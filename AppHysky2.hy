@@ -1,4 +1,8 @@
 
+    (setv $INDENT_MARK  "✠")
+    (setv $EMPTY_LINE   "✠✠✠✠")
+    (setv $ELN          4)
+
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (import pyparsing :as pp)
@@ -9,11 +13,10 @@
     (. sys.stdout (reconfigure :encoding "utf-8"))
 
     (require hyrule [of as-> -> ->> doto case branch unless lif do_n list_n ncut])
-    (import  _hyext *)
-    (require _hyext [f:: fm p> pluckm lns &+ &+> l> l>=] :readers [L])
+    (import  _hyextlink *)
+    (require _hyextlink [f:: fm p> pluckm lns &+ &+> l> l>=] :readers [L])
 
 ; _____________________________________________________________________________/ }}}1
-
 ; IO ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ str
@@ -27,21 +30,19 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    ; parse — returns 1st found?, takes list of str
-    ; scan  — returns all found , takes list of str
-    (defn t_orn [token name] (-> token pp.originalTextFor (.setResultsName name)))
-
 ; prepare code for parsing ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ (of List IndentMarkedLine)
         infiltrate_with_indent
         [ #^ HCode hcode
         ]
-        (->> hcode
-             split_to_lines
-             (lmap add_indent)
-             (str_join :sep "\n")
-             ))
+        (setv outp (->> hcode
+                        split_to_lines
+                        (lmap add_indent)
+                        (str_join :sep "\n")
+                        ))
+        ; also always add last empty line (to avoid special case for line processor)
+        (return (sconcat outp $EMPTY_LINE)))
 
     (defn #^ (of List HCodeLine)
         split_to_lines
@@ -57,7 +58,7 @@
         (setv without_indent (line.lstrip))
         (setv indent_len (- (len line) (len without_indent)))
         (setv indent (* $INDENT_MARK indent_len))
-        (sconcat (* $INDENT_MARK 4) indent without_indent) ; always add at least 4 indent
+        (sconcat $EMPTY_LINE indent without_indent) 
         )
 
 ; _____________________________________________________________________________/ }}}1
@@ -156,7 +157,7 @@
 ; work on parsed data ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ (of List DeconstructedLine)
-        split_parsed_to_lines    
+        split_parsed_to_dlines    
         [ #^ (of List str) parsed
         ]
         (when (= parsed []) (return []))
@@ -170,10 +171,186 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    (setv _code (-> "demo.hy" file_to_code))
-    (setv _parsed (parse_hysky_code _code))
+; work on dlines ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (lmap print (split_parsed_to_lines _parsed))
+    (defn #^ DLineKind
+        get_dline_kind
+        [ #^ DeconstructedLine dline
+        ]
+        (when (= (len dline) 1)
+              (return DLineKind.EMPTY))
+        (setv _elem (second dline))
+        (cond (= ":" _elem)
+              (return DLineKind.OPENER)
+              ;
+              (re_test r"^\\" _elem)
+              (return DLineKind.CONTINUATOR)
+              True
+              (return DLineKind.OPENER)))
+
+    (defn #^ int
+        get_indent
+        [ #^ DeconstructedLine dline
+        ]
+        (len (first dline)))
+
+    ; indent is symbols count, indent_level is index in list
+    (defn #^ int
+        get_indent_level
+        [ #^ (of List int) indents      #_ "[4 8 20]"
+          #^ int           cur_indent  
+        ]
+        (for [&idx (range 0 (len indents))] (when (= cur_indent (get indents &idx)) (setv outp &idx)))
+        (return outp)
+        )
+
+    (defn #^ DeconstructedLine
+        insert_starter_brackets
+        [ #^ DeconstructedLine dline
+          #^ int closers
+          #^ int openers
+          #^ bool [remove_continuation_mark False ]
+        ]
+
+        (lconcat [(get dline 0)]
+                 [(sconcat (* ")" closers) (* "(" openers))]
+                 (if remove_continuation_mark
+                     (cut dline 2 None)
+                     (cut dline 1 None))))
+
+; _____________________________________________________________________________/ }}}1
+; line processor ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (setv $CARD0 (ProcessorCard :indents     [$ELN]
+                                :brkt_count  0))
+
+    (defn #^ (of Tuple ProcessorCard DeconstructedLine)
+        process_dline
+        [ #^ ProcessorCard     pcard
+          #^ DeconstructedLine dline
+        ]
+        (setv dline_kind (get_dline_kind dline))
+        (cond (= dline_kind DLineKind.OPENER) 
+              (process_opener_dline pcard dline)
+              (= dline_kind DLineKind.EMPTY)
+              (process_empty_dline pcard dline)
+              (= dline_kind DLineKind.CONTINUATOR)
+              (process_continuator_dline pcard dline)
+              True
+              [pcard dline]))
+
+    (defn #^ (of Tuple ProcessorCard DeconstructedLine)
+        process_empty_dline
+        [ #^ ProcessorCard     pcard
+          #^ DeconstructedLine dline
+        ]
+        (setv prev_accum   pcard.brkt_count)
+        ;
+        (return [ $CARD0
+                  (insert_starter_brackets dline
+                                           prev_accum
+                                           0)]))
+
+    (defn #^ (of Tuple ProcessorCard DeconstructedLine)
+        process_opener_dline
+        [ #^ ProcessorCard     pcard
+          #^ DeconstructedLine dline
+        ]
+        (setv cur_indent   (get_indent dline))
+        (setv prev_indents pcard.indents)
+        (setv prev_indent  (last prev_indents))
+        (setv prev_accum   pcard.brkt_count)
+        ;
+        (setv _levels_to_open 1)
+        (cond (> cur_indent prev_indent)
+              (setv _levels_to_close 0
+                    _new_indents (lconcat prev_indents [cur_indent]))
+              (= cur_indent prev_indent)
+              (setv _levels_to_close 1
+                    _new_indents prev_indents)
+              (< cur_indent prev_indent)
+              (setv _levels_to_close (- (len prev_indents)
+                                        (get_indent_level prev_indents cur_indent))
+                    _new_indents (list (drop_last (dec _levels_to_close) prev_indents))))
+        (return [ (ProcessorCard :indents    _new_indents
+                                 :brkt_count (+ prev_accum
+                                                _levels_to_open
+                                                (neg _levels_to_close)))
+                  (insert_starter_brackets dline _levels_to_close _levels_to_open)]))
+
+    (defn #^ (of Tuple ProcessorCard DeconstructedLine)
+        process_continuator_dline
+        [ #^ ProcessorCard     pcard
+          #^ DeconstructedLine dline
+        ]
+        (setv cur_indent   (get_indent dline))
+        (setv prev_indents pcard.indents)
+        (setv prev_indent  (last prev_indents))
+        (setv prev_accum   pcard.brkt_count)
+        ;
+        (setv _levels_to_open 0)
+        (cond (> cur_indent prev_indent)
+              (setv _levels_to_close 0
+                    _new_indents (lconcat prev_indents [cur_indent]))
+              (= cur_indent prev_indent)
+              (setv _levels_to_close 0
+                    _new_indents prev_indents)
+              (< cur_indent prev_indent)
+              (setv _levels_to_close (- (len prev_indents)
+                                        (get_indent_level prev_indents cur_indent)
+                                        1)
+                    _new_indents (list (drop_last _levels_to_close prev_indents))))
+        (return [ (ProcessorCard :indents    _new_indents
+                                 :brkt_count (+ prev_accum
+                                                _levels_to_open
+                                                (neg _levels_to_close)))
+                  (insert_starter_brackets dline
+                                           _levels_to_close
+                                           _levels_to_open
+                                           :remove_continuation_mark True)]))
+
+; _____________________________________________________________________________/ }}}1
+; full processor ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn #^ (of List DeconstructedLine)
+        process_dlines_list
+        [ #^ ProcessorCard init_card
+          #^ (of List DeconstructedLine) dlines
+        ]
+        (setv cur_card init_card)
+        (setv _result (* ["blank"] (len dlines)))
+        (for [[&idx &dl] (enumerate dlines)]
+             (setv outp (process_dline cur_card &dl))
+             (setv (get _result &idx) (second outp))
+             (setv cur_card (first outp)))
+        (return _result))
+
+; _____________________________________________________________________________/ }}}1
+
+; assembly_dlines ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn #^ str
+        assembly_dlines
+        [ #^ (of List DeconstructedLine) dlines
+        ]
+        (setv _with_newLines (lfor &dl dlines (lconcat ["\n" (* " " (- (len (first &dl)) 4))]
+                                                       (list (rest &dl)))))
+        (-> _with_newLines
+            flatten
+            (str_join :sep " "))
+        )
+
+; _____________________________________________________________________________/ }}}1
+
+    (setv _code (-> "parser_demo.hy" file_to_code))
+    (setv _parsed (parse_hysky_code _code))
+    (setv _dlines (split_parsed_to_dlines _parsed))
+    (setv _result (process_dlines_list $CARD0 _dlines))
+    (print (assembly_dlines _result))
+
+
+    ;(lprint (lfor &dl _dlines (process_dline $CARD0 &dl)))
     ;(lprint (split_parsed_to_lines _parsed))
 
 
+    

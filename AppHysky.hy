@@ -137,9 +137,9 @@
     (lprint _deconstructedLines)
     (lprint (lmap get_indent _deconstructedLines))
 
-    (setv $PARSERSTART (ParserFlow :prev_indent    None
-                                   :accum_brackets 0
-                                   :accum_lists    0))
+    (setv $PARSERSTART (ProcessorCard :prev_indent    4 ; 4 is empty line
+                                      :brkt_count     0
+                                      :accum_lists    0))
 
     (defn #^ ParserFlow
         process_one_dstring

@@ -1,14 +1,4 @@
 
-    ; only one-line brackets are allowed
-    ; only one-line qstrings are allowed curently
-    ; tabs vs spaces!!!
-
-
-    "pupos"
-
-    "riba
-     buber"
-
     numbers     1234567890
                 -1.2
                 1.3e2
