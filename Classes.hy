@@ -9,6 +9,7 @@
     (require _hyextlink [f:: fm p> pluckm lns &+ &+> l> l>=] :readers [L])
 
 ; _____________________________________________________________________________/ }}}1
+; Classes ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; stage 0:
 
@@ -45,3 +46,16 @@
     ; stage 4:
 
         (setv #_ DC HyCode str)
+
+; _____________________________________________________________________________/ }}}1
+
+    ; (defclass [dataclass] DeconstructedLine []
+    ;     "gives info on previously processed line"
+    ;     (#^ int                 raw_indent_length   #_ "number of ✠ symbols")
+    ;     (#^ str                 markers             #_ "like : and \ at beginning of the line")
+    ;     (#^ (of List str)       tokens              #_ "like «func» and «<=»")
+    ;     (#^ (of Optional str)   ending_comment      #_ "like ; comment"))
+
+
+
+

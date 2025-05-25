@@ -33,7 +33,8 @@
     (setv $ELN          4)
 
 ; _____________________________________________________________________________/ }}}1
-; Stages Info ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+; [Dev doc] Stages Info ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; stage 1: PREPARE
     ; :: HyCode -> PreparedCode // with ✠ marks
@@ -464,8 +465,6 @@
     (setv _hysky (-> "parser_docs\\_test.hy" file_to_code))
     (setv _hy (hysky_to_hy _hysky))
     (print _hy)
-    (print "=========================")
-    (hy.eval (hy.read_many _hy))
 
 
 
