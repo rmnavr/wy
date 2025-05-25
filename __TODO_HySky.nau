@@ -1,10 +1,9 @@
 
 	TODO:
-		- work on comments 
 		- L C #{}
 		- reader macros
-		! trailing spaces
-		! no-ident works bad -> solve the issue!
+		- work on ; comments -> do not remove them
+		! : |split| ; comment  -> bad behaviour
 		- tabs vs spaces
 
 	Info:
@@ -14,5 +13,6 @@
 
 	Side:
 		+ hy.vim: #_ "highlight bracket opener ()"
+		+ hy.vim: : :: nested highlights lol?
 		+ sexp: remove #bfr from macroses?
 

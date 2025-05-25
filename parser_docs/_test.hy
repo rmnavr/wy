@@ -1,4 +1,26 @@
 
+    import pyparsing :as pp
+    import sys
+    . sys.stdout : reconfigure :encoding "utf-8"
+
+    require hyrule [of as-> -> ->> doto case branch unless lif do_n list_n ncut]
+    import  _hyextlink *
+    require _hyextlink [f:: fm p> pluckm lns &+ &+> l> l>=]
+                     \ :readers [L]
+
+    setv ALPHAS    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    setv WSYMBOLS  : + "_" "$.-=+&*<>!/|" "%^?"  ; no: `~@'":;\#
+    setv NUMS      "0123456789"
+
+    setv LPAR      : | : pp.Literal "(" :: pp.Literal "#("
+    setv RPAR      : pp.Literal ")"
+    setv LCRB      : | : pp.Literal (py "\'{\'") :: pp.Literal (py "\'#{\'")
+    setv RBRCKT    : pp.Literal "]"
+    setv LBRCKT    : pp.Literal "["
+    setv RCRB      : pp.Literal "}"
+
+; 1 ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
     setv x 3
 
     setv y 4
@@ -36,4 +58,6 @@
             print
 
     sum [riba pupos]
+
+; _____________________________________________________________________________/ }}}1
 

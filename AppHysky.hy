@@ -175,9 +175,9 @@
                         ANNOTATION
                         QSTRING
                         KEYWORD
+                        WORD
                         SKYMARK
                         NUMBER
-                        WORD
                         INDENT))
 
     (setv EXPR      (| QEXPR SEXPR CEXPR))
