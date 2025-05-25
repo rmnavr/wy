@@ -1,6 +1,54 @@
 
 ; how to indent ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
+    \atr — DOES introduce new indent level
+
+    (fn atr         +1
+        \atr            ; ~
+        \atr            ; ~
+        (fn atr     +1  ; 
+        )\atr       -1  ; CLOSES
+        \atr            ; ~
+    )\atr           -1  ; CLOSES
+    \atr
+
+    (fn atr
+        (fn atr
+        )\atr           ; -> CLOSES block-indent
+        \atr            
+        (fn atr         ; -> RESTARTS block-indent
+        \atr            
+    ))(fn atr
+    )(fn atr
+
+    (fn atr         +1
+        \atr        ; DOES introduce new indent level
+        (fn atr     +1
+        )\atr       -1
+        \atr
+    )\atr           -1
+
+    (fn atr
+        (fn atr
+            \atr 
+            \atr 
+        )\atr 
+        \atr
+
+    (fn atr
+        (fn atr
+        )(fn atr
+            \atr
+            (fn atr
+        )\atr
+        \atr
+        )(fn
+
+
+
+
+
+
                             i action    accum   kind
                             - ------    -----   ----
     (fn atr                 0 
@@ -40,6 +88,27 @@
 
 ; _____________________________________________________________________________/ }}}1
 
+    ! do not confuse:
+      - brackets to close
+      - indent_levels to close
+
+    ! work correctly on comments and strings!
+    ! no-ident works bad -> solve the issue!
+
+    stages:
+    1 hysky code
+    2 split «: func» to 2 lines // currently: will parse "strings" non ideally but will still work
+      add «✠✠✠✠» at indents
+    3 parse to   ["✠✠✠✠" "\\" "x"]
+    4 process to ["✠✠✠✠" "))" "(" "x"]
+      
+
+
+;   0 1 2
+    : partial plus 3 
+      : lns 1 2
+        \     (Each) (collect)
+
     + tabs vs spaces
     + only one-line brackets are allowed currently
     + work on empty code
@@ -58,6 +127,7 @@
     inline openers:
         
         ::
+
 
 
     ====================================================================================================

@@ -18,13 +18,15 @@
 
     (defclass [] DLineKind [Enum] ; DLine is DeconstructedLine
         (setv EMPTY         0)
-        (setv OPENER        1   #_ "<:> or <word>")
+        (setv OPENER        1   #_ "<word> and such")
         (setv CONTINUATOR   2   #_ "\\")
+        (setv LINESTARTER   3   #_ ":")
         ;(setv DOUBLEOPENER  3   #_ "<: word>")
         )
 
     (defclass [dataclass] ProcessorCard []
         (#^ (of List int) indents)
-        (#^ int           brkt_count     #_ "count of (opener) brackets")
+        (#^ int           brkt_count)
+        (#^ DLineKind     dline_kind)
         )
 
