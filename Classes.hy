@@ -10,23 +10,38 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    (setv #_ DC HCode             str)             ; many lines
-    (setv #_ DC HCodeLine         str)             ; partial flip 3
-    (setv #_ DC IndentMarkedLine  str)             ; ✠✠✠✠partial flip 3 | ■
+    ; stage 0:
 
-    (setv #_ DC DeconstructedLine (of List str))   ; ['■'] | ['✠✠' partial ..] | ['partial' ..]
+        (setv #_ DC HyskyCode     str)  ; many lines
+        (setv #_ DC HyskyCodeLine str)  ; partial flip 3
 
-    (defclass [] DLineKind [Enum] ; DLine is DeconstructedLine
-        (setv EMPTY         0)
-        (setv OPENER        1   #_ "<word> and such")
-        (setv CONTINUATOR   2   #_ "\\")
-        (setv LINESTARTER   3   #_ ":")
-        ;(setv DOUBLEOPENER  3   #_ "<: word>")
-        )
+    ; stage 1:
 
-    (defclass [dataclass] ProcessorCard []
-        (#^ (of List int) indents)
-        (#^ int           brkt_count)
-        (#^ DLineKind     dline_kind)
-        )
+        (setv #_ DC PreparedCode  str)  ; ✠✠partial flip 3
 
+    ; stage 2:
+
+        (setv #_ DC DeconstructedLine (of List str))   ; ["■"] , ["✠✠" "partial" ..] , ["partial" ..]
+
+        (defclass [] DLineKind [Enum]   ; DLine is DeconstructedLine
+            (setv EMPTY         0)
+            (setv OPENER        1   #_ "<word> and such")
+            (setv CONTINUATOR   2   #_ "\\")
+            (setv LINESTARTER   3   #_ ":")
+            ;(setv DOUBLEOPENER  3   #_ "<: word>")
+            )
+
+    ; stage 3:
+
+        (setv #_ DC ProcessedLine     (of List str))   ; ["✠✠" ")" "(" "partial" ...]
+
+        (defclass [dataclass] ProcessorCard []
+            "gives info on previously processed line"
+            (#^ (of List int) indents)
+            (#^ int           brkt_count)
+            (#^ DLineKind     dline_kind)
+            )
+
+    ; stage 4:
+
+        (setv #_ DC HyCode str)

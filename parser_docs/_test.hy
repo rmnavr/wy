@@ -1,5 +1,6 @@
 
     setv x 3
+
     setv y 4
     setv lst : * [[x y]] 3
 
@@ -8,14 +9,14 @@
                Each
                collect
            \lst
-         x "sss
+         \x "sss
             ttt
             ssss"
     print z
 
 
     defn #^ int
-        \add_2_numbers 
+        \add_2_numbers
         \[ #^ int x
         \  #^ int y
         \]
@@ -24,7 +25,6 @@
 
     print
         + : * 3 4
-            / 7 9
 
     setv xx
          lmap : p> abs neg str

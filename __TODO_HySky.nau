@@ -1,15 +1,9 @@
 
 	TODO:
-		- refactor stages:
-    	  1 hysky code
-    	  2 split «: func» to 2 lines // currently: will parse "strings" non ideally but will still work
-    	    add «✠✠✠✠» at indents
-    	  3 parse to   ["✠✠✠✠" "\\" "x"]
-    	  4 process to ["✠✠✠✠" "))" "(" "x"]
-
-		- work on comments and strings
+		- work on comments 
 		- L C #{}
 		- reader macros
+		! trailing spaces
 		! no-ident works bad -> solve the issue!
 		- tabs vs spaces
 
