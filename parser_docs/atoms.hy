@@ -11,6 +11,7 @@
     skymarks    ::
                 :
                 L
+                C
                 \
 
     unused      ,
@@ -38,14 +39,14 @@
     comments    #_ (ololo)
                 ; comment ololo
 
-
     keywords    :pupos
 
     ; ==================================================
     ; TODO:
 
-    reader      ...
+    reader      #word()
 
-    macros      ; ` ' ~@ ~
+    macros      ` ' ~@ ~
+
 
 
