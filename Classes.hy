@@ -10,11 +10,11 @@
 
 ; _____________________________________________________________________________/ }}}1
 
+; constants ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
     (setv $INDENT_MARK  "✠")
     (setv $BASE_INDENT  "✠✠✠✠")
     (setv $ELIN         (len $BASE_INDENT)) ; empty line indents N
-
-; markers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; used at : 1) StartOfLine          — work as LINESTARTERS
     ;           2) MidOfLine/EndOfLine  — work as MIDOPENERS
@@ -45,6 +45,7 @@
                                :reverse True))
 
 ; _____________________________________________________________________________/ }}}1
+
 ; preparator ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; PREPARATOR:
@@ -64,7 +65,7 @@
     (setv #_ DC TokenizedLine   (of List Token))    ; ["✠✠✠✠" ":" "func" "x" "x" "; text"]  
 
 ; _____________________________________________________________________________/ }}}1
-; parser: dl builder ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; parser: DLines builder ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defclass [dataclass] LinestarterDL []
         (#^ Token linestarter_token    #_ "like «:» and «#L» at beginning of the line"))
@@ -82,27 +83,38 @@
 
     (defclass [dataclass] DeconstructedLine []
         (#^ StructuralKind      kind_spec)
-        (#^ int                 equiv_indent)     ; <- extra ✠✠✠✠ are dealt with at this stage
+        (#^ int                 equiv_indent)     ; <- extra ✠✠✠✠ are dealt with at this stage; there is only one case where equiv_indent≠real_indent - only for continuator \
         (#^ (of List Token)     body_tokens)
         (#^ (of Optional Token) ending_comment))  ; <- OnlyOCommentDL stores it's comment here
 
 ; _____________________________________________________________________________/ }}}1
+; bracketer ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
+    ; to decide on closers/openers, current line needs info:
+    ; - indent
+    ; - opened brackets stack
+    ; current line can deside how many closers/openers it needs based on itself and previous line, no more info is needed
 
+    ; 1 — count only structural brackets
 
+        (defclass [dataclass] BracketedLine []
+            "calcs structural opener brackets for current line"
+            (#^ DeconstructedLine   dline)
+            (#^ str                 closers #_ "closers are placed before openers (thus closing previous line - but this info is stored in cur line)")
+            (#^ str                 openers #_ "at the start for current line")) 
 
+        ; structural bracket processor
+        (defclass [dataclass] SBP_Card []
+            "gives info on previously processed line"
+            (#^ (of List int)   indents)
+            (#^ (of List str)   brckt_stack #_ "list of closer brackets like [')' '}' ']'] where ')' is the first to be closed")
+            (#^ type            skind #_ "StructuralKind"))
 
+    ; 2 — work on inline brackets
 
-
-; old ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    ; (defclass [dataclass] ProcessorCard []
-    ;     "gives info on previously processed line"
-    ;     (#^ (of List int) indents)
-    ;     (#^ int           brkt_count)
-    ;     (#^ DLineKind     dline_kind)
-    ;     )
-    ; (setv #_ DC HyCode str)
+        (setv #_ DC HyCodeFull str)
+        (setv #_ DC HyCodeLine str)
 
 ; _____________________________________________________________________________/ }}}1
+
 

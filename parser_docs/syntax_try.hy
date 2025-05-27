@@ -1,12 +1,4 @@
 
-       head     inline double
-       --       --     ---
-       :   func :  1 2 ::  3 4
-       L   func L  1 2 LL  3 4
-       C   func C  1 2     3 4 
-       #:  func #: 1 2     3 4
-       #C  func #C 1 2 :#C 3 4
-
 
      func1
         func2

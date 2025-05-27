@@ -193,7 +193,7 @@
 ; _____________________________________________________________________________/ }}}1
 ; structural kind testers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn #^ bool
+    (defn #^ type
         decide_structural_kind
         [ #^ TokenizedLine tline
         ]
@@ -223,8 +223,6 @@
 
 ; _____________________________________________________________________________/ }}}1
 ; DL constructors ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    (of Union LinestarterDL ContinuatorDL OnlyOCommentDL EmptyLineDL ImpliedOpenerDL)
 
     (defn #^ bool
         construct_LinestarterDL
@@ -307,3 +305,4 @@
               EmptyLineDL     (construct_EmptyLineDL     tline)))
 
 ; _____________________________________________________________________________/ }}}1
+

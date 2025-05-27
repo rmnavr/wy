@@ -34,55 +34,58 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    ; «↓» is indent 1
-    ; «.» is indent 2
+    ; «↓» is position of indent 1
+    ; «x» is position of indent 2
 
         bgnM	midOpen midSplit    ; seen as
         ---     ---     --------
 
         ↓
-        : .	    :	    ::		;  (    
-        L .	    L	    LL		;  [ 
-        C .	    C  	    		;  { 
-        #: .    #: 	    		; #( 
-        #C .    #C 	    		; #{ 
+        : x	    :	    ::		;  (    
+        L x	    L	    LL		;  [ 
+        C x	    C  	    		;  { 
+        #: x    #: 	    		; #( 
+        #C x    #C 	    		; #{ 
 
         ↓
-        #m: . 	#m:			    ; #m(
+        #m: x 	#m:			    ; #m(
 
         ↓
-        ': .    ': 	    		; '(
-        'L .    'L 	    		; '[
-        'C .    'C 	    		; '{
-        '#:	.   '#:	    		; '#(
-        '#C	.   '#C	    		; '#{
+        ': x    ': 	    		; '(
+        'L x    'L 	    		; '[
+        'C x    'C 	    		; '{
+        '#:	x   '#:	    		; '#(
+        '#C	x   '#C	    		; '#{
 
-        ~: .    ~: 	    		; ~(
-        ~L .    ~L 	    		; ~[
-        ~C .    ~C 	    		; ~{
-        ~#: .   ~#:	    		; ~#(
-        ~#C .   ~#C	    		; ~#{
+        ~: x    ~: 	    		; ~(
+        ~L x    ~L 	    		; ~[
+        ~C x    ~C 	    		; ~{
+        ~#: x   ~#:	    		; ~#(
+        ~#C x   ~#C	    		; ~#{
 
-        ~@: .   ~: 	    		; ~(
-        ~@L .   ~L 	    		; ~[
-        ~@C .   ~C 	    		; ~{
-        ~@#: .  ~#:	    		; ~#(
-        ~@#C .  ~#C	    		; ~#{
+        ~@: x   ~: 	    		; ~(
+        ~@L x   ~L 	    		; ~[
+        ~@C x   ~C 	    		; ~{
+        ~@#: x  ~#:	    		; ~#(
+        ~@#C x  ~#C	    		; ~#{
 
-        `: .	`: 	    		; `(
-        `L .	`L 	    		; `[
-        `C .	`C 	    		; `{
-        `#: .	`#:	    		; `#(
-        `#C .	`#C	    		; `#{
+        `: x	`: 	    		; `(
+        `L x	`L 	    		; `[
+        `C x	`C 	    		; `{
+        `#: x	`#:	    		; `#(
+        `#C x	`#C	    		; `#{
 
     ; «↓» is indent 1
 
         ↓
-       \ 				        ; continuator          ↓
-        1                       ; essentially seen as \1
-        "string"                ; essentially seen as \"string"
-        '      			        ; essentially seen as \'
-        `      			        ; essentially seen as \`
-        ~                       ; essentially seen as \~
-        ~@                      ; essentially seen as \~@
+
+        1                       ; regarged as continuator
+        .1                      ; regarged as continuator
+        "string"                ; regarded as continuator
+
+       \ 				        ; continuator          
+        '      			        ; continuator
+        `      			        ; continuator
+        ~                       ; continuator
+        ~@                      ; continuator
 

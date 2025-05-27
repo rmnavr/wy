@@ -1,5 +1,11 @@
 
 	! add: reader macros
+	! refactor: NAMINGS!!!!!!!!!!!!
+	! StructuralKind -> when (of Union), is it object? is it class? may be better inheritance than (setv #_ DC ...) ?
+	! delete buffers matching string (dir) in name
+	:bufdo if expand('%:p') =~ '.*Spadoc.*' | bd | endif
+
+	hy.vim: "{" bad coloring
 
 	! insert_smart_indent should be done BEFORE split_linestarters (it makes no sense otherwise)
 	  1 replace tabs with spaces
