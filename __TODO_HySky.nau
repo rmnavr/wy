@@ -1,4 +1,6 @@
 
+	! lang guidelines from cheetsheet to hyext
+	! py: passing list to function (mutations?)
 	! add: reader macros
 	! refactor: NAMINGS!!!!!!!!!!!!
 	! StructuralKind -> when (of Union), is it object? is it class? may be better inheritance than (setv #_ DC ...) ?

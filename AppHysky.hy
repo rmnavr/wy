@@ -5,7 +5,7 @@
 
     (import Preparator [prepare_code_for_pyparsing])
     (import Parser     [prepared_code_to_tlines tline_to_dline])
-    (import Bracketer  [$CARD0 run_processor bline_to_hcodeline])
+    (import Bracketer  [$CARD0 run_processor blines_to_hcode])
 
     (import Classes *)
 
@@ -32,11 +32,15 @@
 ; _____________________________________________________________________________/ }}}1
 
     (setv _hysky         (-> "parser_docs\\_test2.hy" file_to_code))
-    (setv _prepared_code (prepare_code_for_pyparsing (+ _hysky "\n "))) ; empty line to ensure closing all brackets by processor
+    (setv _prepared_code (prepare_code_for_pyparsing _hysky))
     (setv _tlines        (prepared_code_to_tlines _prepared_code))
-    (setv _dlines        (lmap tline_to_dline _tlines))
+    (setv _dlines        (lmap tline_to_dline  _tlines))
     (setv _blines        (run_processor $CARD0 _dlines))
+    (setv _hycode        (blines_to_hcode _blines))
 
-    (lprint _blines)
-    (lprint (lmap bline_to_hcodeline _blines))
+    ;(print _prepared_code)
+    ;(lprint _tlines)
+    ;(lprint _dlines)
+    (print _hycode)
+    ;(-> _hycode hy.read_many hy.eval)
 

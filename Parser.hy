@@ -24,7 +24,7 @@
 
     (setv LPAR      (| (pp.Literal "(") (pp.Literal "#(")))
     (setv RPAR      (pp.Literal ")"))
-    (setv LCRB      (| (pp.Literal (py "\"{\"")) (pp.Literal (py "\"#{\""))))
+    (setv LCRB      (| (pp.Literal (py "'{'")) (pp.Literal (py "'#{'"))))
     (setv RBRCKT    (pp.Literal "]"))
     (setv LBRCKT    (pp.Literal "["))
     (setv RCRB      (pp.Literal "}"))

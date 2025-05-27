@@ -27,7 +27,7 @@
         [ #^ CodeLine line
         ]
                     ; (gr1)  (group 2     )   (gr3)
-        (re.sub (+ r"^(\s+)" $MARKERS_REGEX r"(\s+)")
+        (re.sub (+ r"^(\s*)" $MARKERS_REGEX r"(\s*)")
                 (fm 
                     (sconcat (%1.group 1) (%1.group 2) "\n"
                              (%1.group 1) (* " " (len (%1.group 2))) (%1.group 3)))

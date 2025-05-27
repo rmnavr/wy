@@ -39,6 +39,7 @@
                                  (re.sub r"\`" "\\`"))
                             ")"))
 
+    ; for pyparser:
     ; "L:" should be before "L" — otherwise pyparser will interpret "L:" as "L" + ":"
     (setv $SKY_MARKERS (sorted (lconcat $MARKERS $DMARKERS $CONTINUATORS)
                                :key len
@@ -86,6 +87,11 @@
         (#^ int                 equiv_indent)     ; <- extra ✠✠✠✠ are dealt with at this stage; there is only one case where equiv_indent≠real_indent - only for continuator \
         (#^ (of List Token)     body_tokens)
         (#^ (of Optional Token) ending_comment))  ; <- OnlyOCommentDL stores it's comment here
+
+    (setv $BLANK_DL (DeconstructedLine :kind_spec      (EmptyLineDL)
+                                       :equiv_indent   0
+                                       :body_tokens    []
+                                       :ending_comment None))
 
 ; _____________________________________________________________________________/ }}}1
 ; bracketer ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1

@@ -2,6 +2,7 @@
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (import Classes *)
+    (import Parser [linestarter_markerQ])
 
     (import sys)
     (. sys.stdout (reconfigure :encoding "utf-8"))
@@ -12,7 +13,7 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    (setv $CARD0 (SBP_Card :indents     [$ELIN]
+    (setv $CARD0 (SBP_Card :indents     [0]
                            :brckt_stack []
                            :skind       EmptyLineDL)) 
 
@@ -28,7 +29,7 @@
         ; TODO: make more efficient
         (setv opener (->> token (re.sub ":" "(")
                                 (re.sub "L" "[")
-                                (re.sub "C" (py "\"{\""))))
+                                (re.sub "C" (py "'{'"))))
         (setv closer (cond (re_test ":" token) ")"
                            (re_test "L" token) "]"
                            (re_test "C" token) "}"))
@@ -53,7 +54,7 @@
     ; «indent» is symbols count, «indent_level» is index in list
     (defn #^ int
         get_indent_level
-        [ #^ (of List int) indents      #_ "[4 8 20]"
+        [ #^ (of List int) indents      #_ "[0 4 8 20]"
           #^ int           cur_indent
         ]
         (for [&idx (range 0 (len indents))]
@@ -63,7 +64,7 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    ; convertion from "~@:" to "~@:" is done in these functions:
+    ; convertion from "~@:" to "~@(" is done here (only for actual linestarters, not for body tokens)
 ; process empty dline ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ (of Tuple SBP_Card BracketedLine)
@@ -243,7 +244,7 @@
         ]
         (setv _result [])
         (setv _cur_card starting_card)
-        (for [&dl dlines]
+        (for [&dl (lconcat dlines [$BLANK_DL])] ; extra line is added for processor to always properly close
             (setv step_result (process_single_dline _cur_card &dl))
             (setv _cur_card (first step_result))
             (_result.append (second step_result)))
@@ -253,13 +254,123 @@
 
 ; Part 3 — concatenate all into final HyCode
 
-; work on inner bracket markers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+    ; convertion from "~@:" to "~@(" is done here (only for body tokens)
+; insert inner bracket markers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
+    (defn #^ (of List Token)
+        process_inner_markers_inside_body
+        [ #^ (of List Token) body_tokens
+        ]
+        ; 1) process linestarters (acting as midopeners)
+        (setv _new_body [])
+        (setv _postfix  "")
+        (for [&t body_tokens]
+             (if (linestarter_markerQ &t)
+                 (do (setv [_opener _closer] (linestarter_marker_to_hybrackets &t))
+                     (+= _new_body [_opener])
+                     (+= _postfix  _closer))
+                 (+= _new_body [&t])))
+        ; 2) process doublemarkers:
+        (if (= _postfix "")
+            (setv _new_body_with_postfix _new_body)
+            (setv _new_body_with_postfix (lconcat _new_body [_postfix])))
+        (process_doubleMarkers_inside_body _new_body_with_postfix))
+
+    (defn #^ (of List Token)
+        process_doubleMarkers_inside_body
+        [ #^ (of List Token) body_tokens
+        ]
+        (setv _new_body [])
+        (for [&t body_tokens]
+            (cond (= &t "::") (_new_body.extend [")" "("])  ; there 2 new tokens (instead of one ")(") to be consistent with parser
+                  (= &t "LL") (_new_body.extend ["]" "["])  ; 
+                  True        (_new_body.append &t)))
+        (return _new_body))
+
+; _____________________________________________________________________________/ }}}1
+; helper checks if token is bracket ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    ; inserts extra spaces when needed, and inserts nothing when not needed
+
+    (defn #^ bool
+        is_opening_bracket
+        [ #^ Token token
+        ]
+        (when (zeroQ (len token)) (return False))   ; just in case emtpy token "" slips in (but it shouldn't)
+        (if (or (= (last token) "(")
+                (= (last token) "[")
+                (= (last token) (py "'{'")))
+            True
+            False))
+
+    (defn #^ bool
+        is_closing_bracket
+        [ #^ Token token
+        ]
+        (when (zeroQ (len token)) (return False))   ; just in case emtpy token "" slips in (but it shouldn't)
+        (if (or (= (first token) ")")
+                (= (first token) "]")
+                (= (first token) (py "'}'")))
+            True
+            False))
+
+    (defn #^ bool
+        is_bracket
+        [ #^ Token token
+        ]
+        (when (zeroQ (len token)) (return False))   ; just in case emtpy token "" slips in (but it shouldn't)
+        (if (or (is_opening_bracket token)
+                (is_closing_bracket token))
+            True
+            False))
+
+; _____________________________________________________________________________/ }}}1
+; smart sconcat body tokens ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    ; at this stage tokens are "~@(" instead of "~@:"
+
+    (defn #^ HyCodeLine
+        smart_concat_body_tokens
+        [ #^ (of List Token) body_tokens
+        ]
+        "should be applied to body with inner markers processed already"
+        (when (zeroQ (len body_tokens)) (return ""))   
+        ; find insert positions:
+        (setv _new_body [(first body_tokens)])
+        (for [[&idx &token] (enumerate (cut body_tokens 1 None))]
+            (setv idx (inc &idx))
+            (setv token_cur  (get body_tokens idx))
+            (setv token_prev (get body_tokens (dec idx)))
+            ;
+            (cond ; (x
+                  (and (not_ is_bracket         token_cur)      ; TODO: condense
+                       (     is_opening_bracket token_prev))
+                  (_new_body.append &token)
+                  ; ()
+                  (and (     is_closing_bracket token_cur)
+                       (     is_opening_bracket token_prev))
+                  (_new_body.append &token)
+                  ; ((
+                  (and (     is_opening_bracket token_cur)
+                       (     is_opening_bracket token_prev))
+                  (_new_body.append &token)
+                  ; )) 
+                  (and (     is_closing_bracket token_cur)
+                       (     is_closing_bracket token_prev))
+                  (_new_body.append &token)
+                  ; x)
+                  (and (     is_closing_bracket token_cur)
+                       (not_ is_bracket         token_prev))
+                  (_new_body.append &token)
+                  ; all other
+                  True
+                  (_new_body.extend [" " &token])))
+        (return (str_join _new_body :sep "")))
 
 ; _____________________________________________________________________________/ }}}1
 ; bline to hycodeline ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn #^ HyCodeLine
+    (defn #^ (of Tuple str HyCodeLine) #_ "[closers_for_prev_line   cur_line]"
         bline_to_hcodeline
         [ #^ BracketedLine bline
         ]
@@ -268,9 +379,31 @@
         (setv _indent  (* " " dline.equiv_indent))
         (setv _openers (str_join bline.openers     :sep ""))
         (setv _closers (str_join bline.closers     :sep ""))
-        (setv _body    (str_join dline.body_tokens :sep " "))
         (setv _comment (if (isnone dline.ending_comment) "" dline.ending_comment))
-        (sconcat _indent _openers _body _closers _comment)
-        )
+        ; add continuator marks
+        (setv _prefix  "")
+        (when (= (type dline.kind_spec) ContinuatorDL)
+              (if (or (= dline.kind_spec.continuator_token "\\")
+                      (= dline.kind_spec.continuator_token None))
+                  ""
+                  dline.kind_spec.continuator_token))
+        ; process inner markers:
+        (setv _body (-> dline.body_tokens process_inner_markers_inside_body
+                                          smart_concat_body_tokens))
+        ;
+        [_closers (sconcat _indent _openers _body _comment)])
+
+; _____________________________________________________________________________/ }}}1
+; assembly: blines_to_hcode ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn #^ HyCodeFull 
+        blines_to_hcode
+        [ #^ (of List BracketedLine) blines
+        ]
+        (setv _outp "")
+        (for [&bl blines]
+             (setv [_closers _line] (bline_to_hcodeline &bl))
+             (+= _outp (sconcat _closers "\n" _line)))  ; for first elem will produce redundant starting "\n"
+        (return ((p> rest str_join) _outp)))            ; this "\n" is removed here
 
 ; _____________________________________________________________________________/ }}}1
