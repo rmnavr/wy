@@ -31,16 +31,26 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    (setv _hysky         (-> "parser_docs\\_test2.hy" file_to_code))
-    (setv _prepared_code (prepare_code_for_pyparsing _hysky))
-    (setv _tlines        (prepared_code_to_tlines _prepared_code))
-    (setv _dlines        (lmap tline_to_dline  _tlines))
-    (setv _blines        (run_processor $CARD0 _dlines))
-    (setv _hycode        (blines_to_hcode _blines))
+    (setv _hysky         (-> "docs\\_test3.wy" file_to_code))
 
+    (setv _prepared_code (prepare_code_for_pyparsing _hysky))
+    (setv _tlines        (prepared_code_to_tlines _prepared_code))  ; tokenize
+    (setv _dlines        (lmap tline_to_dline  _tlines))            ; deconstruct
+    (setv _blines        (run_processor $CARD0 _dlines))            ; bracketize
+    (setv _hycode        (blines_to_hcode _blines))                 ; assembly
+
+    (defn #^ int func
+        [ #^ int arg1
+          #^ int arg2
+          #^ int #** arg3
+        ]
+        (print 1)
+        )
     ;(print _prepared_code)
     ;(lprint _tlines)
     ;(lprint _dlines)
+    ;(lprint _blines)
     (print _hycode)
+
     ;(-> _hycode hy.read_many hy.eval)
 

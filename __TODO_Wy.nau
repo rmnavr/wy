@@ -1,0 +1,51 @@
+
+// Docs ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+	Phylosofical:
+		- HyWy only changes syntax, nothing more.
+		- All HyExt is done in HyLang.
+
+	Syntax Rules:
+		- only ONE L/C/: has special recognition at line beginning; need more? use new lines punk
+		- inline L/C/: has different meaning
+
+// ____________________________________________________________________________/ }}}1
+
+	; TODO: reader macro
+
+	↓
+	#m: x	#m:
+	-> strings and ;comments can contain any printable character
+
+	
+
+
+    // core grammar has no:
+    // - linestarter lines with anything except linestarter
+    // - applicator-markers
+    // before parsing, wy-code is expanded into core grammar
+
+	bug: ~@ is not added currently
+	\ in mid ?
+	allow \   x to start indend at \ ?
+
+	new functionality:
+		• «self» should be continuator?
+		• $ :$ $$
+		• fully-possible-one-line-syntax without parens, also , is str_join lol
+		• nesting interaction: () : :: $ $$
+		• save positions where on Preparation stage lines were splited? or make it properly recognized?
+		• reader macroses recognition
+		+ proper error messaging
+
+		Later:
+		+ L C can open new indent levels also at linemid?
+		+ pass closing bracket through comments to actual line where it belongs
+
+	Pretty-factoring:
+		! CONSISTENT NAMINGS!!!!!!!!!!!!
+		! Review all TODO parts of the code
+		! Organize $MARKERS (+ correct ordering for regex/pyparsing)
+		! «; comment» pyparser token will NOT recognize non WORD chars — поправить это
+		+ insert_smart_indent should be done BEFORE split_linestarters (it makes no sense otherwise)
+

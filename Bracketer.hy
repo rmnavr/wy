@@ -265,27 +265,20 @@
         (setv _new_body [])
         (setv _postfix  "")
         (for [&t body_tokens]
-             (if (linestarter_markerQ &t)
-                 (do (setv [_opener _closer] (linestarter_marker_to_hybrackets &t))
-                     (+= _new_body [_opener])
-                     (+= _postfix  _closer))
-                 (+= _new_body [&t])))
+             (cond (linestarter_markerQ &t)
+                   (do (setv [_opener _closer] (linestarter_marker_to_hybrackets &t))
+                       (+= _new_body [_opener])
+                       (setv _postfix (+ _closer _postfix)))
+                   (= &t "::")
+                   (+= _new_body [")" "("])
+                   (= &t "LL")
+                   (+= _new_body ["]" "["])
+                   True
+                   (+= _new_body [&t])))
         ; 2) process doublemarkers:
         (if (= _postfix "")
-            (setv _new_body_with_postfix _new_body)
-            (setv _new_body_with_postfix (lconcat _new_body [_postfix])))
-        (process_doubleMarkers_inside_body _new_body_with_postfix))
-
-    (defn #^ (of List Token)
-        process_doubleMarkers_inside_body
-        [ #^ (of List Token) body_tokens
-        ]
-        (setv _new_body [])
-        (for [&t body_tokens]
-            (cond (= &t "::") (_new_body.extend [")" "("])  ; there 2 new tokens (instead of one ")(") to be consistent with parser
-                  (= &t "LL") (_new_body.extend ["]" "["])  ; 
-                  True        (_new_body.append &t)))
-        (return _new_body))
+            _new_body
+            (lconcat _new_body [_postfix])))
 
 ; _____________________________________________________________________________/ }}}1
 ; helper checks if token is bracket ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -370,7 +363,7 @@
 ; _____________________________________________________________________________/ }}}1
 ; bline to hycodeline ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn #^ (of Tuple str HyCodeLine) #_ "[closers_for_prev_line   cur_line]"
+    (defn #^ (of Tuple str Token HyCodeLine) #_ "[closers_string comment main_text]"
         bline_to_hcodeline
         [ #^ BracketedLine bline
         ]
@@ -391,7 +384,7 @@
         (setv _body (-> dline.body_tokens process_inner_markers_inside_body
                                           smart_concat_body_tokens))
         ;
-        [_closers (sconcat _indent _openers _body _comment)])
+        [_closers _comment (sconcat _indent _openers _body)])
 
 ; _____________________________________________________________________________/ }}}1
 ; assembly: blines_to_hcode ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -401,9 +394,11 @@
         [ #^ (of List BracketedLine) blines
         ]
         (setv _outp "")
+        (setv _prev_comment "")
         (for [&bl blines]
-             (setv [_closers _line] (bline_to_hcodeline &bl))
-             (+= _outp (sconcat _closers "\n" _line)))  ; for first elem will produce redundant starting "\n"
-        (return ((p> rest str_join) _outp)))            ; this "\n" is removed here
+             (setv [_closers _comment _line] (bline_to_hcodeline &bl))
+             (+= _outp (sconcat _closers _prev_comment "\n" _line))     ; for first elem will produce redundant starting "\n"
+             (setv _prev_comment _comment))             
+        (return ((p> rest str_join) _outp)))                            ; this "\n" is removed here
 
 ; _____________________________________________________________________________/ }}}1

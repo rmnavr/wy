@@ -6,7 +6,7 @@
     require hyrule [of as-> -> ->> doto case branch unless lif do_n list_n ncut]
     import  _hyextlink *
     require _hyextlink [f:: fm p> pluckm lns &+ &+> l> l>=]
-                     \ :readers [L]
+                      \ :readers [L]
 
     setv ALPHAS    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
     setv WSYMBOLS  : + "_" "$.-=+&*<>!/|" "%^?"  ; no: `~@'":;\#
@@ -14,12 +14,10 @@
 
     setv LPAR      : | : pp.Literal "(" :: pp.Literal "#("
     setv RPAR      : pp.Literal ")"
-    setv LCRB      : | : pp.Literal (py "\'{\'") :: pp.Literal (py "\'#{\'")
+    setv LCRB      : | : pp.Literal (py "'{'") :: pp.Literal (py "'#{'")
     setv RBRCKT    : pp.Literal "]"
     setv LBRCKT    : pp.Literal "["
     setv RCRB      : pp.Literal "}"
-
-; 1 ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     setv x 3
 
@@ -30,8 +28,8 @@
          : lns 1
                Each
                collect
-           \lst
-         \x "sss
+          \lst
+        \x "sss
             ttt
             ssss"
     print z
@@ -42,22 +40,21 @@
         \[ #^ int x
         \  #^ int y
         \]
-        + 10 x y
+         + 10 x y
     print : add_2_numbers 10 12
 
     print
         + : * 3 4
+        7
 
     setv xx
          lmap : p> abs neg str
                \[-1 -2 -3]
-         \riba 11
-         \pupos 12
+        \riba 11
+        \pupos 12
 
     -> xx : l> 1 (get)
             print
 
     sum [riba pupos]
-
-; _____________________________________________________________________________/ }}}1
 

@@ -150,7 +150,55 @@
 
     ; Part 2: TokenizedLine -> DeconstructedLine
 
+; TMP: COPYPASTE helper checks if token is bracket ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    ; inserts extra spaces when needed, and inserts nothing when not needed
+
+    (defn #^ bool
+        is_opening_bracket
+        [ #^ Token token
+        ]
+        (when (zeroQ (len token)) (return False))   ; just in case emtpy token "" slips in (but it shouldn't)
+        (if (or (= (last token) "(")
+                (= (last token) "[")
+                (= (last token) (py "'{'")))
+            True
+            False))
+
+    (defn #^ bool
+        is_closing_bracket
+        [ #^ Token token
+        ]
+        (when (zeroQ (len token)) (return False))   ; just in case emtpy token "" slips in (but it shouldn't)
+        (if (or (= (first token) ")")
+                (= (first token) "]")
+                (= (first token) (py "'}'")))
+            True
+            False))
+
+    (defn #^ bool
+        is_bracket
+        [ #^ Token token
+        ]
+        (when (zeroQ (len token)) (return False))   ; just in case emtpy token "" slips in (but it shouldn't)
+        (if (or (is_opening_bracket token)
+                (is_closing_bracket token))
+            True
+            False))
+
+; _____________________________________________________________________________/ }}}1
+
 ; token type testers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn #^ bool
+        regarded_as_continuatorQ
+        [ #^ Token token
+        ]
+        (or (digitQ             token)   
+            (qstringQ           token)
+            (annotation_markerQ token)
+            (unpacker_markerQ   token)
+            (is_bracket         token))) 
 
     (defn #^ bool
         linestarter_markerQ
@@ -165,11 +213,17 @@
         (if (in token $CONTINUATORS) True False))
 
     (defn #^ bool
-        regarded_as_continuatorQ
+        annotation_markerQ
         [ #^ Token token
         ]
-        (or (digitQ   token)   
-            (qstringQ token))) 
+        (= token "#^"))
+
+    (defn #^ bool
+        unpacker_markerQ
+        [ #^ Token token
+        ]
+        (or (= token "#*")
+            (= token "#**")))
 
     (defn #^ bool
         digitQ
@@ -222,7 +276,7 @@
               ImpliedOpenerDL))
 
 ; _____________________________________________________________________________/ }}}1
-; DL constructors ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; DL constructors ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ bool
         construct_LinestarterDL
