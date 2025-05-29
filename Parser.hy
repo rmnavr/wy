@@ -46,8 +46,8 @@
     (setv WY_MARKER    (| #* (lmap pp.Literal $WY_MARKERS)))
     (setv HYMACRO_MARK (| #* (lmap pp.Literal $HY_MACROMARKS)))
     (setv UNPACKER     (| (pp.Literal "#**") (pp.Literal "#*")))
-    (setv WORD         (| (pp.Word (+ ALPHAS WSYMBOLS) (+ ALPHAS NUMS WSYMBOLS ":"))))
-    (setv KEYWORD      (pp.Combine (+ ":" WORD)))
+    (setv WORD         (pp.Word (+ ALPHAS WSYMBOLS) (+ ALPHAS NUMS WSYMBOLS ":")))
+    (setv KEYWORD      (pp.Combine (+ ":" (pp.Word (+ ALPHAS "_") (+ ALPHAS "_" NUMS)))))
     (setv QSTRING      (pp.Combine (+  (pp.Optional (pp.oneOf "r f b"))
                                        (pp.QuotedString   :quoteChar "\""
                                                           :escChar "\\"
@@ -55,6 +55,7 @@
                                                           :unquoteResults False))))
     (setv OCOMMENT     (pp.Combine (+  (pp.Literal ";")
                                        (pp.SkipTo (pp.lineEnd)))))
+
 
     ; ==========================
     ; ATOM    = words and similar
@@ -157,12 +158,14 @@
         token_regarded_as_continuatorQ
         [ #^ Token token
         ]
-        (or (digit_tokenQ           token)
-            (qstring_tokenQ         token)
-            (annotation_tokenQ      token)
-            (unpacker_tokenQ        token)
-            (hy_macromark_tokenQ    token)
-            (hy_bracket_tokenQ      token)))
+        (or (digit_tokenQ        token)
+            (qstring_tokenQ      token)
+            (keyword_tokenQ      token)
+            (annotation_tokenQ   token)
+            (icomment_tokenQ     token)
+            (unpacker_tokenQ     token)
+            (hy_macromark_tokenQ token)
+            (hy_bracket_tokenQ   token)))
 
     (defn #^ bool
         hy_bracket_tokenQ
@@ -196,6 +199,12 @@
         (= token "#^"))
 
     (defn #^ bool
+        icomment_tokenQ
+        [ #^ Token token
+        ]
+        (= token "#_"))
+
+    (defn #^ bool
         unpacker_tokenQ
         [ #^ Token token
         ]
@@ -220,6 +229,12 @@
         ]
         (re_test "^[rbf]?\"" token))
 
+    (defn #^ bool
+        keyword_tokenQ
+        [ #^ Token token
+        ]
+        (re_test r":\w+" token))
+
 ; _____________________________________________________________________________/ }}}1
 ; testers: wy token type ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
@@ -236,6 +251,7 @@
         (in token $CMARKERS))
 
 ; _____________________________________________________________________________/ }}}1
+
 ; structural kind testers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ type
@@ -256,6 +272,11 @@
                    (omarker_tokenQ (second tline)))
               GroupStarterDL
               ;
+              ; ["✠✠✠✠" "~@:" "smth"] ; <- can only come from source lines like «: : func»
+              (and (>= (len tline) 3)
+                   (omarker_tokenQ (second tline)))
+              ContinuatorDL
+              ;
               ; ["✠✠✠✠" "\\" ...]
               ; ["✠✠✠✠" "1" ...]
               (and (>= (len tline) 2)
@@ -267,7 +288,6 @@
               ImpliedOpenerDL))
 
 ; _____________________________________________________________________________/ }}}1
-
 ; DL constructors ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ bool

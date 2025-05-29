@@ -30,8 +30,19 @@
         (return outp))
 
 ; _____________________________________________________________________________/ }}}1
+; vim tmp ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (setv _hysky         (-> "docs\\_test3.wy" file_to_code))
+    ;nnoremap <A-/> mz^hr\`z:delmarks!<Enter>
+    ;nnoremap <A-\> mz^Whr\`z:delmarks!<Enter>
+    ;inoremap <A-/> <Esc>^hr\A
+    ;inoremap <A-\> <Esc>^Whr\A
+
+    ;nnoremap <leader>wi V}o><Esc>O<BS>
+    ;nnoremap <leader>wd ^mzjwY}Pmy`z<C-V>`yhoxddmx}kdd`x:delmarks!<Enter>
+
+; _____________________________________________________________________________/ }}}1
+
+    (setv _hysky         (-> "_test5.wy" file_to_code))
     (setv _prepared_code (prepare_code_for_pyparsing _hysky))
 
     (setv _tlines        (prepared_code_to_tlines _prepared_code))  ; tokenize
@@ -44,9 +55,7 @@
     ;(print  "=== tokenized lines ===")    (lprint _tlines)          (print "")
     ;(print  "=== decontructed lines ===") (lprint _dlines)          (print "")
     ;(print  "=== bracketed lines ===")    (lprint _blines)          (print "")
-    ;(print  "=== final hy code ===")      (lprint _blines)          (print "")
-    (print _hycode)
-    ;(-> _hycode hy.read_many hy.eval)
+    (print  "=== final hy code ===")      (print _hycode)           (print "")
+    (print  "=== repl result ===")        (-> _hycode hy.read_many hy.eval)
 
 
-    

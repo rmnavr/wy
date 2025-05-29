@@ -197,7 +197,9 @@
         ;
         (cond (> cur_indent prev_indent)
               (setv _levels_to_close 0
-                    _new_indents (lconcat prev_indents [cur_indent]))
+                    _new_indents (if (= prev_kind ContinuatorDL)
+                                     prev_indents
+                                     (lconcat prev_indents [cur_indent])))
               (= cur_indent prev_indent)
               (setv _levels_to_close (if (= prev_kind ContinuatorDL) 0 1)
                     _new_indents prev_indents)

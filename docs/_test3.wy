@@ -1,4 +1,14 @@
 
+    lmap : fm : * %1 2 $ [1 2 3]
+
+    : lmap : fm : * %1 2 $ [1 2 3]
+
+    LRiba
+    :keyword
+
+
+    1
+
     : p> abs neg str
      \[1 2 3]
 
@@ -40,14 +50,11 @@
 
     ; $ is needed to close all inline : and such
 
-    lmap : fm : * %1 2 $ [1 2 3]
-
     lmap : fm : * %1 2
        [1 2 3]
 
     (lmap (fm (* %1 2)) [1 2 3])
 
-    : lmap : fm : * %1 2 $ [1 2 3]
 
     print x y $ \z
     (print x y z)
