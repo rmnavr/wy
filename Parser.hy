@@ -25,8 +25,8 @@
     (setv LPAR      (| #* (lmap pp.Literal $HY_OPENERS1)))
     (setv RPAR      (pp.Literal ")"))
 
-    (setv RBRCKT    (| #* (lmap pp.Literal $HY_OPENERS2)))
-    (setv LBRCKT    (pp.Literal "["))
+    (setv LBRCKT    (| #* (lmap pp.Literal $HY_OPENERS2)))
+    (setv RBRCKT    (pp.Literal "]"))
 
     (setv LCRB      (| #* (lmap pp.Literal $HY_OPENERS3)))
     (setv RCRB      (pp.Literal "}"))
@@ -55,6 +55,7 @@
                                                           :unquoteResults False))))
     (setv OCOMMENT     (pp.Combine (+  (pp.Literal ";")
                                        (pp.SkipTo (pp.lineEnd)))))
+
     ; ==========================
     ; ATOM    = words and similar
     ; EXPR    = bracketed
@@ -111,11 +112,10 @@
         run_pyparse
         [ #^ PreparedCodeFull code
         ]
-        (setv result (-> code CONTENT.scanString
-                              list           ; generator to list
-                              flatten
-                              (cut None -2)  ; remove column info
-                              ))
+        (setv result (->> code CONTENT.scanString
+                               list                                 ; generator to list
+                               (map (fm (cut %1 None -2)) #_ here) ; remove column info
+                               flatten))
         (lmap (p> str
                   replace_indentmarks_if_qstrings)
               result))

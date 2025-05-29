@@ -1,4 +1,7 @@
 
+    : p> abs neg str
+     \[1 2 3]
+
     pupos
     ~@ x
 
@@ -53,8 +56,6 @@
 
     p> abs neg str $$ [1 2 3]
 
-    : p> abs neg str
-     \[1 2 3]
 
     lns 1 2 (Each) (collect) $$ \x y
 
