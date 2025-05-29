@@ -22,7 +22,7 @@
         return
 
 
-    $ должно закрывать все скобки на строке
+    ; $ должно закрывать все скобки на строке
 
     import sys
     . sys.stdout : reconfigure :encoding "utf-8"

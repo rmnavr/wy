@@ -37,8 +37,12 @@
     ; terminology:
 ; All Dev Terms ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
+    ; ✠ is «Indent Mark»
+
 	; Wy Source code is in [Condensed Grammar] format
-	; 1 Preparator		-> expands Condensed Grammar to [Expanded Grammar]
+	; 1 Preparator		-> 1) expands Condensed Grammar to [Expanded Grammar]
+    ;                      2) adds indent marks
+    ;                      code is now called [Prepared Code]
 	; 2 Parser			-> parses Expanded Grammar to [Lines kinds]
 	; 3 Bracketer		-> counts brackets based on indent, replaces WYMarkers with HYMarkers
 
@@ -48,12 +52,11 @@
 	;   - MMarkers (middle markers)  -> expanded inside line
 	; - DMarkers (double markers)	 -> expanded inside line
 	; - CMarker  (cont marker)		 -> can be used only at line start
-	; - AMarkers (appl markers)		 -> ...
+	; * AMarkers (appl markers)		 -> ...
 
 	; HYMarkers:
-	; - CTokens						 -> HY tokens, that are regarded as linestarter
-	; - OMarkers (opener markers)	 -> same as WY_OMarkers, but with :LC replaced to ([{ 
-	; - BClosers					 -> just 3 elems: ) ] }
+	; * CTokens						 -> HY tokens, that are regarded as linestarter
+	; - HyOpeners                 	 -> same as OMarkers, but with :LC replaced to ([{ 
 
 	; Lines kinds of Expanded Grammar:
 	; - GroupStarterL		-> «   :»					// OMarkers act as SMarkers only at GroupStarterL
@@ -65,11 +68,11 @@
 	; - EmptyL				-> « »						// acts as indent closer
 
 ; _____________________________________________________________________________/ }}}1
-; Wy markers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; CMarkers/CTokens ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
 	; symbol ↓ marks indent level
 
-	; CMarker (continuator marker):
+	; CMarkers (continuator marker):
 
 				       ↓
 	   \anything	-> anything
@@ -93,6 +96,10 @@
 		{ ... x}	-> { ... x}
 		#( ... x)	-> #( ... x)
 		#{ ... x}	-> #{ ... x}
+		; ↑ same for opener brackets with ` ' ` ~@
+        )           -> )
+        ]           -> ]
+        }           -> }
 
 ; _____________________________________________________________________________/ }}}1
 ; OMarkers (= SM/MM), DMarkers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -174,7 +181,7 @@
                 #( )
                 #{ }
 
-    info        things like ~@( will be parsed as 2 tokens: "~@" and "(" )
+    info        things like "~@(" will be parsed as 2 tokens: "~@" and "("
 
     words       ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_
                 1234567890

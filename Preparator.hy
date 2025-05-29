@@ -14,18 +14,6 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-; split applicators ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    ; + splits «func $ x» to:
-    ;          «func
-    ;            \x»
-    ; + splits «: func $ x» to:
-    ;          «: func
-    ;            \x»
-
-    ; TODO
-
-; _____________________________________________________________________________/ }}}1
 ; split linestarters ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; + splits «   : pups» to:
@@ -34,12 +22,12 @@
     ; (this will keep both indent levels)
 
 
-    (defn #^ CodeLine
-        split_linestarters
-        [ #^ CodeLine line
+    (defn #^ WyCodeLine
+        split_at_smarkers
+        [ #^ WyCodeLine line
         ]
-                    ; (gr1)  (group 2     )   (gr3)
-        (re.sub (+ r"^(\s*)" $MARKERS_REGEX r"(\s*)")
+                    ; (gr1)  (group 2      )   (gr3)
+        (re.sub (+ r"^(\s*)" $OMARKERS_REGEX r"(\s*)")
                 (fm 
                     (sconcat (%1.group 1) (%1.group 2) "\n"
                              (%1.group 1) (* " " (len (%1.group 2))) (%1.group 3)))
@@ -66,9 +54,9 @@
 
 ; ________________________________________________________________________/ }}}2
 
-    (defn #^ CodeLine
+    (defn #^ WyCodeLine
         insert_indent_marks
-        [ #^ CodeLine line
+        [ #^ WyCodeLine line
         ]
         (setv _TABL 4)
         (setv new_line [""])
@@ -95,13 +83,13 @@
 
 ; assembly ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn #^ FullCode
+    (defn #^ PreparedCodeFull
         prepare_code_for_pyparsing
-        [ #^ FullCode code
+        [ #^ WyCodeLine code
         ]
         (->> code
              .splitlines                     
-             (lmap (p> split_linestarters   ; split «  : func» to 2 lines
+             (lmap (p> split_at_smarkers   ; split «  : func» to 2 lines
                        (.rstrip)))          ; rstrip
              (str_join :sep "\n")            
              .splitlines                    

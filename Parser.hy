@@ -22,15 +22,16 @@
     (setv WSYMBOLS  (+ "_" "$.-=+&*<>!/|" "%^?"))  ; no: :#`'~@"\ ;,
     (setv NUMS      "0123456789")
 
-    (setv LPAR      (| (pp.Literal "(") (pp.Literal "#(")))
+    (setv LPAR      (| #* (lmap pp.Literal $HY_OPENERS1)))
     (setv RPAR      (pp.Literal ")"))
-    (setv LCRB      (| (pp.Literal (py "'{'")) (pp.Literal (py "'#{'"))))
-    (setv RBRCKT    (pp.Literal "]"))
+
+    (setv RBRCKT    (| #* (lmap pp.Literal $HY_OPENERS2)))
     (setv LBRCKT    (pp.Literal "["))
+
+    (setv LCRB      (| #* (lmap pp.Literal $HY_OPENERS3)))
     (setv RCRB      (pp.Literal "}"))
 
     ; =========================================================
-
 
     (setv NUMBER (| (pp.Combine (+ (pp.Optional "-")
                                    (pp.Word NUMS)
@@ -42,8 +43,8 @@
                     (pp.Combine (+ (pp.Word ".") (pp.Word NUMS)))))
 
     (setv INDENT       (pp.Word $INDENT_MARK))
-    (setv SKY_MARKER   (| #* (lmap pp.Literal $SKY_MARKERS)))
-    (setv HYMACRO_MARK (| #* (lmap pp.Literal ["~@" "~" "'" "`"])))
+    (setv WY_MARKER    (| #* (lmap pp.Literal $WY_MARKERS)))
+    (setv HYMACRO_MARK (| #* (lmap pp.Literal $HY_MACROMARKS)))
     (setv UNPACKER     (| (pp.Literal "#**") (pp.Literal "#*")))
     (setv WORD         (| (pp.Word (+ ALPHAS WSYMBOLS) (+ ALPHAS NUMS WSYMBOLS ":"))))
     (setv KEYWORD      (pp.Combine (+ ":" WORD)))
@@ -72,7 +73,7 @@
                            KEYWORD
                            WORD
                            UNPACKER
-                           SKY_MARKER
+                           WY_MARKER
                            HYMACRO_MARK
                            NUMBER
                            INDENT))
@@ -92,23 +93,23 @@
 
     ; updates "text  \n✠✠✠✠   text" to "text  \n       text"
 
-    (defn #^ str
+    (defn #^ Token
         replace_indentmarks_if_qstrings
-        [#^ str elem]
+        [#^ Token token]
         "if is NOT a qstring, return same"
-        (if (and (>= (len elem) 3)
-                 (= (first elem) "\"")
-                 (= (last  elem) "\""))
-            (->> elem (re.sub (+ r"" $BASE_INDENT r"(" $INDENT_MARK "*)") (fm (%1.group 1)))    ; remove 4 artificial indent-marks from the start
-                      (re.sub (+ r"" $INDENT_MARK) " "))        ; replace remaining with spaces
-            elem))
+        (if (and (>= (len token) 3)
+                 (= (first token) "\"")
+                 (= (last  token) "\""))
+            (->> token (re.sub (+ r"" $BASE_INDENT r"(" $INDENT_MARK "*)") (fm (%1.group 1)))    ; remove 4 artificial indent-marks from the start
+                       (re.sub (+ r"" $INDENT_MARK) " "))        ; replace remaining with spaces
+            token))
 
 ; _____________________________________________________________________________/ }}}1
 ; pyparse run ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ (of List Token)
         run_pyparse
-        [ #^ FullCode code
+        [ #^ PreparedCodeFull code
         ]
         (setv result (-> code CONTENT.scanString
                               list           ; generator to list
@@ -141,7 +142,7 @@
 
     (defn #^ (of List TokenizedLine)
         prepared_code_to_tlines
-        [ #^ FullCode code
+        [ #^ PreparedCodeFull code
         ]
         (-> code run_pyparse
                  split_parsed_to_tlines))
@@ -150,99 +151,89 @@
 
     ; Part 2: TokenizedLine -> DeconstructedLine
 
-; TMP: COPYPASTE helper checks if token is bracket ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    ; inserts extra spaces when needed, and inserts nothing when not needed
+; testers: is regarded as continuator ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ bool
-        is_opening_bracket
+        token_regarded_as_continuatorQ
         [ #^ Token token
         ]
-        (when (zeroQ (len token)) (return False))   ; just in case emtpy token "" slips in (but it shouldn't)
-        (if (or (= (last token) "(")
-                (= (last token) "[")
-                (= (last token) (py "'{'")))
-            True
-            False))
+        (or (digit_tokenQ           token)
+            (qstring_tokenQ         token)
+            (annotation_tokenQ      token)
+            (unpacker_tokenQ        token)
+            (hy_macromark_tokenQ    token)
+            (hy_bracket_tokenQ      token)))
 
     (defn #^ bool
-        is_closing_bracket
+        hy_bracket_tokenQ
         [ #^ Token token
         ]
-        (when (zeroQ (len token)) (return False))   ; just in case emtpy token "" slips in (but it shouldn't)
-        (if (or (= (first token) ")")
-                (= (first token) "]")
-                (= (first token) (py "'}'")))
-            True
-            False))
+        (or (hy_opener_tokenQ       token)
+            (closing_bracket_tokenQ token)))
 
     (defn #^ bool
-        is_bracket
+        hy_opener_tokenQ
         [ #^ Token token
         ]
-        (when (zeroQ (len token)) (return False))   ; just in case emtpy token "" slips in (but it shouldn't)
-        (if (or (is_opening_bracket token)
-                (is_closing_bracket token))
-            True
-            False))
-
-; _____________________________________________________________________________/ }}}1
-
-; token type testers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+        (in token $HY_OPENERS))
 
     (defn #^ bool
-        regarded_as_continuatorQ
+        closing_bracket_tokenQ
         [ #^ Token token
         ]
-        (or (digitQ             token)   
-            (qstringQ           token)
-            (annotation_markerQ token)
-            (unpacker_markerQ   token)
-            (is_bracket         token))) 
+        (in token $CLOSER_BRACKETS))
 
     (defn #^ bool
-        linestarter_markerQ
+        hy_macromark_tokenQ
         [ #^ Token token
         ]
-        (if (in token $MARKERS) True False))
+        (in token $HY_MACROMARKS))
 
     (defn #^ bool
-        continuator_markerQ
-        [ #^ Token token
-        ]
-        (if (in token $CONTINUATORS) True False))
-
-    (defn #^ bool
-        annotation_markerQ
+        annotation_tokenQ
         [ #^ Token token
         ]
         (= token "#^"))
 
     (defn #^ bool
-        unpacker_markerQ
+        unpacker_tokenQ
         [ #^ Token token
         ]
-        (or (= token "#*")
-            (= token "#**")))
+        (in token ["#*" "#**"]))
 
     (defn #^ bool
-        digitQ
+        digit_tokenQ
         [ #^ Token token
         ]
         (re_test r"^\.?\d" token))
 
     (defn #^ bool
-        ocommentQ
+        ocomment_tokenQ
         [ #^ Token token
         ]
         "ocomment is Outer Comment starting with ; symbol"
         (re_test "^;" token))
 
     (defn #^ bool
-        qstringQ
+        qstring_tokenQ
         [ #^ Token token
         ]
         (re_test "^[rbf]?\"" token))
+
+; _____________________________________________________________________________/ }}}1
+; testers: wy token type ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn #^ bool
+        omarker_tokenQ
+        [ #^ Token token
+        ]
+        (in token $OMARKERS))
+
+    (defn #^ bool
+        cmarker_tokenQ
+        [ #^ Token token
+        ]
+        (in token $CMARKERS))
 
 ; _____________________________________________________________________________/ }}}1
 ; structural kind testers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -257,32 +248,33 @@
               ;
               ; ["✠✠✠✠" "; text"]
               (and (= (len tline) 2)
-                   (ocommentQ (second tline)))
+                   (ocomment_tokenQ (second tline)))
               OnlyOCommentDL
               ;
               ; ["✠✠✠✠" "~@:"]
               (and (= (len tline) 2)
-                   (linestarter_markerQ (second tline)))
-              LinestarterDL
+                   (omarker_tokenQ (second tline)))
+              GroupStarterDL
               ;
-              ; ["✠✠✠✠" "\\" ...] 
-              ; ["✠✠✠✠" "1" ...] 
+              ; ["✠✠✠✠" "\\" ...]
+              ; ["✠✠✠✠" "1" ...]
               (and (>= (len tline) 2)
-                   (or (continuator_markerQ (second tline))
-                       (regarded_as_continuatorQ (second tline))))
+                   (or (cmarker_tokenQ (second tline))
+                       (token_regarded_as_continuatorQ (second tline))))
               ContinuatorDL
-              ; 
+              ;
               True
               ImpliedOpenerDL))
 
 ; _____________________________________________________________________________/ }}}1
+
 ; DL constructors ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ bool
-        construct_LinestarterDL
+        construct_GroupStarterDL
         [ #^ TokenizedLine tline
         ]
-        (DeconstructedLine :kind_spec      (LinestarterDL :linestarter_token (second tline))
+        (DeconstructedLine :kind_spec      (GroupStarterDL :smarker (second tline))
                            :equiv_indent   (- (len (first tline)) $ELIN)
                            :body_tokens    []
                            :ending_comment None))
@@ -309,7 +301,7 @@
         construct_ImpliedOpenerDL
         [ #^ TokenizedLine tline
         ]
-        (if (ocommentQ (last tline))
+        (if (ocomment_tokenQ (last tline))
             (setv _body    (cut tline 1 -1)
                   _comment (last tline))
             (setv _body    (cut tline 1 None)
@@ -323,36 +315,36 @@
         construct_ContinuatorDL
         [ #^ TokenizedLine tline
         ]
-        (if (ocommentQ (last tline))
+        (if (ocomment_tokenQ (last tline))
             (setv _bodyWithNoComment (cut tline 1 -1)
                   _comment           (last tline))
             (setv _bodyWithNoComment (cut tline 1 None)
                   _comment           None))
-        (if (continuator_markerQ (second tline))
+        (if (cmarker_tokenQ (second tline))
             ; if true -> we have continuation marker
-            (setv _ctoken    (second tline)         
+            (setv _ctoken    (second tline)
                   _indent    (+ (len (first tline))
                                 (neg $ELIN)
                                 (if (= "\\" (second tline)) 1 0))
                   _bodyFinal (cut _bodyWithNoComment 1 None))
             ; if false -> we have «regarded as continuator» token
-            (setv _ctoken    None                      
+            (setv _ctoken    None
                   _bodyFinal _bodyWithNoComment
-                  _indent    (- (len (first tline)) $ELIN)))   
-        (DeconstructedLine :kind_spec      (ContinuatorDL :continuator_token _ctoken)
+                  _indent    (- (len (first tline)) $ELIN)))
+        (DeconstructedLine :kind_spec      (ContinuatorDL :cmarker _ctoken)
                            :equiv_indent   _indent
                            :body_tokens    _bodyFinal
                            :ending_comment _comment))
 
 ; _____________________________________________________________________________/ }}}1
-; tline to dline ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; -> tline to dline ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ DeconstructedLine
         tline_to_dline
         [ #^ TokenizedLine tline
         ]
         (case (decide_structural_kind tline)
-              LinestarterDL   (construct_LinestarterDL   tline)
+              GroupStarterDL  (construct_GroupStarterDL  tline)
               ContinuatorDL   (construct_ContinuatorDL   tline)
               ImpliedOpenerDL (construct_ImpliedOpenerDL tline)
               OnlyOCommentDL  (construct_OnlyOCommentDL  tline)

@@ -2,7 +2,7 @@
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (import Classes *)
-    (import Parser [linestarter_markerQ])
+    (import Parser [omarker_tokenQ hy_bracket_tokenQ hy_opener_tokenQ closing_bracket_tokenQ])
 
     (import sys)
     (. sys.stdout (reconfigure :encoding "utf-8"))
@@ -20,10 +20,10 @@
 ; Part 1 — generate structural brackets
 
     ; utils:
-; linestarter token to hy bracket ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; omarker to hy bracket ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn #^ (of Tuple str str) #_ "opener closer"
-        linestarter_marker_to_hybrackets
+    (defn #^ (of Tuple str str) #_ "[HY_OPENER   CLOSER_BRACKET]"
+        omarker_to_hy_tokens
         [ #^ Token token
         ]
         ; TODO: make more efficient
@@ -64,7 +64,7 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    ; convertion from "~@:" to "~@(" is done here (only for actual linestarters, not for body tokens)
+    ; for SMARKERS convertion to HYMARKERS is done here:
 ; process empty dline ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ (of Tuple SBP_Card BracketedLine)
@@ -113,7 +113,7 @@
               (setv _levels_to_close (case prev_kind
                                            ContinuatorDL     0
                                            ImpliedOpenerDL   1
-                                           LinestarterDL     1
+                                           GroupStarterDL    1
                                            EmptyLineDL       0)
                     _new_indents     prev_indents)
               (< cur_indent prev_indent)
@@ -137,16 +137,16 @@
     ; (print (process_ImpliedOpenerDL $CARD0 (DeconstructedLine (ImpliedOpenerDL) 8 ["pups"] None)))
 
 ; _____________________________________________________________________________/ }}}1
-; process linestarter dline ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; process groupstarter dline ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
     
     (defn #^ (of Tuple SBP_Card BracketedLine)
-        process_LinestarterDL
+        process_GroupStarterDL
         [ #^ SBP_Card          pcard
           #^ DeconstructedLine dline
         ]
         (setv cur_indent   dline.equiv_indent)
         (setv [opener_brckt closer_brckt]
-              (linestarter_marker_to_hybrackets dline.kind_spec.linestarter_token)) ; like ["~@(" ")"]
+              (omarker_to_hy_tokens dline.kind_spec.smarker)) 
         (setv prev_indents pcard.indents)
         (setv prev_indent  (last prev_indents))
         (setv prev_accum   pcard.brckt_stack)
@@ -159,7 +159,7 @@
               (setv _levels_to_close (case prev_kind
                                            ContinuatorDL     0
                                            ImpliedOpenerDL   1
-                                           LinestarterDL     1
+                                           GroupStarterDL    1
                                            EmptyLineDL       0)
                     _new_indents     prev_indents)
               (< cur_indent prev_indent)
@@ -175,7 +175,7 @@
         ;
         (return [ (SBP_Card      :indents     _new_indents
                                  :brckt_stack _new_stack
-                                 :skind       LinestarterDL)
+                                 :skind       GroupStarterDL)
                   (BracketedLine dline
                                  _new_closers
                                  _new_openers)]))
@@ -218,8 +218,7 @@
                                  [] #_ "no new openers are created for continuator")]))
 
 ; _____________________________________________________________________________/ }}}1
-
-; assembly: process single dline ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; -> process single dline ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ (of Tuple SBP_Card BracketedLine)
         process_single_dline
@@ -227,14 +226,15 @@
           #^ DeconstructedLine dline
         ]
         (case (type dline.kind_spec)
-              LinestarterDL   (process_LinestarterDL   pcard dline)
+              GroupStarterDL  (process_GroupStarterDL  pcard dline)
               ContinuatorDL   (process_ContinuatorDL   pcard dline)
               ImpliedOpenerDL (process_ImpliedOpenerDL pcard dline)
               OnlyOCommentDL  (process_OnlyOCommentDL  pcard dline)
               EmptyLineDL     (process_EmptyLineDL     pcard dline)))
 
 ; _____________________________________________________________________________/ }}}1
-; run processor ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+; run processor (on all lines) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
 
     (defn #^ (of List BracketedLine)
@@ -254,19 +254,19 @@
 
 ; Part 3 — concatenate all into final HyCode
 
-    ; convertion from "~@:" to "~@(" is done here (only for body tokens)
+    ; for MMARKERS and DMARKDERS convertion to HYMARKERS is done here:
 ; insert inner bracket markers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ (of List Token)
-        process_inner_markers_inside_body
+        process_wymarkers_inside_body
         [ #^ (of List Token) body_tokens
         ]
-        ; 1) process linestarters (acting as midopeners)
+        "processes mid-markers and double-markers"
         (setv _new_body [])
         (setv _postfix  "")
         (for [&t body_tokens]
-             (cond (linestarter_markerQ &t)
-                   (do (setv [_opener _closer] (linestarter_marker_to_hybrackets &t))
+             (cond (omarker_tokenQ &t)
+                   (do (setv [_opener _closer] (omarker_to_hy_tokens &t))
                        (+= _new_body [_opener])
                        (setv _postfix (+ _closer _postfix)))
                    (= &t "::")
@@ -275,58 +275,19 @@
                    (+= _new_body ["]" "["])
                    True
                    (+= _new_body [&t])))
-        ; 2) process doublemarkers:
         (if (= _postfix "")
             _new_body
             (lconcat _new_body [_postfix])))
 
 ; _____________________________________________________________________________/ }}}1
-; helper checks if token is bracket ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    ; inserts extra spaces when needed, and inserts nothing when not needed
-
-    (defn #^ bool
-        is_opening_bracket
-        [ #^ Token token
-        ]
-        (when (zeroQ (len token)) (return False))   ; just in case emtpy token "" slips in (but it shouldn't)
-        (if (or (= (last token) "(")
-                (= (last token) "[")
-                (= (last token) (py "'{'")))
-            True
-            False))
-
-    (defn #^ bool
-        is_closing_bracket
-        [ #^ Token token
-        ]
-        (when (zeroQ (len token)) (return False))   ; just in case emtpy token "" slips in (but it shouldn't)
-        (if (or (= (first token) ")")
-                (= (first token) "]")
-                (= (first token) (py "'}'")))
-            True
-            False))
-
-    (defn #^ bool
-        is_bracket
-        [ #^ Token token
-        ]
-        (when (zeroQ (len token)) (return False))   ; just in case emtpy token "" slips in (but it shouldn't)
-        (if (or (is_opening_bracket token)
-                (is_closing_bracket token))
-            True
-            False))
-
-; _____________________________________________________________________________/ }}}1
+    ; below there are no OMARKERS left:
 ; smart sconcat body tokens ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    ; at this stage tokens are "~@(" instead of "~@:"
-
     (defn #^ HyCodeLine
-        smart_concat_body_tokens
+        smart_concat_body_hy_tokens
         [ #^ (of List Token) body_tokens
         ]
-        "should be applied to body with inner markers processed already"
+        "should be applied to body with wymarkers already converted to hymarkers: like '@~:' to '@~(' and 'LL' to ']' + '['"
         (when (zeroQ (len body_tokens)) (return ""))   
         ; find insert positions:
         (setv _new_body [(first body_tokens)])
@@ -336,24 +297,24 @@
             (setv token_prev (get body_tokens (dec idx)))
             ;
             (cond ; (x
-                  (and (not_ is_bracket         token_cur)      ; TODO: condense
-                       (     is_opening_bracket token_prev))
+                  (and (not_ hy_bracket_tokenQ      token_cur)      ; TODO: condense
+                       (     hy_opener_tokenQ       token_prev))
                   (_new_body.append &token)
                   ; ()
-                  (and (     is_closing_bracket token_cur)
-                       (     is_opening_bracket token_prev))
+                  (and (     closing_bracket_tokenQ token_cur)
+                       (     hy_opener_tokenQ       token_prev))
                   (_new_body.append &token)
                   ; ((
-                  (and (     is_opening_bracket token_cur)
-                       (     is_opening_bracket token_prev))
+                  (and (     hy_opener_tokenQ       token_cur)
+                       (     hy_opener_tokenQ       token_prev))
                   (_new_body.append &token)
                   ; )) 
-                  (and (     is_closing_bracket token_cur)
-                       (     is_closing_bracket token_prev))
+                  (and (     closing_bracket_tokenQ token_cur)
+                       (     closing_bracket_tokenQ token_prev))
                   (_new_body.append &token)
                   ; x)
-                  (and (     is_closing_bracket token_cur)
-                       (not_ is_bracket         token_prev))
+                  (and (     closing_bracket_tokenQ token_cur)
+                       (not_ hy_bracket_tokenQ      token_prev))
                   (_new_body.append &token)
                   ; all other
                   True
@@ -370,19 +331,19 @@
         (setv dline bline.dline)
         ;
         (setv _indent  (* " " dline.equiv_indent))
-        (setv _openers (str_join bline.openers     :sep ""))
-        (setv _closers (str_join bline.closers     :sep ""))
+        (setv _openers (str_join bline.openers :sep ""))
+        (setv _closers (str_join bline.closers :sep ""))
         (setv _comment (if (isnone dline.ending_comment) "" dline.ending_comment))
         ; add continuator marks
         (setv _prefix  "")
         (when (= (type dline.kind_spec) ContinuatorDL)
-              (if (or (= dline.kind_spec.continuator_token "\\")
-                      (= dline.kind_spec.continuator_token None))
+              (if (or (= dline.kind_spec.cmarker "\\")
+                      (= dline.kind_spec.cmarker None))
                   ""
-                  dline.kind_spec.continuator_token))
+                  dline.kind_spec.cmarker))
         ; process inner markers:
-        (setv _body (-> dline.body_tokens process_inner_markers_inside_body
-                                          smart_concat_body_tokens))
+        (setv _body (-> dline.body_tokens process_wymarkers_inside_body
+                                          smart_concat_body_hy_tokens))
         ;
         [_closers _comment (sconcat _indent _openers _body)])
 
@@ -402,3 +363,4 @@
         (return ((p> rest str_join) _outp)))                            ; this "\n" is removed here
 
 ; _____________________________________________________________________________/ }}}1
+

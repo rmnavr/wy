@@ -17,9 +17,10 @@
 	#m: x	#m:
 	-> strings and ;comments can contain any printable character
 
+    side: Literal "12" "23"
+    , joiner
+    ; not the best name: hy_bracket_tokenQ (really it is hyopener + closer_bracket)
 	
-
-
     // core grammar has no:
     // - linestarter lines with anything except linestarter
     // - applicator-markers

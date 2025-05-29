@@ -10,69 +10,103 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-; constants ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; Stages description ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    ; PREPARATOR:
+    ; • expands grammar:
+    ;   - splits «   : func» to 2-lines (required to preserve 2nd indent)
+    ; • inserts $INDENT_MARKs (with extra $BASE_INDENT at every line)
+
+    ; PARSER:
+    ; 1) pyparsing (on expanded grammar) to tokens -> TLine (tokenized line)        
+    ;    - wytokens are seen as single: "~@:", hytokens are seen as double: "~@" "("
+    ; +) removes "✠" symbols from QStrings
+    ; 2) builds DLines (deconstructed line) from TLines
+    ;    - «\» is put into ContinuatorDL.cmarker here
+    ;    - equiv_indent is calced here ($BASE_INDENT is removed here)
+
+    ; BRACKETER:
+    ; 1) calcs needed brackets based on indent (uses SBProcessor) -> produces BLines
+    ;    - info: current line can deside how many closers/openers it needs based on itself and previous line
+    ;      (indent + opened bracekts stack), no more info is needed
+    ; 2) converts WY_MARKERS to HY_MARKERS
+    ;    - omarkers like "~@:" are converted into hy_omarkers "~@(" (instead of double "~@" "(" as in pyparser stage)
+    ; 3) assembles BLines to HyCode
+
+; _____________________________________________________________________________/ }}}1
+
+; markers (constants) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (setv $INDENT_MARK  "✠")
     (setv $BASE_INDENT  "✠✠✠✠")
-    (setv $ELIN         (len $BASE_INDENT)) ; empty line indents N
+    (setv $ELIN         (len $BASE_INDENT)) ; [E]mpty [L]ine [I]ndents [N]
 
-    ; used at : 1) StartOfLine          — work as LINESTARTERS
-    ;           2) MidOfLine/EndOfLine  — work as MIDOPENERS
-    (setv $MARKERS [ ":"   "L"    "C"   "#:"   "#C"
-                     "':"  "'L"   "'C"  "'#:"  "'#C"
-                     "`:"  "`L"   "`C"  "`#:"  "`#C"
-                     "~:"  "~L"   "~C"  "~#:"  "~#C"
-                     "~@:" "~@L"  "~@C" "~@#:" "~@#C" ])
+    ; ===============================================================================
 
-    ; «double markders» used only in MiddleOfLine   — work as MIDDOUBLEOPENERS
+    ; can act as «smarkers» and «mmarkers»
+    (setv $OMARKERS [   ":"   "L"    "C"   "#:"   "#C"
+                       "':"  "'L"   "'C"  "'#:"  "'#C"
+                       "`:"  "`L"   "`C"  "`#:"  "`#C"
+                       "~:"  "~L"   "~C"  "~#:"  "~#C"
+                      "~@:" "~@L"  "~@C" "~@#:" "~@#C" ])
+
     (setv $DMARKERS [ "::" "LL" ])
 
-    (setv $CONTINUATORS [ "\\" "'" "`" "~" "~@"])
+    (setv $CMARKERS [ "\\" ])
 
-    ; ===================
+    ; used in pyparsing, so order is important
+    (setv $WY_MARKERS (sorted (lconcat $OMARKERS $DMARKERS $CMARKERS)
+                              :key len
+                              :reverse True))
 
-    ; for usage in regex «`» should be escaped (but in normal string it shouldn't be escaped)
-    ; regex will try to take max possible chars, so no special ordering inside $MARKERS_REGEX is required
-    (setv $MARKERS_REGEX (+ r"("
-                            (->> $MARKERS
-                                 (str_join :sep "|")
-                                 (re.sub r"\`" "\\`"))
-                            ")"))
+    ; 1) for usage in regex «`» should be escaped (but in normal string it shouldn't be escaped) ;
+    ; 2) since regex is trying to take max possible chars match, no special ordering inside $OMARKERS_REGEX is required
+    (setv $OMARKERS_REGEX (+ r"("
+                             (->> $OMARKERS
+                                  (str_join :sep "|")
+                                  (re.sub r"\`" "\\`"))
+                             ")"))
 
-    ; for pyparser:
-    ; "L:" should be before "L" — otherwise pyparser will interpret "L:" as "L" + ":"
-    (setv $SKY_MARKERS (sorted (lconcat $MARKERS $DMARKERS $CONTINUATORS)
-                               :key len
-                               :reverse True))
+    ; ===============================================================================
+
+    ; used in pyparser, so order is important
+    (setv $HY_MACROMARKS [ "~@" "~" "`" "'"])
+
+    ; used in pyparser, so order is important
+    (setv $HY_OPENERS1 [ "~@#(" "~#(" "~@(" "'#(" "`#(" "#(" "`(" "'(" "~(" "("])
+    (setv $HY_OPENERS2 [              "~@["                  "`[" "'[" "~[" "["])
+    (setv $HY_OPENERS3 [ "~@#{" "~#{" "~@{" "'#{" "`#{" "#{" "`{" "'{" "~{" "{"])
+
+    ; used in tokenQ
+    (setv $HY_OPENERS  (lconcat $HY_OPENERS1 $HY_OPENERS2 $HY_OPENERS3))
+
+    ; ===============================================================================
+
+    ; used in tokenQ
+    (setv $CLOSER_BRACKETS [ ")" "]" "}" ])
 
 ; _____________________________________________________________________________/ }}}1
 
 ; preparator ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    ; PREPARATOR:
-    ; - splits «   : func» to 2-lines (required to preserve 2nd indent)
-    ; - inserts $INDENT_MARKs (with extra $BASE_INDENT at every line)
-
-        ; Source code, Prepared code:
-        (setv #_ DC FullCode        str)                ; "abs \n 3\n print y ..."
-        (setv #_ DC CodeLine        str)                ; "partial flip 3"
+    ; used both for condensed (source) and expanded grammar:
+    (setv #_ DC WyCodeLine str)
+    (setv #_ DC WyCodeFull str)
+    (setv #_ DC PreparedCodeFull str)
 
 ; _____________________________________________________________________________/ }}}1
-; parser: tokenizer ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; parser ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (setv #_ DC Token           str)                ; ":" | "(" | ";text" | ...
-
-    ; has extra $BASE_INDENT indents marks
+    (setv #_ DC Token str)                          ; ":" | "(" | ";text" | ...
     (setv #_ DC TokenizedLine   (of List Token))    ; ["✠✠✠✠" ":" "func" "x" "x" "; text"]  
 
-; _____________________________________________________________________________/ }}}1
-; parser: DLines builder ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+    ; ==========================================================================================================
 
-    (defclass [dataclass] LinestarterDL []
-        (#^ Token linestarter_token    #_ "like «:» and «#L» at beginning of the line"))
+    (defclass [dataclass] GroupStarterDL []
+        (#^ Token smarker    #_ "like «:» and «#L» at beginning of the line"))
 
     (defclass [dataclass] ContinuatorDL []
-        (#^ (of Optional Token) continuator_token   #_ "None is for digits and qstrings"))
+        (#^ (of Optional Token) cmarker #_ "usually <\\>, None is for what regarded as openers (digits, strings, etc.)"))
 
     (defclass [dataclass] ImpliedOpenerDL [])
 
@@ -80,7 +114,7 @@
 
     (defclass [dataclass] EmptyLineDL [])
 
-    (setv #_ DC StructuralKind (of Union LinestarterDL ContinuatorDL OnlyOCommentDL EmptyLineDL ImpliedOpenerDL))
+    (setv #_ DC StructuralKind (of Union GroupStarterDL ContinuatorDL OnlyOCommentDL EmptyLineDL ImpliedOpenerDL))
 
     (defclass [dataclass] DeconstructedLine []
         (#^ StructuralKind      kind_spec)
@@ -96,30 +130,21 @@
 ; _____________________________________________________________________________/ }}}1
 ; bracketer ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    ; to decide on closers/openers, current line needs info:
-    ; - indent
-    ; - opened brackets stack
-    ; current line can deside how many closers/openers it needs based on itself and previous line, no more info is needed
+    (defclass [dataclass] BracketedLine []
+        "calcs structural opener brackets for current line"
+        (#^ DeconstructedLine   dline)
+        (#^ (of List Token)     closers #_ "elems of CLOSER_BRACKETS; closers are closing previous line - but this info is stored in cur line")
+        (#^ (of List Token)     openers #_ "elems of HY_OPENERS; openers are at the start for current line")) 
 
-    ; 1 — count only structural brackets
+    ; structural bracket processor
+    (defclass [dataclass] SBP_Card []
+        "gives info on previously processed line"
+        (#^ (of List int)   indents)
+        (#^ (of List str)   brckt_stack #_ "elems of CLOSER_BRACKETS: like [')' '}' ']'] where ')' is the first one to be closed")
+        (#^ type            skind       #_ "StructuralKind"))
 
-        (defclass [dataclass] BracketedLine []
-            "calcs structural opener brackets for current line"
-            (#^ DeconstructedLine   dline)
-            (#^ str                 closers #_ "closers are placed before openers (thus closing previous line - but this info is stored in cur line)")
-            (#^ str                 openers #_ "at the start for current line")) 
-
-        ; structural bracket processor
-        (defclass [dataclass] SBP_Card []
-            "gives info on previously processed line"
-            (#^ (of List int)   indents)
-            (#^ (of List str)   brckt_stack #_ "list of closer brackets like [')' '}' ']'] where ')' is the first to be closed")
-            (#^ type            skind #_ "StructuralKind"))
-
-    ; 2 — work on inline brackets
-
-        (setv #_ DC HyCodeFull str)
-        (setv #_ DC HyCodeLine str)
+    (setv #_ DC HyCodeFull str)
+    (setv #_ DC HyCodeLine str)
 
 ; _____________________________________________________________________________/ }}}1
 
