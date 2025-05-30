@@ -30,17 +30,6 @@
         (return outp))
 
 ; _____________________________________________________________________________/ }}}1
-; vim tmp ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    ;nnoremap <A-/> mz^hr\`z:delmarks!<Enter>
-    ;nnoremap <A-\> mz^Whr\`z:delmarks!<Enter>
-    ;inoremap <A-/> <Esc>^hr\A
-    ;inoremap <A-\> <Esc>^Whr\A
-
-    ;nnoremap <leader>wi V}o><Esc>O<BS>
-    ;nnoremap <leader>wd ^mzjwY}Pmy`z<C-V>`yhoxddmx}kdd`x:delmarks!<Enter>
-
-; _____________________________________________________________________________/ }}}1
 
     (setv _hysky         (-> "_test5.wy" file_to_code))
     (setv _prepared_code (prepare_code_for_pyparsing _hysky))

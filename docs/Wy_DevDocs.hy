@@ -33,6 +33,26 @@
 			'#(1)
 
 ; _____________________________________________________________________________/ }}}1
+; Rules ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+	Phylosofical:
+		- HyWy only changes syntax, nothing more.
+		- All HyExt is done in HyLang.
+
+	Syntax Rules:
+		- only ONE L/C/: has special recognition at line beginning; need more? use new lines punk
+		- inline L/C/: has different meaning
+
+    ·······························
+
+    ____ seen as smarker ____
+    |                       |
+    ↓                       ↓
+    : : . lens 1 2 (Each) $ : : riba
+      ↑                       ↑
+      | seen as mmarker _____ |
+
+; _____________________________________________________________________________/ }}}1
 
     ; terminology:
 ; All Dev Terms ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
