@@ -35,58 +35,60 @@
 ; _____________________________________________________________________________/ }}}1
 ; Rules ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-	Phylosofical:
-		- HyWy only changes syntax, nothing more.
-		- All HyExt is done in HyLang.
+	• HyWy only changes syntax, nothing more
+	• If I need new functionality, it shall be done in hy-fptk
 
-	Syntax Rules:
-		- only ONE L/C/: has special recognition at line beginning; need more? use new lines punk
-		- inline L/C/: has different meaning
 
-    ·······························
+	____ seen as smarker ____
+	|						|
+	↓						↓
+	: : . lens 1 2 (Each) $ : : riba
+	  ↑						  ↑
+	  | seen as mmarker _____ |
 
-    ____ seen as smarker ____
-    |                       |
-    ↓                       ↓
-    : : . lens 1 2 (Each) $ : : riba
-      ↑                       ↑
-      | seen as mmarker _____ |
+
+	linesplitters:
+		: 
+		::
+		$
+		,
 
 ; _____________________________________________________________________________/ }}}1
 
-    ; terminology:
+	; terminology:
 ; All Dev Terms ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    ; ✠ is «Indent Mark»
+	✠ is «Indent Mark»
 
-	; Wy Source code is in [Condensed Grammar] format
-	; 1 Preparator		-> 1) expands Condensed Grammar to [Expanded Grammar]
-    ;                      2) adds indent marks
-    ;                      code is now called [Prepared Code]
-	; 2 Parser			-> parses Expanded Grammar to [Lines kinds]
-	; 3 Bracketer		-> counts brackets based on indent, replaces WYMarkers with HYMarkers
+	Wy Source code is in [Condensed Grammar] format
+	1 Preparator		-> 1) expands Condensed Grammar to [Expanded Grammar]
+					  	   2) adds indent marks
+					  	   code is now called [Prepared Code]
+	2 Parser		  	-> parses Expanded Grammar to [Lines kinds]
+	3 Bracketer		  	-> counts brackets based on indent, replaces WYMarkers with HYMarkers
 
-	; WYMarkers:
-	; - OMarkers (opener markers) acting as:
-	;   - SMarkers (starter markers) -> splits source line to [GroupStarterL + non-GroupStarterL]
-	;   - MMarkers (middle markers)  -> expanded inside line
-	; - DMarkers (double markers)	 -> expanded inside line
-	; - CMarker  (cont marker)		 -> can be used only at line start
-	; * AMarkers (appl markers)		 -> ...
+	WYMarkers:
+	- OMarkers (opener markers) acting as:
+	  - SMarkers (starter markers)	-> splits source line to [GroupStarterL + non-GroupStarterL]
+	  - MMarkers (middle markers)  	-> expanded inside line
+	- DMarkers (double markers)    	-> expanded inside line
+	- CMarkers (cont markers)	   	-> can be used only at line start, currently there is just one cmarker: \
+	* AMarkers (appl markers)	   	-> ...
 
-	; HYMarkers:
-	; * CTokens						 -> HY tokens, that are regarded as linestarter
-	; - HyOpeners                 	 -> same as OMarkers, but with :LC replaced to ([{ 
+	HYMarkers:
+	* CTokens					   	-> HY tokens, that are regarded as linestarter
+	- HyOpeners					   	-> same as OMarkers, but with :LC replaced to ([{					
 
-	; Lines kinds of Expanded Grammar:
-	; - GroupStarterL		-> «   :»					// OMarkers act as SMarkers only at GroupStarterL
-	; - ContinuationL		
-	;   - lines starting with CTokens	-> «   'x»
-	;   - lines starting with CMarker	-> «  \x» 
-	; - ImpliedOpenerL		-> «func x»				
-	; - OnlyOCommentL		-> «   ; comment»			// required because it passes through indent level
-	; - EmptyL				-> « »						// acts as indent closer
+	Lines kinds of Expanded Grammar:
+	- GroupStarterL			-> «	 :»				// OMarkers act as SMarkers only at GroupStarterL
+	- ContinuationL		  
+	  - lines starting with CTokens		-> «	 'x»
+	  - lines starting with CMarker   	-> «	\x» 
+	- ImpliedOpenerL		-> «func x»			  
+	- OnlyOCommentL		  	-> «	 ; comment»		// required because it passes through indent level
+	- EmptyL			  	-> « »					// acts as indent closer
 
+}])
 ; _____________________________________________________________________________/ }}}1
 ; CMarkers/CTokens ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
@@ -94,19 +96,19 @@
 
 	; CMarkers (continuator marker):
 
-				       ↓
+					   ↓
 	   \anything	-> anything
 
 	; CTokens (when line starts with CToken, line is regarded as continuator):
 
-        ↓
+		↓
 		---------	
 		1			
 		.1			
 		"string"	
-        :keyword    
+		:keyword	
 		#^			
-		#*    		
+		#*			
 		#**			
 		' x			
 		` x			
@@ -118,9 +120,9 @@
 		#( ... x)	
 		#{ ... x}	
 		; ↑ same for opener brackets with ` ' ` ~@
-        )           
-        ]           
-        }           
+		)			
+		]			
+		}			
 
 ; _____________________________________________________________________________/ }}}1
 ; OMarkers (= SM/MM), DMarkers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -130,7 +132,7 @@
 
 	OMs:	OMs:
 	as SM	as MM	DMarkers
-	---		---		--------	-> equiv Hy_OMarkers
+	---		---		--------	; equiv Hy_Openers
 
 	↓
 	: x		:		::			;  (		) (
@@ -143,8 +145,8 @@
 	': x	':					; '(
 	'L x	'L					; '[
 	'C x	'C					; '{
-	'#:	x	'#:					; '#(
-	'#C	x	'#C					; '#{
+	'#: x	'#:					; '#(
+	'#C x	'#C					; '#{
 
 	~: x	~:					; ~(
 	~L x	~L					; ~[
@@ -166,64 +168,64 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    ; parser:
+	; parser:
 ; Parser Atoms ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    unused      ,
+	unused		,
 
-    numbers     1234567890
-                -1.2
-                1.3e2
-                1.3e+2
-                1.3E-2
-                .3
-                10
-                -92.3E+3
+	numbers		1234567890
+				-1.2
+				1.3e2
+				1.3e+2
+				1.3E-2
+				.3
+				10
+				-92.3E+3
 
-    wy_markers  omarkers (acting as smarkers/mmarkers):
-                    : L C #: #C
-                    ': 'L 'C '#: '#C
-                    `: `L `C `#: `#C
-                    ~: ~L ~C ~#: ~#C
-                    ~@: ~@L ~@C ~@#: ~@#C
+	wy_markers	omarkers (acting as smarkers/mmarkers):
+					: L C #: #C
+					': 'L 'C '#: '#C
+					`: `L `C `#: `#C
+					~: ~L ~C ~#: ~#C
+					~@: ~@L ~@C ~@#: ~@#C
 
-                dmarkers:
-                    :: LL
+				dmarkers:
+					:: LL
 
-                continuators:
-                    \
+				continuators:
+					\
 
-                hymacro:
-                    ' ` ~@ ~
+				hymacro:
+					' ` ~@ ~
 
-    brackets     ( )
-                 [ ]
-                 { }
-                #( )
-                #{ }
+	brackets	 ( )  ; hy_openers + closers
+				 [ ]
+				 { }
+				#( )
+				#{ }
 
-    info        things like "~@(" will be parsed as 2 tokens: "~@" and "("
+				+ all ` ' ~ ~@ variants
 
-    words       ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_
-                1234567890
-                $.-=+&*<>!/|
-                %^?
-                f:: p> mth>
+	words		ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_
+				1234567890
+				$.-=+&*<>!/|
+				%^?
+				f:: p> mth>
 
-    keywords    :pupos
+	keywords	:pupos
 
-    unpackers   #* #**
+	unpackers	#* #**
 
-    annotation  #^ (of Tuple str str)
+	annotation	#^ (of Tuple str str)
 
-    icomment    #_ (ololo)
+	icomment	#_ (ololo)
 
-    ocomment    ; comment ololo
+	ocomment	; comment ololo
 
-    string      "olol;22 : o"   
-                f"ololo"        ; this means that stringQ token check should be based on last symbol, not on first 
-                b"olo\"lo\""
-                r"ololo"
+	string		"olol;22 : o"	
+				f"ololo"		; this means that stringQ token check should be based on last symbol, not on first 
+				b"olo\"lo\""
+				r"ololo"
 
 ; _____________________________________________________________________________/ }}}1
 

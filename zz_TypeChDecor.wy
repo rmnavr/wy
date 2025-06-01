@@ -1,0 +1,76 @@
+
+; Import ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    import dataclasses [dataclass]
+    import typing [List Union get_type_hints Callable Any]
+    require hyrule [of]
+    import pydantic [BaseModel]
+
+    (require hyrule [of as-> -> ->> doto case branch unless lif do_n list_n ncut])
+    (import  _hyextlink *)
+    (require _hyextlink [f:: fm p> pluckm lns &+ &+> l> l>=])
+
+; _____________________________________________________________________________/ }}}1
+
+    ; to add checks for:
+    ; - optional (maybe)
+    ; - Union
+    ; - list, tuple, ...
+    ; - nested
+
+    defn #^ Callable
+       \typecheck
+        L #^ Callable func
+        ;
+        defn #^ Any
+           \wrapper 
+            L #^ Any #*  args   ; [5.0 10.0]
+              #^ Any #** kwargs ; {...}
+            ; get_type_hints takes the most of extra performance time
+            setv _hints : get_type_hints func    ; {'a': <class 'float'>, 'b': <class 'float'>, 'return': <class 'float'>}
+            ; check args:
+            for L [&arg &name &expected_type] : zip args (_hints.keys) (_hints.values)
+                when : not_ isinstance &arg &expected_type
+                       raise : TypeError f"Argument [{&name} = {&arg}] does not match expected type {&expected_type}"
+            ; check kwargs:
+            for L [&key &arg] (kwargs.items)
+                when
+                    and : in &key _hints
+                          not_ isinstance &arg (get _hints &key)
+                    raise : TypeError f"Argument [{&key} = {&arg}] does not match expected type {(get _hints &key)}"
+            ; execute result and check:
+            setv result : func #* args #** kwargs
+            setv expected_result_type : get _hints "return"
+            when
+                and : in "return" _hints 
+                      not_ isinstance result expected_result_type
+                raise : TypeError f"Return value {result} does not match expected type {expected_result_type}"
+            return result
+        return wrapper
+
+    defn [typecheck] #^ float
+       \add_numbers_typechecked
+        L #^ float a
+          #^ float b
+        return : + a b
+
+    defn #^ float
+       \add_numbers
+        L #^ float a
+          #^ float b
+        return : + a b
+
+    print
+        execution_time
+            fm : add_numbers_typechecked 3.0 14.0
+            :n     1000
+            :tUnit "us"
+            :msg   "with typecheck"
+
+    print
+        execution_time
+            fm : add_numbers 3.0 14.0
+            :n     1000
+            :tUnit "us"
+            :msg   "no typecheck"
+

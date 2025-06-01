@@ -114,7 +114,7 @@
         [ #^ PreparedCodeFull code
         ]
         (setv result (->> code CONTENT.scanString
-                               list                                 ; generator to list
+                               list                                ; generator to list
                                (map (fm (cut %1 None -2)) #_ here) ; remove column info
                                flatten))
         (lmap (p> str
