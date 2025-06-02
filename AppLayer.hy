@@ -82,10 +82,9 @@
 ; _____________________________________________________________________________/ }}}1
 
     (when (= __name__ "__main__")
-
-        ;(setv _hysky (-> "zz_TypeChDecor.wy" file_to_code))
-        ;(print (execution_time (fm (wy2hy _hysky)) :tUnit "s"))
-        ;(print (wy2hy _hysky))
+        (setv _wy_code (-> "tests\\_test1.wy" file_to_code))
+        (setv [t_s prompt outp] (execution_time (fm (wy2hy _wy_code)) :tUnit "s"))
+        (print f"> transpiled in {t_s :.3f} seconds")
+        (print outp)
         ;(-> _hysky wy2hy hy.read_many hy.eval)
-
     )

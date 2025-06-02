@@ -5,8 +5,7 @@
     
     (require hyrule [of as-> -> ->> doto case branch unless lif do_n list_n ncut])
     (import _hyextlink *)
-    (require _hyextlink [f:: fm p> pluckm lns &+ &+> l> l>=]
-                       :readers [[]])
+    (require _hyextlink [f:: fm p> pluckm lns &+ &+> l> l>=])
     
     (setv ALPHAS "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
     (setv WSYMBOLS (+ "_" "$.-=+&*<>!/|" "%^?")); no: `~@'":;\#

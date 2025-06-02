@@ -52,8 +52,8 @@
 
     ; 1) Transpile:
     (setv _wy_code (file_to_code $INPUT_FILE_NAME))
-    (setv _hy_code (wy2hy _wy_code))
-    (print "[wy2hy] [V] tranpilation is successful")
+    (setv [_t_s prompt _hy_code] (execution_time (fm (wy2hy _wy_code)) :tUnit "s"))
+    (print f"[wy2hy] [V] tranpilation is successful (done in {_t_s :.3f} seconds)")
 
     ; 2) Write:
     (if $TO_WRITE
