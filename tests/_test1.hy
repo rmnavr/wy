@@ -1,0 +1,60 @@
+    
+    (import pyparsing :as pp)
+    (import sys)
+    (. sys.stdout (reconfigure :encoding "utf-8"))
+    
+    (require hyrule [of as-> -> ->> doto case branch unless lif do_n list_n ncut])
+    (import _hyextlink *)
+    (require _hyextlink [f:: fm p> pluckm lns &+ &+> l> l>=]
+                       :readers [[]])
+    
+    (setv ALPHAS "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
+    (setv WSYMBOLS (+ "_" "$.-=+&*<>!/|" "%^?")); no: `~@'":;\#
+    (setv NUMS "0123456789")
+    
+    (setv LPAR (| (pp.Literal "(") (pp.Literal "#(" )))
+    (setv RPAR (pp.Literal ")"))
+    (setv LCRB (| (pp.Literal (py "'{'")) (pp.Literal (py "'#{'") )))
+    (setv RBRCKT (pp.Literal "]"))
+    (setv LBRCKT (pp.Literal "["))
+    (setv RCRB (pp.Literal "}"))
+    
+    (setv x 3)
+    
+    (setv y 4)
+    (setv lst (* [[x y]] 3))
+    
+    (setv z
+         (
+           (lns 1
+               (Each)
+               (collect))
+           lst)
+         x "sss
+            ttt
+            ssss")
+    (print z)
+    
+    
+    (defn #^ int
+         add_2_numbers
+         [#^ int x
+         #^ int y
+         ]
+         (+ 10 x y))
+    (print (add_2_numbers 10 12))
+    
+    (print
+        (+ (* 3 4))
+        7)
+    
+    (setv xx
+         (lmap (p> abs neg str)
+                [-1 -2 -3])
+         riba 11
+         pupos 12)
+    
+    (-> xx (l> 1 (get))
+            (print))
+    
+    (sum [riba pupos])

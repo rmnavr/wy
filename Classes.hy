@@ -53,9 +53,11 @@
     (setv $DMARKERS [ "::" "LL" ])
 
     (setv $CMARKERS [ "\\" ])
+    (setv $AMARKER  "$")
+    (setv $JMARKER  ",")
 
     ; used in pyparsing, so order is important
-    (setv $WY_MARKERS (sorted (lconcat $OMARKERS $DMARKERS $CMARKERS)
+    (setv $WY_MARKERS (sorted (lconcat $OMARKERS $DMARKERS $CMARKERS [$AMARKER] [$JMARKER])
                               :key len
                               :reverse True))
 

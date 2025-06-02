@@ -1,12 +1,10 @@
 
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-
+    (import Classes *)
     (import Preparator [prepare_code_for_pyparsing])
     (import Parser     [prepared_code_to_tlines tline_to_dline])
     (import Bracketer  [$CARD0 run_processor blines_to_hcode])
-
-    (import Classes *)
 
     (import sys)
     (. sys.stdout (reconfigure :encoding "utf-8"))
@@ -64,7 +62,8 @@
         (return _hycode))
 
 ; _____________________________________________________________________________/ }}}1
-; step_by_step ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+; for debug: step_by_step ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ;(setv _prepared_code (prepare_code_for_pyparsing _hysky))
     ;(setv _tlines        (prepared_code_to_tlines _prepared_code))  ; tokenize
@@ -82,10 +81,11 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    (setv _hysky (-> "zz_TypeChDecor.wy" file_to_code))
+    (when (= __name__ "__main__")
 
-    ;(print (execution_time (fm (wy2hy _hysky)) :tUnit "s"))
-    ;(print (wy2hy _hysky))
-    (-> _hysky wy2hy hy.read_many hy.eval)
+        ;(setv _hysky (-> "zz_TypeChDecor.wy" file_to_code))
+        ;(print (execution_time (fm (wy2hy _hysky)) :tUnit "s"))
+        ;(print (wy2hy _hysky))
+        ;(-> _hysky wy2hy hy.read_many hy.eval)
 
-
+    )

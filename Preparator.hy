@@ -90,7 +90,8 @@
         [ #^ WyCodeLine line
         ]
         (when (or (line_consists_only_of_smarkerQ line)
-                  (line_starts_with_keywordQ      line))
+                  (line_starts_with_keywordQ      line)
+                  )
               (return line))
         ;             (gr1)  (group 2      )   (gr3)
         (re.sub (+ r"^(\s*)" $OMARKERS_REGEX r"(\s*)")
