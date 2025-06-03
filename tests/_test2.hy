@@ -1,0 +1,27 @@
+    
+    (defn _macro2 [riba] [bubr (ololo) (riba )]; comment
+          ; comment
+          ; comment
+        [ #^ bool testQ; comment
+          ; comment
+          ; comment
+          1; comment
+          ; comment
+          ; comment
+          (plus 3; comment
+          ; comment
+          )]; comment
+        (when testQ; comment
+          ; comment
+          ; comment
+            (print "==" msg "=="; comment
+          ; comment
+          ); comment
+            (lmap (fn [%x] (print ">" %x )); comment
+          ; comment
+          ; comment
+                 (lines; comment
+          ; comment
+          )); comment
+            (print ""))); comment
+     

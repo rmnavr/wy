@@ -1,6 +1,10 @@
 
+    bug: number is not seen as continuator
+	nested compilation
+
     ! issue: recursion limit in pyparser -> quick solution: split code by empty lines (and parse)
     «: \isPointInsideRect (get rects 0) pt $ ZoneN.Z1» will be processed incorrectly
+	Type[Shape]
 
     currently:
     1) $ is split (first at line)
