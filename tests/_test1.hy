@@ -1,4 +1,8 @@
     
+    ( (pups) (bubr)); riba
+    ( ("riba bubr");comm1
+    );comm2
+    
     (import pyparsing :as pp)
     (import sys)
     (. sys.stdout (reconfigure :encoding "utf-8"))
@@ -7,7 +11,7 @@
     (import _hyextlink *)
     (require _hyextlink [f:: fm p> pluckm lns &+ &+> l> l>=])
     
-    (setv ALPHAS "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstu\nvwxyz")
+    (setv ALPHAS "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklm\nnopqrstuvwxyz")
     (setv WSYMBOLS (+ "_" "$.-=+&*<>!/|" "%^?")); no: `~@'":;\#
     (setv NUMS "0123456789")
     
@@ -24,8 +28,7 @@
     (setv lst (* [[x y]] 3))
     
     (setv z
-         (
-           (lns 1
+         ( (lns 1
                (Each)
                (collect))
            lst)
@@ -57,3 +60,4 @@
             (print))
     
     (sum [riba pupos])
+     
