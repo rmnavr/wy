@@ -43,10 +43,11 @@
                     (pp.Combine (+ (pp.Word ".") (pp.Word NUMS)))))
 
     (setv INDENT       (pp.Word $INDENT_MARK))
-    (setv WY_MARKER    (| #* (lmap pp.Literal $WY_MARKERS)))
+    (setv MIDSPACE     (pp.Word $MIDSPACE_MARK))
+    (setv WY_MARKER    (| #* (lmap pp.Literal $WY_MARKERS)))    ; <- OMarkers DMarkers CMarker AMarker JMarker
     (setv HYMACRO_MARK (| #* (lmap pp.Literal $HY_MACROMARKS)))
     (setv UNPACKER     (| (pp.Literal "#**") (pp.Literal "#*")))
-    (setv WORD         (pp.Word (+ ALPHAS WSYMBOLS) (+ ALPHAS NUMS WSYMBOLS ":")))
+    (setv WORD         (pp.Word (+ ALPHAS WSYMBOLS) (+ ALPHAS NUMS WSYMBOLS ":")))      
     (setv KEYWORD      (pp.Combine (+ ":" (pp.Word (+ ALPHAS "_") (+ ALPHAS "_" NUMS)))))
     (setv QSTRING      (pp.Combine (+  (pp.Optional (pp.oneOf "r f b"))
                                        (pp.QuotedString   :quoteChar "\""
@@ -78,7 +79,8 @@
                            WY_MARKER
                            HYMACRO_MARK
                            NUMBER
-                           INDENT))
+                           INDENT
+                           MIDSPACE))
 
     (setv EXPR         (| QEXPR SEXPR CEXPR))
 
@@ -107,22 +109,18 @@
             token))
 
 ; _____________________________________________________________________________/ }}}1
-; pyparse run ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; raw pyparse run ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ (of List Token)
         run_pyparse
         [ #^ PreparedCodeFull code
         ]
-        (setv result (->> code CONTENT.scanString
-                               list                                ; generator to list
-                               (map (fm (cut %1 None -2)) #_ here) ; remove column info
-                               flatten))
-        (lmap (p> str
-                  replace_indentmarks_if_qstrings)
-              result))
+        (->> code CONTENT.scanString
+                  list                                ; generator to list
+                  (map (fm (cut %1 None -2)) #_ here) ; remove column info
+                  flatten))
 
 ; _____________________________________________________________________________/ }}}1
-
 ; split to tlines ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ (of List TokenizedLine)
@@ -139,14 +137,152 @@
         (return tlines))
 
 ; _____________________________________________________________________________/ }}}1
-; assembly (to tlines) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; assembly to ntlines ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ (of List TokenizedLine)
-        prepared_code_to_tlines
+        prepared_code_to_ntlines_in_condensed_grammar
         [ #^ PreparedCodeFull code
         ]
-        (-> code run_pyparse
-                 split_parsed_to_tlines))
+        (setv tlines (->> code run_pyparse
+                               (lmap replace_indentmarks_if_qstrings)
+                               split_parsed_to_tlines))
+        (lmap (fm (NumberedTLine :origRow %1 :tline %2))
+              (range 0 (len tlines))
+              tlines))
+
+; _____________________________________________________________________________/ }}}1
+
+; apl utils ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn #^ (of List list)
+        split_at_elem
+        [ #^ Any elem
+          #^ list container
+        ]
+        (->> container
+             (partition_by (partial eq elem))
+             (lmap list)
+             (lfilter (partial neq [elem]))))
+
+; _____________________________________________________________________________/ }}}1
+; process jmarkers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn #^ (of List NumberedTLine)
+        process_jmarkers
+        [ #^ NumberedTLine ntline
+        ]
+        (setv _orig_tline ntline.tline)
+        (setv _indent (first ntline.tline))
+        (when (= (second _orig_tline) $CMARKER) (+= _indent $INDENT_MARK))
+        ;
+        (setv _new_tlines (split_at_elem $JMARKER _orig_tline))
+        (for [&tl (rest _new_tlines)]
+             (setv cur_indent (if (= (first &tl) $CMARKER) (cut _indent 1 None) _indent))
+             (&tl.insert 0 cur_indent))
+        ;
+        (lmap (fm (NumberedTLine :origRow ntline.origRow :tline %1)) _new_tlines))
+
+; _____________________________________________________________________________/ }}}1
+; process amarkers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    ; ✠✠✠~@:■■func
+    ; ✠✠✠~@:■■\func
+    ; ✠✠✠func
+    ; ✠✠✠\func
+
+    (defn #^ (of List NumberedTLine)
+        process_amarkers
+        [ #^ NumberedTLine ntline
+        ]
+        (setv _orig_tline ntline.tline)
+        ;
+        (setv nMarkers (count_occurrences $AMARKER _orig_tline))
+        (cond (or (=  nMarkers 0)
+                  (<= (len _orig_tline) 2)) ; true for eather empty line or group-starter
+              (return [ntline])
+              (>= nMarkers 2) (raise (Exception f"Line {ntline.origRow} has too many AMarkers")))
+        ;
+        (setv _indent (first _orig_tline)) 
+        (if (in (second _orig_tline) $OMARKERS) 
+            (do (+= _indent (* $INDENT_MARK (len (second _orig_tline))))
+                (when (re_test (sconcat "^" $MIDSPACE_MARK) (third _orig_tline))
+                      (+= _indent (* $INDENT_MARK (len (third _orig_tline)))))
+                (when (or (= (third _orig_tline)  $CMARKER)
+                          (= (fourth _orig_tline) $CMARKER))
+                      (+= _indent $INDENT_MARK)))
+            (+= _indent (* $INDENT_MARK 4))) 
+        (when (= (second _orig_tline) $CMARKER)
+              (+= _indent $INDENT_MARK))
+        ;
+        (setv [_new_tline1 _new_tline2] (split_at_elem $AMARKER _orig_tline))
+        (when (= (first _new_tline2) $CMARKER)
+              (setv _indent (cut _indent 1 None)))
+        ; 
+        [ (NumberedTLine :origRow ntline.origRow
+                         :tline   _new_tline1)
+          (NumberedTLine :origRow ntline.origRow
+                         :tline   (lconcat [_indent] _new_tline2)) ])
+
+; _____________________________________________________________________________/ }}}1
+; process smarkers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    ; ✠✠✠~@:■■func
+    ; ✠✠✠~@:■■\func
+
+    ; ✠✠✠✠✠✠✠✠:\pups
+    ; ✠✠✠✠✠✠✠✠✠\pups
+
+    (defn #^ (of List NumberedTLine)
+        process_smarkers
+        [ #^ NumberedTLine ntline
+        ]
+        (setv _orig_tline ntline.tline)
+        ;
+        (setv nMarkers (count_occurrences $AMARKER _orig_tline))
+        (when (or (not (in (second _orig_tline) $OMARKERS))
+                  (<= (len _orig_tline) 2))
+              (return [ntline]))
+        ;
+        (setv _indent (first _orig_tline)) 
+        (+= _indent (* $INDENT_MARK (len (second _orig_tline))))
+        (setv _third_is_msmark (re_test (sconcat "^" $MIDSPACE_MARK) (third _orig_tline)))
+        (when _third_is_msmark
+              (+= _indent (* $INDENT_MARK (len (third _orig_tline)))))
+        ;
+        (if _third_is_msmark 
+            (setv [_new_tline1 _new_tline2] [(cut _orig_tline 0 2) (cut _orig_tline 3 None)])
+            (setv [_new_tline1 _new_tline2] [(cut _orig_tline 0 2) (cut _orig_tline 2 None)]))
+        ; 
+        [ (NumberedTLine :origRow ntline.origRow
+                         :tline   _new_tline1)
+          (NumberedTLine :origRow ntline.origRow
+                         :tline   (lconcat [_indent] _new_tline2)) ])
+
+; _____________________________________________________________________________/ }}}1
+; assembly ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn #^ (of List NumberedTLine)
+        ntlines_to_extended_grammar
+        [ #^ (of List NumberedTLine) ntlines
+        ]
+        (setv stage_j (lconcat #* (lmap process_jmarkers ntlines)))
+        (setv stage_a (lconcat #* (lmap process_amarkers stage_j)))
+        (setv stage_s (lconcat #* (lmap process_smarkers stage_a)))
+        stage_s)
+
+; _____________________________________________________________________________/ }}}1
+
+; assembly to tlines ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn #^ (of Tuple (of List TokenizedLine) (of List int))
+        prepared_code_to_tlines_and_positions
+        [ #^ PreparedCodeFull code
+        ]
+        (setv _ntlines (->> code prepared_code_to_ntlines_in_condensed_grammar
+                                ntlines_to_extended_grammar))
+        (setv tlines    (pluckm .tline   _ntlines))
+        (setv positions (pluckm .origRow _ntlines))
+        (return [tlines positions]))
 
 ; _____________________________________________________________________________/ }}}1
 

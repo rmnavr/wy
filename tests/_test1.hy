@@ -7,7 +7,7 @@
     (import _hyextlink *)
     (require _hyextlink [f:: fm p> pluckm lns &+ &+> l> l>=])
     
-    (setv ALPHAS "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
+    (setv ALPHAS "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstu\nvwxyz")
     (setv WSYMBOLS (+ "_" "$.-=+&*<>!/|" "%^?")); no: `~@'":;\#
     (setv NUMS "0123456789")
     

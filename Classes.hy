@@ -10,36 +10,13 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-; Stages description ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    ; PREPARATOR:
-    ; • expands grammar:
-    ;   - splits «   : func» to 2-lines (required to preserve 2nd indent)
-    ; • inserts $INDENT_MARKs (with extra $BASE_INDENT at every line)
-
-    ; PARSER:
-    ; 1) pyparsing (on expanded grammar) to tokens -> TLine (tokenized line)        
-    ;    - wytokens are seen as single: "~@:", hytokens are seen as double: "~@" "("
-    ; +) removes "✠" symbols from QStrings
-    ; 2) builds DLines (deconstructed line) from TLines
-    ;    - «\» is put into ContinuatorDL.cmarker here
-    ;    - equiv_indent is calced here ($BASE_INDENT is removed here)
-
-    ; BRACKETER:
-    ; 1) calcs needed brackets based on indent (uses SBProcessor) -> produces BLines
-    ;    - info: current line can deside how many closers/openers it needs based on itself and previous line
-    ;      (indent + opened bracekts stack), no more info is needed
-    ; 2) converts WY_MARKERS to HY_MARKERS
-    ;    - omarkers like "~@:" are converted into hy_omarkers "~@(" (instead of double "~@" "(" as in pyparser stage)
-    ; 3) assembles BLines to HyCode
-
-; _____________________________________________________________________________/ }}}1
-
 ; markers (constants) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (setv $INDENT_MARK  "✠")
-    (setv $BASE_INDENT  "✠✠✠✠")
-    (setv $ELIN         (len $BASE_INDENT)) ; [E]mpty [L]ine [I]ndents [N]
+    (setv $INDENT_MARK    "✠")
+    (setv $BASE_INDENT    "✠✠✠✠")
+    (setv $ELIN           (len $BASE_INDENT)) ; [E]mpty [L]ine [I]ndents [N]
+
+    (setv $MIDSPACE_MARK  "■")
 
     ; ===============================================================================
 
@@ -50,17 +27,6 @@
                        "~:"  "~L"   "~C"  "~#:"  "~#C"
                       "~@:" "~@L"  "~@C" "~@#:" "~@#C" ])
 
-    (setv $DMARKERS [ "::" "LL" ])
-
-    (setv $CMARKERS [ "\\" ])
-    (setv $AMARKER  "$")
-    (setv $JMARKER  ",")
-
-    ; used in pyparsing, so order is important
-    (setv $WY_MARKERS (sorted (lconcat $OMARKERS $DMARKERS $CMARKERS [$AMARKER] [$JMARKER])
-                              :key len
-                              :reverse True))
-
     ; 1) for usage in regex «`» should be escaped (but in normal string it shouldn't be escaped) ;
     ; 2) since regex is trying to take max possible chars match, no special ordering inside $OMARKERS_REGEX is required
     (setv $OMARKERS_REGEX (+ r"("
@@ -68,6 +34,19 @@
                                   (str_join :sep "|")
                                   (re.sub r"\`" "\\`"))
                              ")"))
+
+    (setv $DMARKERS [ "::" "LL" ])
+
+    (setv $CMARKER  "\\")
+    (setv $CMARKERS ["\\"]) ; JFK, currently both are used; remove this line please with refactor (I beg you)
+    (setv $AMARKER  "$")
+    (setv $JMARKER  ",")
+
+    ; used in pyparsing, so order is important
+    (setv $WY_MARKERS (sorted (lconcat $OMARKERS $DMARKERS [$CMARKER] [$AMARKER] [$JMARKER])
+                              :key len
+                              :reverse True))
+
 
     ; ===============================================================================
 
@@ -88,7 +67,6 @@
     (setv $CLOSER_BRACKETS [ ")" "]" "}" ])
 
 ; _____________________________________________________________________________/ }}}1
-
 ; preparator ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; used both for condensed (source) and expanded grammar:
@@ -99,8 +77,12 @@
 ; _____________________________________________________________________________/ }}}1
 ; parser ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (setv #_ DC Token str)                          ; ":" | "(" | ";text" | ...
-    (setv #_ DC TokenizedLine   (of List Token))    ; ["✠✠✠✠" ":" "func" "x" "x" "; text"]  
+    (setv #_ DC Token StrictStr)                      ; ":" | "(" | ";text" | ...
+    (setv #_ DC TokenizedLine (of List StrictStr))    ; ["✠✠✠✠" ":" "func" "x" "x" "; text"]  
+
+    (defclass [] NumberedTLine [BaseModel]
+        (#^ StrictInt     origRow #_ "count starts from 0")
+        (#^ TokenizedLine tline))
 
     ; ==========================================================================================================
 
@@ -149,5 +131,6 @@
     (setv #_ DC HyCodeLine str)
 
 ; _____________________________________________________________________________/ }}}1
+
 
 

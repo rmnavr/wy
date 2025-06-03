@@ -29,7 +29,7 @@
     (import dataclasses     [dataclass]
             enum            [Enum]
             abc             [ABC abstractmethod]
-            pydantic        [StrictInt StrictStr StrictFloat]
+            pydantic        [BaseModel StrictInt StrictStr StrictFloat]
             returns.result  [Result Success Failure]
             typing          [List Tuple TypedDict Dict Union Generator Any Optional Callable Literal Type]
             )
@@ -94,7 +94,7 @@
     (import itertools [starmap takewhile dropwhile cycle])
 
     (import hyrule [ thru assoc
-                     flatten    ; non-mutating btw
+                     flatten    ; non-mutating btw; full-depth
                      rest       ; returns iterator
                      butlast    ; returns generator
                      drop_last  ; returns generator 
@@ -107,13 +107,22 @@
                      drop                   ; returns iterator
                      pluck lpluck
                      pluck_attr lpluck_attr ; // lpluck(i, seq) -> works on lists/dicts
-                     group_by
+                     group_by partition_by
+                     count_by
                    ])
+
+    (defn third  [xs] (if (<= (len xs) 2) (return None) (return (get xs 2))))
+    (defn fourth [xs] (if (<= (len xs) 3) (return None) (return (get xs 3))))
 
     (defn fltr1st [f xs] (next (gfor &x xs :if (f &x) &x) None))
 
     (defn lzip [#* args] (list (zip #* args)))    ;
     (defn lstarmap [f xs] (list (starmap f xs)))  ;
+
+; _____________________________________________________________________________/ }}}1
+; List methods ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn count_occurrences [elem container] (container.count elem))
 
 ; _____________________________________________________________________________/ }}}1
 ; Math, +/* synonims ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -142,7 +151,7 @@
     (defn lmul    [#* args] (* #* args))    ; underlines usage for lists
     (defn plus    [#* args] (+ #* args))    ; just a synonim for + (but a function, not macros)
     (defn sconcat [#* args] (+ #* args))    ; underlines usage for strings
-    (defn lconcat [#* args] (+ #* args))    ; underlines usage for lists
+    (defn lconcat [#* args] (if (= (len args) 1) (first args) (+ #* args)))    ; underlines usage for lists
 
 ; _____________________________________________________________________________/ }}}1
 ; Logic, Checks (Q) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -192,8 +201,8 @@
                ])
     ; match, search, findall, finditer, split, compile, fullmatch, escape
 
-    ; non-escaped:  .  ^  $  *  +  ? {2,4} [abc]      ( | )     
-    ; escaped:     \. \^ \$ \* \+ \? \{ \} $$_bracket $_parenthesis \| \\ \' \"
+    ; non-escaped (commands):  .  ^  $  *  +  ? {2,4} [abc]      ( | )     
+    ; escaped (literals):     \. \^ \$ \* \+ \? \{ \} $$_bracket $_parenthesis \| \\ \' \"
     ; special:     \d \D \w \W \s \S \b \B \n \r \f \v
     ; raw strings: r"\d+" = "\\d+"
 

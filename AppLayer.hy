@@ -3,7 +3,7 @@
 
     (import Classes *)
     (import Preparator [prepare_code_for_pyparsing])
-    (import Parser     [prepared_code_to_tlines tline_to_dline])
+    (import Parser     [prepared_code_to_tlines_and_positions tline_to_dline])
     (import Bracketer  [$CARD0 run_processor blines_to_hcode])
 
     (import sys)
@@ -47,44 +47,37 @@
         (try (setv _prepared_code (prepare_code_for_pyparsing code))
              (except [e Exception] (raise (Exception (nth 0 errors)))))
         ;
-        (try (setv _tlines (prepared_code_to_tlines _prepared_code))
+        (try (setv [_tlines _positions]
+                   (prepared_code_to_tlines_and_positions _prepared_code))
              (except [e Exception] (raise (Exception (nth 1 errors)))))
         ;
-        (try (setv _dlines (lmap tline_to_dline  _tlines))
+        (try (setv _dlines (lmap tline_to_dline _tlines))
              (except [e Exception] (raise (Exception (nth 2 errors)))))
         ;
         (try (setv _blines (run_processor $CARD0 _dlines))
              (except [e Exception] (raise (Exception (nth 3 errors)))))
         ;
-        (try (setv _hycode (blines_to_hcode _blines))
+        (try (setv _hycode (blines_to_hcode _blines _positions))
              (except [e Exception] (raise (Exception (nth 4 errors)))))
         ;
         (return _hycode))
 
 ; _____________________________________________________________________________/ }}}1
-
 ; for debug: step_by_step ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ;(setv _prepared_code (prepare_code_for_pyparsing _hysky))
-    ;(setv _tlines        (prepared_code_to_tlines _prepared_code))  ; tokenize
-    ;(setv _dlines        (lmap tline_to_dline  _tlines))            ; deconstruct
-    ;(setv _blines        (run_processor $CARD0 _dlines))            ; bracketize
-    ;(setv _hycode        (blines_to_hcode _blines))                 ; assembly
-
-    ;(print  "=== source hysky code ===")  (print  _hysky)           (print "")
-    ;(print  "=== prepared code ===")      (print  _prepared_code)   (print "")
-    ;(print  "=== tokenized lines ===")    (lprint _tlines)          (print "")
-    ;(print  "=== decontructed lines ===") (lprint _dlines)          (print "")
-    ;(print  "=== bracketed lines ===")    (lprint _blines)          (print "")
-    ;(print  "=== final hy code ===")      (print _hycode)           (print "")
-    ;(print  "=== repl result ===")        (-> _hycode hy.read_many hy.eval)
+    ;(setv _prepared_code (prepare_code_for_pyparsing _wy_code))
+    ;(setv [_tlines _positions] (prepared_code_to_tlines_and_positions _prepared_code))
+    ;(setv _dlines (lmap tline_to_dline  _tlines))
+    ;(setv _blines (run_processor $CARD0 _dlines)) ; produces +1 extra empty line at the end
+    ;(setv _hycode (blines_to_hcode _blines _positions))     
+    ;(print _hycode)
 
 ; _____________________________________________________________________________/ }}}1
 
     (when (= __name__ "__main__")
-        (setv _wy_code (-> "tests\\_test1.wy" file_to_code))
+        (setv _wy_code (-> "tests\\_test5.wy" file_to_code))
         (setv [t_s prompt outp] (execution_time (fm (wy2hy _wy_code)) :tUnit "s"))
         (print f"> transpiled in {t_s :.3f} seconds")
         (print outp)
-        ;(-> _hysky wy2hy hy.read_many hy.eval)
     )

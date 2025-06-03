@@ -41,66 +41,6 @@
         (re_test r"\s\$\s" line))
 
 ; _____________________________________________________________________________/ }}}1
-; split at amarkers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    ; + splits «lmap func $ x»
-    ;       to «lmap func
-    ;            \x»
-    ; + splits «: lmap func $ x»
-    ;       to «: lmap func
-    ;            \x»
-
-    (defn #^ WyCodeLine
-        split_at_amarkers
-        [ #^ WyCodeLine line
-        ]
-        (when (or (line_starts_with_keywordQ line)
-                  (not_ line_has_amarker line))
-              (return line))
-        (if (line_starts_with_smarkerQ line)
-            ;             (gr1)  (group 2      )   (gr3)(g4)(gr5    )(g6 )(g7)
-            ;example:     «___               @~:    ____|str  ___$___  data
-            (re.sub (+ r"^(\s*)" $OMARKERS_REGEX r"(\s*)(.*)(\s\$\s+)(\\?)(.*)")
-                    (fm 
-                        (sconcat (%1.group 1) (%1.group 2) (%1.group 3) (%1.group 4) "\n"
-                                 (-> (sconcat (%1.group 1) (%1.group 2) (%1.group 3))
-                                     len
-                                     (- (len (%1.group 6)))
-                                     (* " "))
-                                 (%1.group 6) (%1.group 7)))
-                    line)
-            ;       (gr1)(g2)(group 3)(g4)
-            (re.sub r"^(\s*)(.*)(\s\$\s+)(.*)"
-                    (fm 
-                        (sconcat (%1.group 1) (%1.group 2) "\n"
-                                 (%1.group 1) (* " " 4) (%1.group 4)))
-                    line))
-            )
-
-; _____________________________________________________________________________/ }}}1
-; split at smarkers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    ; + splits «   : pups»
-    ;       to «   :
-    ;                pups»
-    ; (this will keep both indent levels)
-
-    (defn #^ WyCodeLine
-        split_at_smarkers
-        [ #^ WyCodeLine line
-        ]
-        (when (or (line_consists_only_of_smarkerQ line)
-                  (line_starts_with_keywordQ      line)
-                  )
-              (return line))
-        ;             (gr1)  (group 2      )   (gr3)
-        (re.sub (+ r"^(\s*)" $OMARKERS_REGEX r"(\s*)")
-                (fm 
-                    (sconcat (%1.group 1) (%1.group 2) "\n"
-                             (%1.group 1) (* " " (len (%1.group 2))) (%1.group 3)))
-                line))
-
-; _____________________________________________________________________________/ }}}1
 ; insert indent marks ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; - adds at least ✠✠✠✠ to every string (requires for pyparser newline recognition)
@@ -139,11 +79,15 @@
                    (do (new_line.append (cut line &idx None))
                        (break))))
         (+ $BASE_INDENT (str_join new_line :sep "")))
-                        
-    ; test:
-    ; (insert_indent_marks   " start")
-    ; (insert_indent_marks   "\tstart")
-    ; (insert_indent_marks   "   \tstart")
+
+    (defn #^ WyCodeLine
+        insert_midspace_marks
+        [ #^ WyCodeLine line
+        ]
+        ;                 (gr1                ) (gr2          )   (gr3)
+        (re_sub (sconcat "(" $INDENT_MARK r"+)" $OMARKERS_REGEX r"(\s*)")
+                (fm (sconcat (%1.group 1) (%1.group 2) (* $MIDSPACE_MARK (len (%1.group 3)))))
+                line))
 
 ; _____________________________________________________________________________/ }}}1
 
@@ -157,19 +101,14 @@
         ]
         (->> code
              ;
-             .splitlines                     
-             (lmap (p> split_at_amarkers (.rstrip)))        
-             (str_join :sep "\n")         
-             ;
-             .splitlines                  
-             (lmap (p> split_at_smarkers (.rstrip)))        
-             (str_join :sep "\n")         
-             ;
-             .splitlines                  
+             .splitlines ; this will NOT split at literal "\n" found in source code, because it is replaced with \"\\n\"
              (lmap insert_indent_marks)   
+             (str_join :sep "\n")
+             ;
+             .splitlines ; this will NOT split at literal "\n" found in source code, because it is replaced with \"\\n\"
+             (lmap insert_midspace_marks)   
              (str_join :sep "\n")))
 
 ; _____________________________________________________________________________/ }}}1
 
     
-

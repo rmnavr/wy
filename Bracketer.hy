@@ -20,7 +20,7 @@
 ; Part 1 — generate structural brackets
 
     ; utils:
-; omarker to hy bracket ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; omarker to hy bracket ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ (of Tuple str str) #_ "[HY_OPENER   CLOSER_BRACKET]"
         omarker_to_hy_tokens
@@ -60,7 +60,8 @@
         (for [&idx (range 0 (len indents))]
              (when (= cur_indent (get indents &idx))
                    (setv outp &idx)))
-        (return outp))
+        (try (return outp)
+             (except [e Exception] (raise (Exception "can't calculate indent at some line")))))
 
 ; _____________________________________________________________________________/ }}}1
 
@@ -137,7 +138,7 @@
     ; (print (process_ImpliedOpenerDL $CARD0 (DeconstructedLine (ImpliedOpenerDL) 8 ["pups"] None)))
 
 ; _____________________________________________________________________________/ }}}1
-; process groupstarter dline ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; process groupstarter dline ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
     
     (defn #^ (of Tuple SBP_Card BracketedLine)
         process_GroupStarterDL
@@ -238,7 +239,6 @@
 
 ; run processor (on all lines) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-
     (defn #^ (of List BracketedLine)
         run_processor
         [ #^ SBP_Card                    starting_card
@@ -326,7 +326,7 @@
 ; _____________________________________________________________________________/ }}}1
 ; bline to hycodeline ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn #^ (of Tuple str Token HyCodeLine) #_ "[closers_string comment main_text]"
+    (defn #^ (of Tuple str str str str)
         bline_to_hcodeline
         [ #^ BracketedLine bline
         ]
@@ -336,18 +336,10 @@
         (setv _openers (str_join bline.openers :sep ""))
         (setv _closers (str_join bline.closers :sep ""))
         (setv _comment (if (isnone dline.ending_comment) "" dline.ending_comment))
-        ; add continuator marks
-        (setv _prefix  "")
-        (when (= (type dline.kind_spec) ContinuatorDL)
-              (if (or (= dline.kind_spec.cmarker "\\")
-                      (= dline.kind_spec.cmarker None))
-                  ""
-                  dline.kind_spec.cmarker))
-        ; process inner markers:
         (setv _body (-> dline.body_tokens process_wymarkers_inside_body
                                           smart_concat_body_hy_tokens))
         ;
-        [_closers _comment (sconcat _indent _openers _body)])
+        [_closers _indent (sconcat _openers _body) _comment])
 
 ; _____________________________________________________________________________/ }}}1
 ; assembly: blines_to_hcode ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -355,14 +347,23 @@
     (defn #^ HyCodeFull 
         blines_to_hcode
         [ #^ (of List BracketedLine) blines
+          #^ (of List int) positions #_ "should be of len-1 of blines, due to processor producing +1 extra line at the end"
         ]
-        (setv _outp "")
+        (setv _positions (lconcat positions [(last positions)]))
+        (setv _hy_code "")
         (setv _prev_comment "")
-        (for [&bl blines]
-             (setv [_closers _comment _line] (bline_to_hcodeline &bl))
-             (+= _outp (sconcat _closers _prev_comment "\n" _line))     ; for first elem will produce redundant starting "\n"
-             (setv _prev_comment _comment))             
-        (return ((p> rest str_join) _outp)))                            ; this "\n" is removed here
+        (for [[&idx &bl] (enumerate blines)]
+             (setv _prev_pos (if (zeroQ &idx) None (get positions (dec &idx))))
+             (setv _cur_pos  (get _positions &idx))
+             (setv _currently_on_same_origRow (= _cur_pos _prev_pos)) 
+             ;
+             (setv [_closers _indent _openers_and_body _comment] (bline_to_hcodeline &bl))
+             (if _currently_on_same_origRow ; for &idx=0 will give False
+                 (+= _hy_code _closers " " _openers_and_body)
+                 (+= _hy_code _closers _prev_comment "\n" _indent _openers_and_body))   ; for &idx=0 extra «\n» is added unwantedly
+             (setv _prev_comment _comment))
+        (return ((p> rest str_join) _hy_code)))                                         ; this "\n" is removed here
 
 ; _____________________________________________________________________________/ }}}1
+
 
