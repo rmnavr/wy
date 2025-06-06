@@ -1,5 +1,5 @@
 *.swp
 __pycache__/
-pyparser_info/
+private/
 *.~$lock
 *swp.tmp
