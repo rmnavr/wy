@@ -102,22 +102,25 @@ You need to have **hy** installed for w2h to work.
 Usage example: run in the terminal
 
 ```
-hy "C:\\users\\username\\hyprojs\\wy\\w2h.hy" "your_source_name.wy" _wf
+hy "C:\\users\\username\\hyprojs\\wy\\wy2hy.hy" "your_source_name.wy" _wm
 ```
 
-> You have to provide full adress for w2h.hy script, because "your_source_name.wy" will be most likely in some other dir
+> You have to provide full adress for wy2hy.hy script, because "your_source_name.wy" will be most likely in some other dir
 
-> Options are given via "_" symbol (instead of "-") to avoid messing with hy options.
+> Options are given via "_" prefix (instead of traditional "-") to avoid messing with hy options.
 
-> If full filename is given (like "C:\users\username\your_source_name.wy"), w2h will also change script's current dir to dir of this file.
-> This enables your transpiled code to import other project files lying in the same dir.
+> If full filename for source file is given (like "C:\\users\\username\\proj1\\your_source_name.wy"), wy2hy will change script's current dir to dir of this file.
+> This enables your transpiled code to import other project files lying in the same dir, which is the most logical way of using `f` and `m` options.
 
-All possible run options (like _wf for example):
+All possible run options (like _wm for example):
 * `w` — [W]rite transpiled hy-file in the same dir as source wy-file
 * `f` — same as `w`, but after writing, immediately run transpiled [F]ile
 * `m` — transpile and run only from [M]emory (meaning, no file will be written on disk);
-  > please be aware, that in opposition to `f` option, if any error occurs in transpiled code, debug messages will be polluted with w2h.hy calls, so `f` is a preffered way of running
+  > please be aware, that in opposition to `f` option, if any error occurs in transpiled code, debug messages will be polluted with wy2hy.hy calls, so `f` is a preffered way of running
 * `s` - [S]ilent mode, won't write any transpilation status messages
+
+
+
 
 
 
