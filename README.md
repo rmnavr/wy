@@ -1,14 +1,24 @@
-# Wy — Hy-lang without parenthesis
 
 ```hy
-defn #^ int                     |   (defn #^ int
-   \fibonacci                   |       fibonacci
-    L #^ int n                  |       [#^ int n]
-    if : <= n 1                 |       (if (<= n 1)
-      \n                        |           n
-       + : fibonacci : - n 1    |           (+ (fibonacci (- n 1))
-           fibonacci : - n 2    |              (fibonacci (- n 2)))))
+wy syntax                               | equivalent hy syntax
 ```
+
+```hy
+defn #^ int                             | (defn #^ int
+   \fibonacci                           |     fibonacci
+    L #^ int n                          |     [#^ int n]
+    if : <= n 1                         |     (if (<= n 1)
+      \n                                |         n
+       + : fibonacci : - n 1            |         (+ (fibonacci (- n 1))
+           fibonacci : - n 2            |            (fibonacci (- n 2)))))
+```
+
+```hy
+setv x : range : abs -3 :: abs -10      | (setv x (range (abs -3) (abs -10)))
+: . lens [1] (get) $ [1 2 3] , print x  | ((. lens [1] (get)) [1 2 3]) (print x)
+```
+
+# Wy — Hy-lang without parenthesis
 
 Wy project consists of 2 parts:
 * **wy** is a **syntax layer** for Hy-lang 
@@ -23,12 +33,15 @@ Wy project consists of 2 parts:
 
 Table of Content:
 - [wy syntax](#Wy-as-a-syntax-layer)
+  - [processing indents](#Processing-indents)
+  - [bracket openers](#Inline-bracket-openers)
+  - [one-liners syntax](#Extra-syntax-elements-for-one-liners)
 - [wy2hy transpiler](#Using-wy2hy-transpiler)
 
 # Wy as a syntax layer
 
 *Syntax layer* is a polite way to say that Wy is not a standalone language, but just a syntax modification to hy.
-To use wy-code, you first transpile it to hy-code (using wy2hy), and then you deal with transpiled *.hy files with original hy infrucstructue.
+To use wy-code, you first transpile it to hy-code (using wy2hy), and then you deal with transpiled *.hy files with original hy infrustructure.
 
 ## Processing indents
 
@@ -78,9 +91,9 @@ Opening bracket also will NOT be added for lines starting with:
 
 `~@:` `L` `C`
 
-## Inline bracket-openers
+## Extra syntax elements for one-liners
 
-
+`$` `,` `::` `LL`
 
 # Using wy2hy transpiler
 
