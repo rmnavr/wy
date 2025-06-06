@@ -384,7 +384,7 @@
         cmarker_tokenQ
         [ #^ Token token
         ]
-        (in token $CMARKERS))
+        (= token $CMARKER))
 
 ; _____________________________________________________________________________/ }}}1
 

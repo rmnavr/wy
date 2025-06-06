@@ -38,7 +38,6 @@
     (setv $DMARKERS [ "::" "LL" ])
 
     (setv $CMARKER  "\\")
-    (setv $CMARKERS ["\\"]) ; JFK, currently both are used; remove this line please with refactor (I beg you)
     (setv $AMARKER  "$")
     (setv $JMARKER  ",")
 
