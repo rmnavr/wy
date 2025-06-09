@@ -37,6 +37,7 @@ Table of Content:
   - [bracket openers](#Inline-bracket-openers)
   - [one-liners syntax](#Extra-syntax-elements-for-one-liners)
 - [wy2hy transpiler](#Using-wy2hy-transpiler)
+- [Installation](#Installation)
 
 # Wy as a syntax layer
 
@@ -116,6 +117,12 @@ All possible run options (like _wm for example):
 * `m` — transpile and run only from [M]emory (meaning, no file will be written on disk);
   > please be aware, that in opposition to `f` option, if any error occurs in transpiled code, debug messages will be polluted with wy2hy.hy calls, so `f` is a preffered way of running
 * `s` - [S]ilent mode, won't write any transpilation status messages
+
+# Installation
+
+```
+pip install git+https://github.com/rmnavr/wy.git@0.0.1
+```
 
 
 
