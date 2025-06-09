@@ -3,14 +3,13 @@
 
     (import pyparsing :as pp)
 
-    (import Classes *)
+    (import wy.Classes *)
 
     (import sys)
     (. sys.stdout (reconfigure :encoding "utf-8"))
 
-    (require hyrule [of as-> -> ->> doto case branch unless lif do_n list_n ncut])
-    (import  _hyextlink *)
-    (require _hyextlink [f:: fm p> pluckm lns &+ &+> l> l>=] :readers [L])
+    (import  fptk *)
+    (require fptk *)
 
 ; _____________________________________________________________________________/ }}}1
 

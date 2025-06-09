@@ -1,15 +1,15 @@
     
-    ( (pups) (bubr)); riba
-    ( ("riba bubr");comm1
-    );comm2
+    ; : abs $ 3 ; riba
+    ; : : "riba bubr" ;comm1
+    ;comm2
     
     (import pyparsing :as pp)
     (import sys)
     (. sys.stdout (reconfigure :encoding "utf-8"))
     
     (require hyrule [of as-> -> ->> doto case branch unless lif do_n list_n ncut])
-    (import _hyextlink *)
-    (require _hyextlink [f:: fm p> pluckm lns &+ &+> l> l>=])
+    (import fptk *)
+    (require fptk *)
     
     (setv ALPHAS "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklm\nnopqrstuvwxyz")
     (setv WSYMBOLS (+ "_" "$.-=+&*<>!/|" "%^?")); no: `~@'":;\#

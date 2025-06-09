@@ -1,18 +1,17 @@
 
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (import Classes *)
-    (import Preparator [prepare_code_for_pyparsing])
-    (import Parser     [prepared_code_to_tlines_and_positions tline_to_dline])
-    (import Bracketer  [$CARD0 run_processor blines_to_hcode])
+    (import wy.Classes *)
+    (import wy.Preparator [prepare_code_for_pyparsing])
+    (import wy.Parser     [prepared_code_to_tlines_and_positions tline_to_dline])
+    (import wy.Bracketer  [$CARD0 run_processor blines_to_hcode])
 
     (import sys)
     (. sys.stdout (reconfigure :encoding "utf-8"))
     (sys.setrecursionlimit 2000) ; needed for pyparser, I saw it crash at 1300
 
-    (require hyrule [of as-> -> ->> doto case branch unless lif do_n list_n ncut])
-    (import  _hyextlink *)
-    (require _hyextlink [f:: fm p> pluckm lns &+ &+> l> l>=] :readers [L])
+    (import  fptk *)
+    (require fptk *)
 
 ; _____________________________________________________________________________/ }}}1
 
@@ -31,7 +30,7 @@
 ; wy2hy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ HyCodeFull
-        wy2hy
+        convert_wy2hy
         [ #^ WyCodeFull code
         ]
         ;
@@ -77,7 +76,7 @@
 
     (when (= __name__ "__main__")
         (setv _wy_code (-> "tests\\_test5.wy" file_to_code))
-        (setv [t_s prompt outp] (execution_time (fm (wy2hy _wy_code)) :tUnit "s"))
+        (setv [t_s prompt outp] (execution_time (fm (convert_wy2hy _wy_code)) :tUnit "s"))
         (print f"> transpiled in {t_s :.3f} seconds")
         (print outp)
     )

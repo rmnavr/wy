@@ -1,18 +1,18 @@
+
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (import argparse)
     (import os)
     (import subprocess)
 
-    (import AppLayer [file_to_code wy2hy])
-    (import Classes *)
+    (import wy.AppLayer [file_to_code convert_wy2hy])
+    (import wy.Classes *)
 
     (import sys)
     (. sys.stdout (reconfigure :encoding "utf-8"))
 
-    (require hyrule [of as-> -> ->> doto case branch unless lif do_n list_n ncut])
-    (import  _hyextlink *)
-    (require _hyextlink [f:: fm p> pluckm lns &+ &+> l> l>=] :readers [L])
+    (import  fptk *)
+    (require fptk *)
 
 ; _____________________________________________________________________________/ }}}1
 
@@ -91,7 +91,7 @@
           #^ bool silent_mode
         ]
         (setv _wy_code (file_to_code filename))
-        (setv [_t_s prompt _hy_code] (execution_time (fm (wy2hy _wy_code)) :tUnit "s"))
+        (setv [_t_s prompt _hy_code] (execution_time (fm (convert_wy2hy _wy_code)) :tUnit "s"))
         (unless silent_mode (print f"[wy2hy] [V] transpilation is successful (done in {_t_s :.3f} seconds)"))
         (return _hy_code))
 
@@ -146,15 +146,18 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    (setv $CMD_ARGS (setup_cmd_parser))
-    (setv [$WRITEQ $HOW_TO_RUN $SILENTQ] (process_cmd_args $CMD_ARGS.options))
-    (setv [$SOURCE_DIR $INPUT_FULL_FILENAME $OUTPUT_FULL_FILENAME] (process_filename $CMD_ARGS.filename))
-    ;(setv [$WRITEQ $TO_RUN $SILENTQ] [True True False])
-    ;(setv [$INPUT_DIR $INPUT_FULL_FILENAME $OUTPUT_FULL_FILENAME] ["" "_test5.wy" "_test5.hy"])
+    (defn run_wy2hy_script []
+        ;
+        (setv $CMD_ARGS (setup_cmd_parser))
+        (setv [$WRITEQ $HOW_TO_RUN $SILENTQ] (process_cmd_args $CMD_ARGS.options))
+        (setv [$SOURCE_DIR $INPUT_FULL_FILENAME $OUTPUT_FULL_FILENAME] (process_filename $CMD_ARGS.filename))
+        ;
+        (setv _hy_code (transpile_code_from_wy_file $INPUT_FULL_FILENAME $SILENTQ))
+        (when $WRITEQ  (write_hy_file $OUTPUT_FULL_FILENAME _hy_code $SILENTQ))
+        ;
+        (case $HOW_TO_RUN
+              RunOption.FROM_MEM  (run_hy_code_from_memory _hy_code $SOURCE_DIR $SILENTQ)
+              RunOption.FROM_FILE (run_hy_code_from_file   $OUTPUT_FULL_FILENAME $SOURCE_DIR $SILENTQ))
+    )
 
-    (setv _hy_code (transpile_code_from_wy_file $INPUT_FULL_FILENAME  $SILENTQ))
-    (when $WRITEQ  (write_hy_file $OUTPUT_FULL_FILENAME _hy_code $SILENTQ))
-    (case $HOW_TO_RUN
-        RunOption.FROM_MEM  (run_hy_code_from_memory _hy_code $SOURCE_DIR $SILENTQ)
-        RunOption.FROM_FILE (run_hy_code_from_file   $OUTPUT_FULL_FILENAME $SOURCE_DIR $SILENTQ))
 

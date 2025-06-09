@@ -102,15 +102,13 @@ You need to have **hy** installed for w2h to work.
 Usage example: run in the terminal
 
 ```
-hy "C:\\users\\username\\hyprojs\\wy\\wy2hy.hy" "your_source_name.wy" _wm
+wy2hy _f your_source_name.wy
 ```
-
-> You have to provide full adress for wy2hy.hy script, because "your_source_name.wy" will be most likely in some other dir
 
 > Options are given via "_" prefix (instead of traditional "-") to avoid messing with hy options.
 
 > If full filename for source file is given (like "C:\\users\\username\\proj1\\your_source_name.wy"), wy2hy will change script's current dir to dir of this file.
-> This enables your transpiled code to import other project files lying in the same dir, which is the most logical way of using `f` and `m` options.
+> This enables your transpiled code to import other project files lying in the same dir, which is intended way of using `f` and `m` options.
 
 All possible run options (like _wm for example):
 * `w` — [W]rite transpiled hy-file in the same dir as source wy-file
