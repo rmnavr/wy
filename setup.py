@@ -19,13 +19,13 @@ class install(install):
 
 libs_required = [
     'hy >= 1',
-    'fptk >= 0.0.1',
+    'fptk == 0.1.0',
     'pyparsing >= 3'
 ]
 
 setup(
     name='wy',
-    version='0.0.1',
+    version='0.0.2',
     setup_requires=['wheel'] + libs_required,
     install_requires=libs_required,
     packages = setuptools.find_packages(exclude = ["private*", "tests*"]),

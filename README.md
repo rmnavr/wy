@@ -31,7 +31,7 @@ Wy project consists of 2 parts:
 > **wy2hy** produces readable hy-code with 1-to-1 line correspondence to source wy-code.
 > So, when you run your transpiled *.hy file, you'll get meaningfull number lines in debug messages.
 
-Table of Content:
+Table of Contents:
 - [wy syntax](#Wy-as-a-syntax-layer)
   - [processing indents](#Processing-indents)
   - [bracket openers](#Inline-bracket-openers)
@@ -123,12 +123,4 @@ All possible run options (like _wm for example):
 ```
 pip install git+https://github.com/rmnavr/wy.git@0.0.1
 ```
-
-
-
-
-
-
-
-
 

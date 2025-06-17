@@ -91,7 +91,7 @@
           #^ bool silent_mode
         ]
         (setv _wy_code (file_to_code filename))
-        (setv [_t_s prompt _hy_code] (execution_time (fm (convert_wy2hy _wy_code)) :tUnit "s"))
+        (setv [_t_s prompt _hy_code] (with_execution_time (fm (convert_wy2hy _wy_code)) :tUnit "s"))
         (unless silent_mode (print f"[wy2hy] [V] transpilation is successful (done in {_t_s :.3f} seconds)"))
         (return _hy_code))
 

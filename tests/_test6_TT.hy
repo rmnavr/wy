@@ -12,9 +12,8 @@
     (. sys.stdout (reconfigure :encoding "utf-8"))
     
     (require hyrule [of as-> -> ->> doto case branch unless lif do_n list_n ncut])
-    (import _hyextlink *)
-    (require _hyextlink [f:: fm p> pluckm lns &+ &+> l> l>=])
-    
+    (import fptk *)
+    (require fptk *)
     
 ; _____________________________________________________________________________/ }}}1
     
@@ -23,10 +22,8 @@
 ; ■ [DC] Point2D, Vector2D ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
     
     (defclass [dataclass] Point2D []
-        (
-          #^ float x)
-        (
-          #^ float y)
+        ( #^ float x)
+        ( #^ float y)
         (defn #^ Point2D __add__ [self other]
             (Point2D (+ self.x other.x) (+ self.y other.y))))
     
@@ -35,8 +32,7 @@
     
     (defn #^ (of Tuple float float)
         toXY
-        [
-          #^ Point2D point]
+        [ #^ Point2D point]
         (return [point.x point.y]))
     
 ; ________________________________________________________________________/ }}}2
@@ -44,8 +40,7 @@
     
     (defn #^ Point2D
         rotateXY
-        [
-          #^ Point2D pt
+        [ #^ Point2D pt
           #^ Point2D rot_center
           #^ float fi #_ rad]
         (setv [x y] (toXY pt))
@@ -56,8 +51,7 @@
     
     (defn #^ float
         dotProduct
-        [
-          #^ Vector2D v1
+        [ #^ Vector2D v1
           #^ Vector2D v2]
         (setv [x1 y1] (toXY v1))
         (setv [x2 y2] (toXY v2))
@@ -65,8 +59,7 @@
     
     (defn #^ float
         distPt2Pt
-        [
-          #^ Point2D p1
+        [ #^ Point2D p1
           #^ Point2D p2]
         (setv [x1 y1] (toXY p1))
         (setv [x2 y2] (toXY p2))
@@ -74,8 +67,7 @@
     
     (defn #^ float
         distPt2Line
-        [
-          #^ Point2D p
+        [ #^ Point2D p
           #^ Point2D linePt1
           #^ Point2D linePt2]
         (setv [x0 y0] (toXY p))
@@ -88,8 +80,7 @@
     
     (defn #^ float
         revPerSec2radPerMs
-        [
-          #^ float omega]
+        [ #^ float omega]
         (py "omega*2*math.pi/1000"))
     
 ; ________________________________________________________________________/ }}}2
@@ -98,34 +89,22 @@
 ; Classes ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
     
     (defclass [dataclass] GeomRect []
-        (
-          #^ Point2D pCenter #_ mm)
-        (
-          #^ float width #_ mm)
-        (
-          #^ float length #_ mm)
-        (
-          #^ float fi #_ "rad, dir x=0 is fi=0 degrees"))
+        ( #^ Point2D pCenter #_ mm)
+        ( #^ float width #_ mm)
+        ( #^ float length #_ mm)
+        ( #^ float fi #_ "rad, dir x=0 is fi=0 degrees"))
     
     (defclass [dataclass] ZonedRect []
-        (
-          #^ GeomRect rect)
-        (
-          #^ float ballR #_ mm))
+        ( #^ GeomRect rect)
+        ( #^ float ballR #_ mm))
     
     (defclass [dataclass] Ball []
-        (
-             #^ float x #_ mm)
-        (
-             #^ float y #_ mm)
-        (
-             #^ float fi #_ rad)
-        (
-             #^ float vx #_ "m/s = mm/ms  | >0 is =>")
-        (
-             #^ float vy #_ "m/s = mm/ms  | >0 is A")
-        (
-             #^ float omega #_ "rad/ms       | >0 is V_o_A")
+        ( #^ float x #_ mm)
+        ( #^ float y #_ mm)
+        ( #^ float fi #_ rad)
+        ( #^ float vx #_ "m/s = mm/ms  | >0 is =>")
+        ( #^ float vy #_ "m/s = mm/ms  | >0 is A")
+        ( #^ float omega #_ "rad/ms       | >0 is V_o_A")
         (setv #^ float m 2.7 #_ gramm)
         (setv #^ float R 19. #_ mm)
         (setv #^ float Cf 0.47 #_ "drag kof")
@@ -159,8 +138,7 @@
     
     (defn #^ #(Point2D Point2D Point2D Point2D)
         calc4Pts
-        [
-          #^ GeomRect rect]
+        [ #^ GeomRect rect]
         (setv x1_0 (py " rect.width /2")); \_right top
         (setv y1_0 (py " rect.length/2")); /
         (setv x2_0 (py "-rect.width /2")); \_left top
@@ -176,14 +154,12 @@
         (setv pt4r (rotateXY (Point2D x4_0 y4_0) (Point2D 0 0) rect.fi)
         ); translate coords:
         (setv pts
-            (lmap (partial plus rect.pCenter)
-                [pt1r pt2r pt3r pt4r]))
+            (lmap (partial plus rect.pCenter) [pt1r pt2r pt3r pt4r]))
         (return pts))
     
     (defn #^ bool
         isPointInsideRect
-        [
-          #^ GeomRect rect
+        [ #^ GeomRect rect
           #^ Point2D p
         ]; unpack:
         (setv [mx my] [p.x p.y])
@@ -200,8 +176,7 @@
     
     (defn #^ (of Tuple (of List float) (of List float)) #_ "[[x1 x2 ..] [y1 y2 ..]]"
         gRect2xyList
-        [
-          #^ GeomRect grect
+        [ #^ GeomRect grect
           #^ bool [looped_list False] #_ "if True, return list in order 1-2-4-3-1"]
         (setv xys
             (->> grect
@@ -216,8 +191,7 @@
     
     (defn #^ (of List GeomRect) #_ "there are 8 zones: 1 2 3 4 - 6 7 8 9"
         get8grects
-        [
-          #^ ZonedRect zRect
+        [ #^ ZonedRect zRect
         ]; unpacking:
         (setv W zRect.rect.width)
         (setv rL zRect.rect.length); name «rL» is temporary to not mess with WyTranspiler
@@ -249,32 +223,21 @@
         (return [rect1 rect2 rect3 rect4 rect6 rect7 rect8 rect9]))
     
     (defn whatZoneIsPointIn
-        [
-          #^ ZonedRect zRect #^ Point2D pt]
+        [ #^ ZonedRect zRect #^ Point2D pt]
         (setv rects (get8grects zRect))
         (cond
-            (isPointInsideRect (get rects 0) pt)
-            ZoneN.Z1
-            (isPointInsideRect (get rects 1) pt)
-            ZoneN.Z2
-            (isPointInsideRect (get rects 2) pt)
-            ZoneN.Z3
-            (isPointInsideRect (get rects 3) pt)
-            ZoneN.Z4
-            (isPointInsideRect (get rects 4) pt)
-            ZoneN.Z6
-            (isPointInsideRect (get rects 5) pt)
-            ZoneN.Z7
-            (isPointInsideRect (get rects 6) pt)
-            ZoneN.Z8
-            (isPointInsideRect (get rects 7) pt)
-            ZoneN.Z9
-            True
-            ZoneN.Z0))
+            (isPointInsideRect (get rects 0) pt) ZoneN.Z1
+            (isPointInsideRect (get rects 1) pt) ZoneN.Z2
+            (isPointInsideRect (get rects 2) pt) ZoneN.Z3
+            (isPointInsideRect (get rects 3) pt) ZoneN.Z4
+            (isPointInsideRect (get rects 4) pt) ZoneN.Z6
+            (isPointInsideRect (get rects 5) pt) ZoneN.Z7
+            (isPointInsideRect (get rects 6) pt) ZoneN.Z8
+            (isPointInsideRect (get rects 7) pt) ZoneN.Z9
+            True ZoneN.Z0))
     
     (defn howDeepIsPointInZone
-        [
-          #^ ZonedRect zRect
+        [ #^ ZonedRect zRect
           #^ Point2D pt]
         (setv R zRect.ballR)
         (setv [zone1 zone2 zone3 zone4 #_ 5 zone6 zone7 zone8 zone9] (get8grects zRect))
@@ -328,3 +291,4 @@
     
     
 ; _____________________________________________________________________________/ }}}1
+     

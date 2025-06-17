@@ -12,9 +12,8 @@
     . sys.stdout : reconfigure :encoding "utf-8"
 
     require hyrule L of as-> -> ->> doto case branch unless lif do_n list_n ncut
-    import  _hyextlink *
-    require _hyextlink L f:: fm p> pluckm lns &+ &+> l> l>=
-
+    import  fptk *
+    require fptk *
 
 ; _____________________________________________________________________________/ }}}1
 
@@ -227,24 +226,15 @@
         L #^ ZonedRect zRect #^ Point2D pt
         setv rects : get8grects zRect
         cond
-            isPointInsideRect (get rects 0) pt
-           \ZoneN.Z1
-            isPointInsideRect (get rects 1) pt
-           \ZoneN.Z2
-            isPointInsideRect (get rects 2) pt
-           \ZoneN.Z3
-            isPointInsideRect (get rects 3) pt
-           \ZoneN.Z4
-            isPointInsideRect (get rects 4) pt
-           \ZoneN.Z6
-            isPointInsideRect (get rects 5) pt
-           \ZoneN.Z7
-            isPointInsideRect (get rects 6) pt
-           \ZoneN.Z8
-            isPointInsideRect (get rects 7) pt
-           \ZoneN.Z9
-           \True
-           \ZoneN.Z0 
+            isPointInsideRect (get rects 0) pt , \ZoneN.Z1
+            isPointInsideRect (get rects 1) pt , \ZoneN.Z2
+            isPointInsideRect (get rects 2) pt , \ZoneN.Z3
+            isPointInsideRect (get rects 3) pt , \ZoneN.Z4
+            isPointInsideRect (get rects 4) pt , \ZoneN.Z6
+            isPointInsideRect (get rects 5) pt , \ZoneN.Z7
+            isPointInsideRect (get rects 6) pt , \ZoneN.Z8
+            isPointInsideRect (get rects 7) pt , \ZoneN.Z9
+           \True , \ZoneN.Z0 
 
     defn howDeepIsPointInZone
         L #^ ZonedRect zRect
