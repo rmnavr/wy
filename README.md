@@ -1,7 +1,5 @@
 
-```hy
-wy syntax                               | equivalent hy syntax
-```
+<!-- Intro ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
 ```hy
 defn #^ int                             | (defn #^ int
@@ -38,6 +36,9 @@ Table of Contents:
   - [one-liners syntax](#Extra-syntax-elements-for-one-liners)
 - [wy2hy transpiler](#Using-wy2hy-transpiler)
 - [Installation](#Installation)
+
+<!-- __________________________________________________________________________/ }}}1 -->
+<!-- Wy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
 # Wy as a syntax layer
 
@@ -96,6 +97,9 @@ Opening bracket also will NOT be added for lines starting with:
 
 `$` `,` `::` `LL`
 
+<!-- __________________________________________________________________________/ }}}1 -->
+<!-- wy2hy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+
 # Using wy2hy transpiler
 
 You need to have **hy** installed for w2h to work.
@@ -118,9 +122,17 @@ All possible run options (like _wm for example):
   > please be aware, that in opposition to `f` option, if any error occurs in transpiled code, debug messages will be polluted with wy2hy.hy calls, so `f` is a preffered way of running
 * `s` - [S]ilent mode, won't write any transpilation status messages
 
+
+<!-- __________________________________________________________________________/ }}}1 -->
+<!-- Install ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+
 # Installation
 
 ```
 pip install git+https://github.com/rmnavr/wy.git@0.0.1
 ```
+
+<!-- __________________________________________________________________________/ }}}1 -->
+
+
 

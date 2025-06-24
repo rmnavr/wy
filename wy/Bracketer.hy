@@ -121,7 +121,7 @@
                                         (get_indent_level prev_indents cur_indent))
                     _levels_to_close (+ _deltaIndents
                                         (if (= prev_kind ContinuatorDL) 0 1))
-                    _new_indents     (list (drop_last _deltaIndents prev_indents))))
+                    _new_indents     (drop_lastN _deltaIndents prev_indents)))
         ;
         (setv _new_openers ["("])
         (setv [_new_closers _stack2] (take_brackets_from_stack prev_accum _levels_to_close))
@@ -167,7 +167,7 @@
                                         (get_indent_level prev_indents cur_indent))
                     _levels_to_close (+ _deltaIndents
                                         (if (= prev_kind ContinuatorDL) 0 1))
-                    _new_indents     (list (drop_last _deltaIndents prev_indents))))
+                    _new_indents     (drop_lastN _deltaIndents prev_indents)))
         ;
         (setv _new_openers [opener_brckt])
         (setv [_new_closers _stack2] (take_brackets_from_stack prev_accum _levels_to_close))
@@ -208,7 +208,7 @@
                                         (get_indent_level prev_indents cur_indent))
                     _levels_to_close (+ _deltaIndents
                                         (if (= prev_kind ContinuatorDL) 0 1))
-                    _new_indents     (list (drop_last _deltaIndents prev_indents))))
+                    _new_indents     (drop_lastN _deltaIndents prev_indents)))
         ;
         (setv [_new_closers _new_stack] (take_brackets_from_stack prev_accum _levels_to_close))
         ;
