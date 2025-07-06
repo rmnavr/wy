@@ -159,7 +159,7 @@
           #^ list container
         ]
         (->> container
-             (partition_by (partial eq elem))
+             (funcy.partition_by (partial eq elem))
              (lmap list)
              (lfilter (partial neq [elem]))))
 
