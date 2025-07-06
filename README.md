@@ -1,6 +1,10 @@
 
 <!-- Intro ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
+> Project is not yet ready
+
+# Wy — Hy-lang without parenthesis
+
 ```hy
 defn #^ int                             | (defn #^ int
    \fibonacci                           |     fibonacci
@@ -15,8 +19,6 @@ defn #^ int                             | (defn #^ int
 setv x : range : abs -3 :: abs -10      | (setv x (range (abs -3) (abs -10)))
 : . lens [1] (get) $ [1 2 3] , print x  | ((. lens [1] (get)) [1 2 3]) (print x)
 ```
-
-# Wy — Hy-lang without parenthesis
 
 Wy project consists of 2 parts:
 * **wy** is a **syntax layer** for Hy-lang 
