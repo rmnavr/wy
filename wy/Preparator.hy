@@ -8,8 +8,8 @@
     (import sys)
     (. sys.stdout (reconfigure :encoding "utf-8"))
 
-    (import  fptk *)
-    (require fptk *)
+    (import  _fptk_local *)
+    (require _fptk_local *)
 
 ; _____________________________________________________________________________/ }}}1
 

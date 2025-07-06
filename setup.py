@@ -19,7 +19,6 @@ class install(install):
 
 libs_required = [
     'hy >= 1',
-    'fptk == 0.1.1-develop',
     'pyparsing >= 3'
 ]
 

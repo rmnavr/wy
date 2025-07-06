@@ -10,8 +10,8 @@
     (. sys.stdout (reconfigure :encoding "utf-8"))
     (sys.setrecursionlimit 2000) ; needed for pyparser, I saw it crash at 1300
 
-    (import  fptk *)
-    (require fptk *)
+    (import  _fptk_local *)
+    (require _fptk_local *)
 
 ; _____________________________________________________________________________/ }}}1
 
@@ -75,8 +75,8 @@
 ; _____________________________________________________________________________/ }}}1
 
     (when (= __name__ "__main__")
-        (setv _wy_code (-> "tests\\_test5.wy" file_to_code))
-        (setv [t_s prompt outp] (execution_time (fm (convert_wy2hy _wy_code)) :tUnit "s"))
+        (setv _wy_code (-> "..\\tests\\_test5.wy" file_to_code))
+        (setv [t_s prompt outp] (with_execution_time (fm (convert_wy2hy _wy_code)) :tUnit "s"))
         (print f"> transpiled in {t_s :.3f} seconds")
         (print outp)
     )
