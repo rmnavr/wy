@@ -10,8 +10,8 @@
     (. sys.stdout (reconfigure :encoding "utf-8"))
     (sys.setrecursionlimit 2000) ; needed for pyparser, I saw it crash at 1300
 
-    (import  _fptk_local *)
-    (require _fptk_local *)
+    (import  wy._fptk_local *)
+    (require wy._fptk_local *)
 
 ; _____________________________________________________________________________/ }}}1
 
