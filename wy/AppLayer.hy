@@ -75,8 +75,10 @@
 ; _____________________________________________________________________________/ }}}1
 
     (when (= __name__ "__main__")
-        (setv _wy_code (-> "..\\tests\\_test5.wy" file_to_code))
+        (setv _wy_code (-> "..\\tests\\!Examples_for_docs.wy" file_to_code))
         (setv [t_s prompt outp] (with_execution_time (fm (convert_wy2hy _wy_code)) :tUnit "s"))
         (print f"> transpiled in {t_s :.3f} seconds")
         (print outp)
     )
+
+

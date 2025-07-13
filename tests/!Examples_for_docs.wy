@@ -1,0 +1,26 @@
+
+    : fn [x] (pow x 2) $ 3
+
+    ; is first expanded to:
+
+    :
+      fn [x] (pow x 2)
+      3
+
+    print : fn [x] (pow x 2)
+
+
+
+	____ seen as smarker ____
+	|						|
+	↓						↓
+	: : . lens 1 2 (Each) $ : : riba
+	  ↑						  ↑
+	  | seen as mmarker _____ |
+
+
+	linesplitters:
+		: 
+		$
+		,
+
