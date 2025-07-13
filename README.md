@@ -107,7 +107,7 @@ Several syntax elements (that are usually not head of s-expression) do not requi
 ```
 
 Also, when line starts with literal bracket (or any macro-bracket), continuator `\` is also not needed:
-```
+```hy
     func                |   (func
         ( x             |       ( x
         )               |       )
@@ -135,7 +135,7 @@ They all behave differently:
 For simplicity we will focus on `:` bracket-opener, but described behaviour is the same for other bracket-openers.
 
 At start of the line `:` is expanded to give +1 indent level.
-```
+```hy
 ;     this is where wy  |
 ;     will see indent   |
 ;     ↓
@@ -151,7 +151,7 @@ At start of the line `:` is expanded to give +1 indent level.
 ```
 
 In the middle of the line `:` does NOT introduce new indent level, it will always close at the END OF THE LINE:
-```
+```hy
     print : + x y           | (print (+ x y)
           7                 |        7)
 
@@ -160,7 +160,7 @@ In the middle of the line `:` does NOT introduce new indent level, it will alway
 ```
 
 Same rules apply to other openers:
-```
+```hy
     L 1 2 3 L 4 5 6     |   [ 1 2 3 [4 5 6]
       7 8 : + 2 3       |     7 8 (+ 2 3)]
 
@@ -179,7 +179,7 @@ Same rules apply to other openers:
 There are 4 symbols to be discussed: `::`, `LL`, `,` and `$`
 
 `::` and `LL` are literal `)(` and `LL`. There 2 cases where they may be convenient:
-```
+```hy
     print : + 1 2 :: + 3 4  |   (print (+ 1 2) (+ 3 4))
 
     print                   |   (print
@@ -187,7 +187,7 @@ There are 4 symbols to be discussed: `::`, `LL`, `,` and `$`
 ```
 
 `,` is emulation of new line (while actually staying on the same line):
-```
+```hy
     print
         3 , 4
 
@@ -199,7 +199,7 @@ There are 4 symbols to be discussed: `::`, `LL`, `,` and `$`
 ```
 
 Be aware that you may require using continuator `\` after `,`:
-```
+```hy
     print       |   (print
         \x , y  |       x (y))
 
@@ -214,7 +214,7 @@ Be aware that you may require using continuator `\` after `,`:
 `$` is placing code on +1 indent level and acts differently if line is started with bracket-opener (like `:`) or if it does not.
 
 Case when line starts with bracket-opener:
-```
+```hy
     : fn [x] (pow x 2) $ 3
 
 ;   temporarily expanded internally as:
@@ -224,7 +224,7 @@ Case when line starts with bracket-opener:
 ```
 
 And when it does not:
-```
+```hy
     print : + x 3 $ 4
 
 ;   temporarily expanded internally as:
@@ -235,7 +235,6 @@ And when it does not:
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
-
 
 <!-- wy2hy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
