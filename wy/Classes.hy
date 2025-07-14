@@ -9,7 +9,7 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-; wy marks and markers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [=] wy marks and markers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; marks:
 
@@ -48,7 +48,7 @@
                                   :reverse True))
 
 ; _____________________________________________________________________________/ }}}1
-; hy syntax elements ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [=] hy syntax elements ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; used in pyparser, so order is important:
     (setv $HY_MACROMARKS [ "~@" "~" "`" "'"])
@@ -68,7 +68,7 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-; preparator ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [C] Preparator ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; used both for condensed (source) and expanded syntax:
     (setv #_ DC WyCodeLine str)
@@ -76,24 +76,23 @@
     (setv #_ DC PreparedCodeFull str)
 
 ; _____________________________________________________________________________/ }}}1
-; parser ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [C] Parser ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (setv #_ DC Token StrictStr)                      ; ":" | "(" | ";text" | ...
     (setv #_ DC TokenizedLine (of List StrictStr))    ; ["✠✠✠✠" ":" "func" "x" "x" "; text"]  
 
     (defclass [] NumberedTLine [BaseModel] 
-        "numbered tokenized line"
-        (#^ StrictInt     origRow #_ "count starts from 0")
+        (#^ StrictInt     origRowN #_ "count starts from 0")
         (#^ TokenizedLine tline))
 
     ; ==========================================================================================================
     ; Deconstructed Lines:
 
     (defclass [dataclass] GroupStarterDL []
-        (#^ Token smarker #_ "like «:» and «#L» at beginning of the line"))
+        (#^ Token smarker #_ "like : and #C at beginning of the line"))
 
     (defclass [dataclass] ContinuatorDL []
-        (#^ (of Optional Token) cmarker #_ "usually <\\>, None is for what regarded as openers (digits, strings, etc.)"))
+        (#^ (of Optional Token) cmarker #_ "usually <\\>, and None is for what regarded as openers (digits, strings, etc.)"))
 
     (defclass [dataclass] ImpliedOpenerDL [])
 
@@ -115,7 +114,7 @@
                                        :ending_comment None))
 
 ; _____________________________________________________________________________/ }}}1
-; bracketer ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [C] Bracketer ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defclass [dataclass] BracketedLine []
         "calcs structural opener brackets for current line"
@@ -132,6 +131,58 @@
 
     (setv #_ DC HyCodeFull str)
     (setv #_ DC HyCodeLine str)
+
+; _____________________________________________________________________________/ }}}1
+
+; token testers: is continuator ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn #^ bool
+        token_regarded_as_continuatorQ
+        [ #^ Token token
+        ]
+        (or (digit_tokenQ        token)
+            (qstring_tokenQ      token)
+            (keyword_tokenQ      token)
+            (annotation_tokenQ   token)
+            (icomment_tokenQ     token)
+            (unpacker_tokenQ     token)
+            (hy_macromark_tokenQ token)
+            (hy_bracket_tokenQ   token)))
+
+; _____________________________________________________________________________/ }}}1
+; token testers: var ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn #^ bool hy_opener_tokenQ       [#^ Token token] (in token $HY_OPENERS))
+    (defn #^ bool closing_bracket_tokenQ [#^ Token token] (in token $CLOSER_BRACKETS))
+
+    (defn #^ bool
+        hy_bracket_tokenQ
+        [ #^ Token token
+        ]
+        (or (hy_opener_tokenQ       token)
+            (closing_bracket_tokenQ token)))
+
+    (defn #^ bool hy_macromark_tokenQ    [#^ Token token] (in token $HY_MACROMARKS))
+
+    (defn #^ bool digit_tokenQ           [#^ Token token] (re_test r"^\.?\d" token))
+    (defn #^ bool keyword_tokenQ         [#^ Token token] (re_test r":\w+" token))
+    (defn #^ bool unpacker_tokenQ        [#^ Token token] (in token ["#*" "#**"]))
+    (defn #^ bool qstring_tokenQ         [#^ Token token] (re_test "^[rbf]?\"" token))
+    (defn #^ bool annotation_tokenQ      [#^ Token token] (= token "#^"))
+    (defn #^ bool icomment_tokenQ        [#^ Token token] (= token "#_"))
+
+    (defn #^ bool
+        ocomment_tokenQ
+        [ #^ Token token
+        ]
+        "ocomment is Outer Comment starting with ; symbol"
+        (re_test "^;" token))
+
+; _____________________________________________________________________________/ }}}1
+; token testers: wy token type ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn #^ bool omarker_tokenQ [#^ Token token] (in token $OMARKERS))
+    (defn #^ bool cmarker_tokenQ [#^ Token token] (= token $CMARKER))
 
 ; _____________________________________________________________________________/ }}}1
 

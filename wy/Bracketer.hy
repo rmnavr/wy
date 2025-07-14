@@ -2,7 +2,6 @@
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (import Classes *)
-    (import Parser [omarker_tokenQ hy_bracket_tokenQ hy_opener_tokenQ closing_bracket_tokenQ])
 
     (import sys)
     (. sys.stdout (reconfigure :encoding "utf-8"))
@@ -354,10 +353,10 @@
         (for [[&idx &bl] (enumerate blines)]
              (setv _prev_pos (if (zeroQ &idx) None (get positions (dec &idx))))
              (setv _cur_pos  (get _positions &idx))
-             (setv _currently_on_same_origRow (= _cur_pos _prev_pos)) 
+             (setv _currently_on_same_origRowN (= _cur_pos _prev_pos)) 
              ;
              (setv [_closers _indent _openers_and_body _comment] (bline_to_hcodeline &bl))
-             (if _currently_on_same_origRow ; for &idx=0 will give False
+             (if _currently_on_same_origRowN ; for &idx=0 will give False
                  (+= _hy_code _closers " " _openers_and_body)
                  (+= _hy_code _closers _prev_comment "\n" _indent _openers_and_body))   ; for &idx=0 extra «\n» is added unwantedly
              (setv _prev_comment _comment))

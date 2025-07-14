@@ -13,9 +13,11 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    ; Part 1: Tokenize
+    ; Part 1: 
+    ; Essentially:  Prepared Code -> NTLines (in Extended Grammar)
+    ; Actual API:   Further splits NTLines to TLines and Positions (and NTLines are never used again)
 
-; atoms ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; pp atoms ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (setv ALPHAS    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
     (setv WSYMBOLS  (+ "_" "$.-=+&*<>!/|" "%^?"))  ; no: :#`'~@"\ ;,
@@ -92,70 +94,66 @@
     (<<   ANNOTATION   (pp.Group (+ (pp.Literal "#^") CONTENT)))
 
 ; _____________________________________________________________________________/ }}}1
-; replace indent marks in qstrings ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    ; updates "text  \n✠✠✠✠   text" to "text  \n       text"
-
-    (defn #^ Token
-        replace_indentmarks_if_qstrings
-        [#^ Token token]
-        "if is NOT a qstring, return same"
-        (if (and (>= (len token) 3)
-                 (= (first token) "\"")
-                 (= (last  token) "\""))
-            (->> token (re.sub (+ r"" $BASE_INDENT r"(" $INDENT_MARK "*)") (fm (%1.group 1)))    ; remove 4 artificial indent-marks from the start
-                       (re.sub (+ r"" $INDENT_MARK) " "))        ; replace remaining with spaces
-            token))
-
-; _____________________________________________________________________________/ }}}1
-; raw pyparse run ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [step] run pp ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ (of List Token)
         run_pyparse
         [ #^ PreparedCodeFull code
         ]
-        (->> code CONTENT.scanString
-                  list                                ; generator to list
-                  (map (fm (cut %1 None -2)) #_ here) ; remove column info
-                  flatten))
+        (->> code
+             CONTENT.scanString
+             list                                ; generator to list
+             (map (fm (cut %1 None -2)) #_ here) ; remove column info
+             flatten))
 
 ; _____________________________________________________________________________/ }}}1
-; split to tlines ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+; [step] remove garbage from qstring      :: Token -> Token ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    ; updates "text  \n✠✠✠✠   text" to "text  \n       text"
+    (defn #^ Token
+        remove_garbage_from_token
+        [#^ Token token]
+        "de facto only removes indent marks from qstring, for other tokens returns themselves"
+        (if (qstring_tokenQ token)
+            (->> token (re.sub (+ r"" $BASE_INDENT r"(" $INDENT_MARK "*)") (fm (%1.group 1)))    ; remove 4 artificial indent-marks from the start
+                       (re.sub (+ r"" $INDENT_MARK) " "))        ; replace remaining with spaces
+            token))
+
+; _____________________________________________________________________________/ }}}1
+; [step] split list of tokens into tlines :: [Token ...] -> [TLine ...] ‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ (of List TokenizedLine)
-        split_parsed_to_tlines
-        [ #^ (of List Token) parsed
+        split_tokens_to_tlines
+        [ #^ (of List Token) tokens 
         ]
-        (when (= parsed []) (return []))
-        (setv tlines [])
+        (when (= tokens []) (return []))
+        (setv _tlines [])
         ;
-        (for [&elem parsed]
+        (for [&elem tokens]
             (if (re_test (sconcat "^" $INDENT_MARK) &elem)
-                (tlines.append [&elem])
-                (. (get tlines -1) (append &elem))))
-        (return tlines))
+                (_tlines.append [&elem])
+                (. (last _tlines) (append &elem))))
+        (return _tlines))
 
 ; _____________________________________________________________________________/ }}}1
-; assembly to ntlines ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [step] attach row number to tlines      :: [TLine ...] -> [NTLine ...] ‾‾‾‾‾‾\ {{{1
 
-    (defn #^ (of List TokenizedLine)
-        prepared_code_to_ntlines_in_condensed_grammar
-        [ #^ PreparedCodeFull code
+    (defn #^ (of List NumberedTLine)
+        tlines_to_ntlines
+        [ #^ (of List TokenizedLine) tlines
         ]
-        (setv tlines (->> code run_pyparse
-                               (lmap replace_indentmarks_if_qstrings)
-                               split_parsed_to_tlines))
-        (lmap (fm (NumberedTLine :origRow %1 :tline %2))
-              (range 0 (len tlines))
-              tlines))
+        (lmapm (NumberedTLine :origRowN %1 :tline %2)
+               (range 0 (len tlines))
+               tlines))
 
 ; _____________________________________________________________________________/ }}}1
 
-; apl utils ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; utils ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ (of List list)
         split_at_elem
-        [ #^ Any elem
+        [ #^ Any  elem
           #^ list container
         ]
         (->> container
@@ -179,7 +177,7 @@
              (setv cur_indent (if (= (first &tl) $CMARKER) (cut _indent 1 None) _indent))
              (&tl.insert 0 cur_indent))
         ;
-        (lmap (fm (NumberedTLine :origRow ntline.origRow :tline %1)) _new_tlines))
+        (lmap (fm (NumberedTLine :origRowN ntline.origRowN :tline %1)) _new_tlines))
 
 ; _____________________________________________________________________________/ }}}1
 ; process amarkers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -199,7 +197,7 @@
         (cond (or (=  nMarkers 0)
                   (<= (len _orig_tline) 2)) ; true for eather empty line or group-starter
               (return [ntline])
-              (>= nMarkers 2) (raise (Exception f"Line {ntline.origRow} has too many AMarkers")))
+              (>= nMarkers 2) (raise (Exception f"Line {ntline.origRowN} has too many AMarkers")))
         ;
         (setv _indent (first _orig_tline)) 
         (if (in (second _orig_tline) $OMARKERS) 
@@ -217,9 +215,9 @@
         (when (= (first _new_tline2) $CMARKER)
               (setv _indent (cut _indent 1 None)))
         ; 
-        [ (NumberedTLine :origRow ntline.origRow
-                         :tline   _new_tline1)
-          (NumberedTLine :origRow ntline.origRow
+        [ (NumberedTLine :origRowN ntline.origRowN
+                         :tline    _new_tline1)
+          (NumberedTLine :origRowN ntline.origRowN
                          :tline   (lconcat [_indent] _new_tline2)) ])
 
 ; _____________________________________________________________________________/ }}}1
@@ -252,140 +250,52 @@
             (setv [_new_tline1 _new_tline2] [(cut _orig_tline 0 2) (cut _orig_tline 3 None)])
             (setv [_new_tline1 _new_tline2] [(cut _orig_tline 0 2) (cut _orig_tline 2 None)]))
         ; 
-        [ (NumberedTLine :origRow ntline.origRow
-                         :tline   _new_tline1)
-          (NumberedTLine :origRow ntline.origRow
+        [ (NumberedTLine :origRowN ntline.origRowN
+                         :tline    _new_tline1)
+          (NumberedTLine :origRowN ntline.origRowN
                          :tline   (lconcat [_indent] _new_tline2)) ])
 
 ; _____________________________________________________________________________/ }}}1
-; assembly ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [step] expand into extended grammar     :: [NTLine ...] -> [NTLine ...] ‾‾‾‾‾\ {{{1
 
     (defn #^ (of List NumberedTLine)
         ntlines_to_extended_grammar
         [ #^ (of List NumberedTLine) ntlines
         ]
-        (setv stage_j (lconcat #* (lmap process_jmarkers ntlines)))
-        (setv stage_a (lconcat #* (lmap process_amarkers stage_j)))
-        (setv stage_s (lconcat #* (lmap process_smarkers stage_a)))
-        stage_s)
+        (setv result_of_stage_j (lconcat #* (lmap process_jmarkers ntlines)))
+        (setv result_of_stage_a (lconcat #* (lmap process_amarkers result_of_stage_j)))
+        (setv result_of_stage_s (lconcat #* (lmap process_smarkers result_of_stage_a)))
+        result_of_stage_s)
 
 ; _____________________________________________________________________________/ }}}1
+; [Assm] code to extended grammar ntlines :: PrprdCode -> [NTLine ..] ‾‾‾‾‾‾‾‾‾\ {{{1
 
-; assembly to tlines ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+    (defn #^ (of List NumberedTLine)
+        prepared_code_to_extended_grammar_ntlines
+        [ #^ PreparedCodeFull code
+        ]
+        (->> code
+             run_pyparse
+             (lmap remove_garbage_from_token) 
+             split_tokens_to_tlines
+             tlines_to_ntlines
+             ntlines_to_extended_grammar))
+
+; _____________________________________________________________________________/ }}}1
+; [API]  pluck row number from ntlines    :: PrprdCode -> [[TLine..] [int..]] ‾\ {{{1
 
     (defn #^ (of Tuple (of List TokenizedLine) (of List int))
         prepared_code_to_tlines_and_positions
         [ #^ PreparedCodeFull code
         ]
-        (setv _ntlines (->> code prepared_code_to_ntlines_in_condensed_grammar
-                                ntlines_to_extended_grammar))
-        (setv tlines    (pluckm .tline   _ntlines))
-        (setv positions (pluckm .origRow _ntlines))
+        (setv ntlines   (prepared_code_to_extended_grammar_ntlines code))
+        (setv tlines    (pluckm .tline    ntlines))
+        (setv positions (pluckm .origRowN ntlines))
         (return [tlines positions]))
 
 ; _____________________________________________________________________________/ }}}1
 
     ; Part 2: TokenizedLine -> DeconstructedLine
-
-; testers: is regarded as continuator ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    (defn #^ bool
-        token_regarded_as_continuatorQ
-        [ #^ Token token
-        ]
-        (or (digit_tokenQ        token)
-            (qstring_tokenQ      token)
-            (keyword_tokenQ      token)
-            (annotation_tokenQ   token)
-            (icomment_tokenQ     token)
-            (unpacker_tokenQ     token)
-            (hy_macromark_tokenQ token)
-            (hy_bracket_tokenQ   token)))
-
-    (defn #^ bool
-        hy_bracket_tokenQ
-        [ #^ Token token
-        ]
-        (or (hy_opener_tokenQ       token)
-            (closing_bracket_tokenQ token)))
-
-    (defn #^ bool
-        hy_opener_tokenQ
-        [ #^ Token token
-        ]
-        (in token $HY_OPENERS))
-
-    (defn #^ bool
-        closing_bracket_tokenQ
-        [ #^ Token token
-        ]
-        (in token $CLOSER_BRACKETS))
-
-    (defn #^ bool
-        hy_macromark_tokenQ
-        [ #^ Token token
-        ]
-        (in token $HY_MACROMARKS))
-
-    (defn #^ bool
-        annotation_tokenQ
-        [ #^ Token token
-        ]
-        (= token "#^"))
-
-    (defn #^ bool
-        icomment_tokenQ
-        [ #^ Token token
-        ]
-        (= token "#_"))
-
-    (defn #^ bool
-        unpacker_tokenQ
-        [ #^ Token token
-        ]
-        (in token ["#*" "#**"]))
-
-    (defn #^ bool
-        digit_tokenQ
-        [ #^ Token token
-        ]
-        (re_test r"^\.?\d" token))
-
-    (defn #^ bool
-        ocomment_tokenQ
-        [ #^ Token token
-        ]
-        "ocomment is Outer Comment starting with ; symbol"
-        (re_test "^;" token))
-
-    (defn #^ bool
-        qstring_tokenQ
-        [ #^ Token token
-        ]
-        (re_test "^[rbf]?\"" token))
-
-    (defn #^ bool
-        keyword_tokenQ
-        [ #^ Token token
-        ]
-        (re_test r":\w+" token))
-
-; _____________________________________________________________________________/ }}}1
-; testers: wy token type ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    (defn #^ bool
-        omarker_tokenQ
-        [ #^ Token token
-        ]
-        (in token $OMARKERS))
-
-    (defn #^ bool
-        cmarker_tokenQ
-        [ #^ Token token
-        ]
-        (= token $CMARKER))
-
-; _____________________________________________________________________________/ }}}1
 
 ; structural kind testers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
@@ -492,7 +402,7 @@
                            :ending_comment _comment))
 
 ; _____________________________________________________________________________/ }}}1
-; -> tline to dline ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [Assm] tline to dline ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ DeconstructedLine
         tline_to_dline
@@ -506,4 +416,5 @@
               EmptyLineDL     (construct_EmptyLineDL     tline)))
 
 ; _____________________________________________________________________________/ }}}1
+
 

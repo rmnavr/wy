@@ -51,13 +51,15 @@
 
 ; _____________________________________________________________________________/ }}}1
 
+    ; «run_processor» produces +1 extra empty line at the end (dt)
+
     (when (= __name__ "__main__")
         (setv _wy_code (read_file "..\\tests\\!Examples_for_docs.wy"))
         (setv _prepared_code (prepare_code_for_pyparsing _wy_code))
         (setv [_tlines _positions] (prepared_code_to_tlines_and_positions _prepared_code))
         (setv _dlines (lmap tline_to_dline  _tlines))
-        (setv _blines (run_processor $CARD0 _dlines)) ; produces +1 extra empty line at the end
-        (setv _hycode (blines_to_hcode _blines _positions))     
-        (print _hycode)
-    )
-
+        (setv _blines (run_processor $CARD0 _dlines))
+        (setv _hy_code (blines_to_hcode _blines _positions))
+        ;
+        (print _hy_code)
+        )
