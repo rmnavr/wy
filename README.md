@@ -3,12 +3,14 @@
 
 # Wy syntax
 
-Wy has many symbols for opening various kinds of brackets, but to get the basics 
+Wy has many symbols for opening various kinds of hy brackets, but to get the basics 
 for now we will focus only on the most frequently used:
 - `:` opener — represents opening parenthesis `(` 
 - `\` continuator — suppresses automatic wrapping line in `(...)`
 
 ## Basic syntax
+
+Here we see usage of `:` and `\` symbols:
 
 ```hy
     ; ":" in the middle of the line adds parentheses,
@@ -24,7 +26,7 @@ for now we will focus only on the most frequently used:
     print                   | (print
        \x                   |      x
         + y z               |      (+ y z))
-    ;   ↑ notice that for "\x" indent is seen exactly where arrow shows
+    ;   ↑ notice that for line "\x" indent is seen exactly where arrow shows
 
     ; use single ":" to add +1 parentheses level:
     :                       | (
@@ -38,9 +40,9 @@ for now we will focus only on the most frequently used:
 ## Condensed syntax
 
 `:` symbol at the start of the line is internally temporily expanded to +1 indent level:
-> Accent on "temporarily expanded" means:
-> 1. Since wy2hy generates 1-to-1 line correspondent hy code, final hy code is not expanded
-> 2. Still, to better understand how `:` at the start of the line works, it is a good mental model to "expand" it first as shown below
+> Term "temporarily expanded" will be used a lot here. It actually means that:
+> 1. To better understand how `:` at the start of the line works, it is a good mental model to "expand" it first as shown below
+> 2. But since wy2hy generates 1-to-1 line correspondent hy code, final hy code is not expanded
 
 ```hy
 ; Example 1:
@@ -49,7 +51,7 @@ for now we will focus only on the most frequently used:
     : fn [x] : + pow 2      | (fn [x] (pow x 2)
       3                     |  3)
 
-    ; internally is temporarily expanded to:
+    ; code above is internally temporarily expanded to:
     :                       | (
       fn [x] : + pow 2      |   (fn [x] (pow x 2))
       3                     |   3)
@@ -59,7 +61,7 @@ for now we will focus only on the most frequently used:
     : : f x     | ( ( (f x)
         3       |     3))
 
-    ; internally is temporarily expanded to:
+    ; code above is internally temporarily expanded to:
     :           | (
       :         |   (
         f x     |     (f x)
@@ -86,12 +88,12 @@ Wy has 3 main symbols for writing one-liners: `::`, `,` and `$`.
     print                   |   (print
         3 , 4 , \x y, f 3   |       3 4 x y (f 3))
 
-;   temporarily expanded internally as:
-    print       |   (print
-        3       |       3
-        4       |       4
-       \x y     |       x y
-        f 3     |       (f 3))
+    ; code above is internally temporarily expanded to:
+    print                   |   (print
+        3                   |       3
+        4                   |       4
+       \x y                 |       x y
+        f 3                 |       (f 3))
 ```
 
 `$` is placing code on +1 indent level and acts differently depending on:
@@ -106,7 +108,7 @@ You may also need to use continuator `\`:
     : fn [x] : pow x 2 $ f 3    | ((fn [x] (pow x 2)) (f 3))
     : fn [x] : pow x 2 $ \x     | ((fn [x] (pow x 2)) x)
 
-;   temporarily expanded internally as:
+    ; code above is internally temporarily expanded to:
     :                           | (
       fn [x] : pow x 2          |   (fn [x] (pow x 2))
       f 3                       |   (f 3))
@@ -118,7 +120,7 @@ You may also need to use continuator `\`:
     print : + x 1 $ x
     print : + x 1 $ \y
 
-;   temporarily expanded internally as:
+    ; code above is internally temporarily expanded to:
     print : + x 1
         x
     print : + x 1
@@ -132,7 +134,7 @@ Notice that `,` symbol has highest priority:
 ```hy
     : fn [x] : + : * x 3 :: / x 4 $ : fn [x] : + x 2 $ \z , print t : + x 3
 
-    ; internally is temporily expanded to:
+    ; code above is internally temporarily expanded to:
     :                               | (
       fn [x] : + : * x 3 :: / x 4   |   (fn [x] (+ (* x 3) (/ x 4))
       :                             |   (
