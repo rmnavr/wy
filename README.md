@@ -5,7 +5,7 @@
 
 Let's start with examples.
 
-Defining function in Wy (example uses `:`, `L` and `\` to control expression level):
+Defining function in wy (example uses `:`, `L` and `\` to control expression level):
 
 ```hy
 defn #^ int                     | (defn #^ int
@@ -22,7 +22,7 @@ Wy also has one-liners syntax (example shows usage of `::`, `$` and `,` symbols)
 ```hy
 setv x : range : abs -3 :: abs -10      | (setv x (range (abs -3) (abs -10)))
 
-: . lens [1] : get $ [1 2 3] , print x  | ((. lens [1] (get)) [1 2 3]) (print x)
+: . lens [1] : get $ L 1 2 3 , print x  | ((. lens [1] (get)) [1 2 3]) (print x)
 ```
 
 Wy project consists of 2 parts:
@@ -70,28 +70,47 @@ we will focus only on the most frequently used:
 Here usage of `:` and `\` symbols is shown:
 
 ```hy
-    ; ":" in the middle of the line adds parentheses,
-    ; that are closed at the end of the line:
-    print x : + y z         | (print x (+ y z))
+; ":" in the middle of the line adds parentheses,
+; that are closed at the end of the line:
+print x : + y z         | (print x (+ y z))
 
-    ; new line by default is wrapped in () :
-    print                   | (print
-        x                   |      (x)
-        + y z               |      (+ y z))
+; new line by default is wrapped in () :
+print                   | (print
+    x                   |      (x)
+    + y z               |      (+ y z))
 
-    ; "\" prevents wrapping line in (),
-    ; also syntax elements that are usually not head of expression
-    ; (like numbers) do not require "\":
-    print                   | (print
-       \x                   |      x
-        3.0                 |      3.0
-        + y z               |      (+ y z))
-    ;   ↑ notice that for line "\x" indent is seen exactly where arrow shows
+; "\" prevents wrapping line in (),
+; also syntax elements that are usually not head of expression
+; (like numbers) do not require "\":
+print                   | (print
+   \x                   |      x
+    3.0                 |      3.0
+    + y z               |      (+ y z))
+;   ↑ notice that for line "\x" indent is seen exactly where arrow shows
 
-    ; use single ":" to add +1 parentheses level:
-    :                       | (
-      fn [x] : + pow 2      |   (fn [x] (pow x 2))
-      3                     |   3)
+; use single ":" to add +1 parentheses level:
+:                       | (
+  fn [x] : + pow 2      |   (fn [x] (pow x 2))
+  3                     |   3)
+```
+
+Wy has special policy about empty lines — you can't have empty lines inside one expression.
+
+```hy
+; Code below will be seen as 3 distinct s-expressions:
+
+    print x     |   (print x)
+                |
+        + z y   |       (+ z y)
+                |    
+        + k n   |       (+ k n)
+
+; Use comment line (at any indent level) to unite them in single expression:
+    print x     |   (print x
+        ;       |       ;
+        + z y   |       (+ z y)
+        ;       |       ;
+        + k n   |       (+ k n))
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
@@ -137,27 +156,27 @@ Wy has 3 main symbols for writing one-liners: `::`, `,` and `$`.
 
 `::` is literal `)(`, and there are many cases where it may be usefull:
 ```hy
-    print : + 1 2 :: + 3 4  |   (print (+ 1 2) (+ 3 4))
+print : + 1 2 :: + 3 4  |   (print (+ 1 2) (+ 3 4))
 
-    print                   |   (print
-        + 1 2 :: + 3 4      |        (+ 1 2) (+ 3 4))
+print                   |   (print
+    + 1 2 :: + 3 4      |        (+ 1 2) (+ 3 4))
 
-    : f 3 :: f 4            |   ((f 3) (f 4))
-    ; line above is internally temporarily expanded to:
-    :                       |   (
-      f 3 :: f 4            |     (f 3) (f 4))
+: f 3 :: f 4            |   ((f 3) (f 4))
+; line above is internally temporarily expanded to:
+:                       |   (
+  f 3 :: f 4            |     (f 3) (f 4))
 ```
 
 `,` is emulation of new line. Be aware that you may require using continuator `\`:
 ```hy
-    print                   |   (print
-        3 , f 3 , \x        |       3 (f 3) x)
+print                   |   (print
+    3 , f 3 , \x        |       3 (f 3) x)
 
-    ; code above is internally temporarily expanded to:
-    print                   |   (print
-        3                   |       3
-        f 3                 |       (f 3)
-       \x                   |       x)
+; code above is internally temporarily expanded to:
+print                   |   (print
+    3                   |       3
+    f 3                 |       (f 3)
+   \x                   |       x)
 ```
 
 `$` is placing code on +1 indent level and acts differently depending on:
