@@ -94,7 +94,17 @@ print                   | (print
   3                     |   3)
 ```
 
-Wy has special policy about empty lines — you can't have empty lines inside one expression.
+Notice that since indent of for example `\x` counts from `x` position (not from `\` position), 
+you'll have this behaviour if `\x` is used without empty spaces before it:
+```
+y       | (y 
+\x      |    x)
+
+ y      | (y)
+\x      | x
+```
+
+Wy also has special policy about empty lines — you can't have empty lines inside one expression.
 
 ```hy
 ; Code below will be seen as 3 distinct s-expressions:
@@ -233,7 +243,7 @@ Symbol `,` has highest priority:
 ## Other types of openers
 
 We already saw how `:` works.
-There are also other elements that act in the same manner (including interacting with `$` and `,` symbols), but produce different brackets.
+There are also other elements that act in the same manner (including condensed syntax and interacting with `$` and `,` symbols), but produce different brackets.
 
 Overall in wy there are:
 - bracket-openers `:`, `L`, `C`, `#:` and `#C` — represent opener brackets `(`, `[`, `{`, `#(` and `#{` respectively
@@ -249,15 +259,19 @@ Overall in wy there are:
 
 Example:
 ```hy
-    L 1 2 3 L 4 5 6 LL 7 8  |   [ 1 2 3 [4 5 6] [7 8]
-     \k n C "x" 3 "y" 4     |     k n {"x" 3 "y" 4}
-      L f 3 :: f 5          |     [ (f 3) (f 5) ]]
+L 1 2 3 L 4 5 6 LL 7 8  |   [ 1 2 3 [4 5 6] [7 8]
+ \k n C "x" 3 "y" 4     |     k n {"x" 3 "y" 4}
+  L f 3 :: f 5          |     [ (f 3) (f 5) ]]
 
-;     internally seen       |
-;     as:                   |
-    L                       |   [
-      1 2 3 L 4 5 6 LL 7 8  |     1 2 3 [4 5 6] [7 8]
-     \k n C "x" 3 "y" 4     |     k n {"x" 3 "y" 4}]
+; internally seen       |
+; as:                   |
+L                       |   [
+  1 2 3 L 4 5 6 LL 7 8  |     1 2 3 [4 5 6] [7 8]
+ \k n C "x" 3 "y" 4     |     k n {"x" 3 "y" 4}]
+
+; be aware that sometimes you'll need \ after L and similar:
+L x y                   |   [(x y)]
+L\x y                   |   [x y]
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
@@ -267,35 +281,46 @@ Example:
 
 Several syntax elements (that are usually not head of s-expression) do not require continuator `\`:
 ```hy
-    func                |   (func
-        1               |       1
-        .1              |       .1
-        -1              |       -1
-        "string"        |       "string"
-        :keyword        |       :keyword
-        #^              |       #^
-        #*              |       #*
-        #**             |       #**
-        ' x             |       ' x
-        ` x             |       ` x
-        ~ x             |       ~ x
-        ~@ x            |       ~@ x)
-                        |
-                        |   ; this is obviously incorrect hy code,
-                        |   ; but it shows how wy2hy works
+func                |   (func
+    1               |       1
+    .1              |       .1
+    -1              |       -1
+    "string"        |       "string"
+    :keyword        |       :keyword
+    #^              |       #^
+    #*              |       #*
+    #**             |       #**
+    ' x             |       ' x
+    ` x             |       ` x
+    ~ x             |       ~ x
+    ~@ x            |       ~@ x)
+                    |
+                    |   ; this is obviously incorrect hy code,
+                    |   ; but it shows how wy2hy works
 ```
 
 Also, when line starts with literal bracket (or any macro-bracket), continuator `\` is also not needed:
 ```hy
-    func                |   (func
-        ( x             |       ( x
-        )               |       )
-        [ x             |       [ x
-        ]               |       ]
-        { x             |       { x
-        }               |       }
-        ~@#{ x          |       ~@#{ x
-        }               |       })
+func                |   (func
+    ( x             |       ( x
+    )               |       )
+    [ x             |       [ x
+    ]               |       ]
+    { x             |       { x
+    }               |       }
+    ~@#{ x          |       ~@#{ x
+    }               |       })
+```
+
+Above means that you can write code close to orginal hy syntax, you'll just need to:
+- add occasional `\`
+- refrain from using empty lines:
+```hy
+(print              |   (print
+    \x              |       x
+     3              |       3
+     ;              |       ;
+     (* y 3))       |       (* y 3))
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
