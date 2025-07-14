@@ -1,26 +1,33 @@
 
-    : fn [x] (pow x 2) $ 3
 
-    ; is first expanded to:
+; condensed syntax:
 
-    :
-      fn [x] (pow x 2)
-      3
+    ; ↓ indent will be assumed at this position
+    : fn [x] : + pow 2      ; (fn [x] (pow x 2)
+      3                     ;  3)
 
-    print : fn [x] (pow x 2)
-
-
-
-	____ seen as smarker ____
-	|						|
-	↓						↓
-	: : . lens 1 2 (Each) $ : : riba
-	  ↑						  ↑
-	  | seen as mmarker _____ |
+    ; internally it is first expanded to
+    :                       ; (
+      fn [x] : + pow 2      ;   fn [x] (pow x 2)
+      3                     ;   3)
 
 
-	linesplitters:
-		: 
-		$
-		,
+    : fn [x] : + : * x 3 :: / x 4 $ : fn [x] : + x 2 $ \z , print t : + x 3
+
+    ; internally is temporily expanded to:
+    :                               | (
+      fn [x] : + : * x 3 :: / x 4   |   (fn [x] (+ (* x 3) (/ x 4))
+      :                             |   (
+        fn [x] : + x 2              |     (fn [x] (+ x 2))
+       \z                           |     z))
+    print t : + x 3                 | (print t (+ x 3))
+
+          
+
+
+        fn [x] (+ x 2)
+       \z
+    print t (+ x 3)
+     
+
 

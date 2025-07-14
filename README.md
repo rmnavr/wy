@@ -1,7 +1,219 @@
 
+<!-- NEW: Syntax, Basics ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+
+# Wy syntax
+
+Wy has many symbols for opening various kinds of brackets, but to get the basics 
+for now we will focus only on the most frequently used:
+- `:` opener — represents opening parenthesis `(` 
+- `\` continuator — suppresses automatic wrapping line in `(...)`
+
+## Basic syntax
+
+```hy
+    ; ":" in the middle of the line adds parentheses,
+    ; that are closed at the end of the line:
+    print x : + y z         | (print x (+ y z))
+
+    ; new line by default is wrapped in () :
+    print                   | (print
+        x                   |      (x)
+        + y z               |      (+ y z))
+
+    ; "\" prevents wrapping line in () :
+    print                   | (print
+       \x                   |      x
+        + y z               |      (+ y z))
+    ;   ↑ notice that for "\x" indent is seen exactly where arrow shows
+
+    ; use single ":" to add +1 parentheses level:
+    :                       | (
+      fn [x] : + pow 2      |   (fn [x] (pow x 2))
+      3                     |   3)
+```
+
+<!-- __________________________________________________________________________/ }}}1 -->
+<!-- NEW: Syntax, Condensed ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+
+## Condensed syntax
+
+`:` symbol at the start of the line is internally temporily expanded to +1 indent level:
+> Accent on "temporarily expanded" means:
+> 1. Since wy2hy generates 1-to-1 line correspondent hy code, final hy code is not expanded
+> 2. Still, to better understand how `:` at the start of the line works, it is a good mental model to "expand" it first as shown below
+
+```hy
+; Example 1:
+
+    ; ↓ implied indent will be assumed at this position
+    : fn [x] : + pow 2      | (fn [x] (pow x 2)
+      3                     |  3)
+
+    ; internally is temporarily expanded to:
+    :                       | (
+      fn [x] : + pow 2      |   (fn [x] (pow x 2))
+      3                     |   3)
+
+; Example 2:
+
+    : : f x     | ( ( (f x)
+        3       |     3))
+
+    ; internally is temporarily expanded to:
+    :           | (
+      :         |   (
+        f x     |     (f x)
+        3       |     3))
+```
+
+<!-- __________________________________________________________________________/ }}}1 -->
+<!-- NEW: Syntax, One-liners ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+
+## Syntax for one-liners
+
+Wy has 3 main symbols for writing one-liners: `::`, `,` and `$`.
+
+`::` is literal `)(`, and there are 2 main cases where it may be usefull:
+```hy
+    print : + 1 2 :: + 3 4  |   (print (+ 1 2) (+ 3 4))
+
+    print                   |   (print
+        + 1 2 :: + 3 4      |        (+ 1 2) (+ 3 4))
+```
+
+`,` is emulation of new line. Be aware that you may require using continuator `\`:
+```hy
+    print                   |   (print
+        3 , 4 , \x y, f 3   |       3 4 x y (f 3))
+
+;   temporarily expanded internally as:
+    print       |   (print
+        3       |       3
+        4       |       4
+       \x y     |       x y
+        f 3     |       (f 3))
+```
+
+`$` is placing code on +1 indent level and acts differently depending on:
+- if line is started with `:`
+- if it does not started with `:`
+You may also need to use continuator `\`:
+
+```hy
+; Case 1 : line starts with ":"
+
+;     ↓ this exact position will be used as indent level for $
+    : fn [x] : pow x 2 $ f 3    | ((fn [x] (pow x 2)) (f 3))
+    : fn [x] : pow x 2 $ \x     | ((fn [x] (pow x 2)) x)
+
+;   temporarily expanded internally as:
+    :                           | (
+      fn [x] : pow x 2          |   (fn [x] (pow x 2))
+      f 3                       |   (f 3))
+    :                           | (
+      fn [x] : pow x 2          |   (fn [x] (pow x 2))
+     \x                         |   x)
+
+; Case 2 : line does not start with ":"
+    print : + x 1 $ x
+    print : + x 1 $ \y
+
+;   temporarily expanded internally as:
+    print : + x 1
+        x
+    print : + x 1
+       \y
+;       ↑ new indent position is created at +4 spaces 
+```
+
+Final example that shows how symbols `:`, `::`, `,` and `$` interact.
+Notice that `,` symbol has highest priority:
+
+```hy
+    : fn [x] : + : * x 3 :: / x 4 $ : fn [x] : + x 2 $ \z , print t : + x 3
+
+    ; internally is temporily expanded to:
+    :                               | (
+      fn [x] : + : * x 3 :: / x 4   |   (fn [x] (+ (* x 3) (/ x 4))
+      :                             |   (
+        fn [x] : + x 2              |     (fn [x] (+ x 2))
+       \z                           |     z))
+    print t : + x 3                 | (print t (+ x 3))
+```
+
+<!-- __________________________________________________________________________/ }}}1 -->
+<!-- NEW: Syntax, Examples ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+
+
+<!-- __________________________________________________________________________/ }}}1 -->
+
+
+
+
+<!-- wy: one-liners ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+
+## Syntax elements for one-liners
+
+There are 4 symbols to be discussed: `::`, `LL`, `,` and `$`
+
+
+`,` is emulation of new line (while actually staying on the same line):
+```hy
+    print
+        3 , 4
+
+;   temporarily expanded internally as:
+
+    print
+        3
+        4
+```
+
+Be aware that you may require using continuator `\` after `,`:
+```hy
+    print       |   (print
+        \x , y  |       x (y))
+
+;   y is parenthesized because above code is
+;   temporarily expanded internally as:
+
+    print       |   (print
+       \x       |       x
+        y       |       (y))
+```
+
+`$` is placing code on +1 indent level and acts differently if line is started with bracket-opener (like `:`) or if it does not.
+
+Case when line starts with bracket-opener:
+```hy
+    : fn [x] (pow x 2) $ 3
+
+;   temporarily expanded internally as:
+    :
+      fn [x] (pow x 2)
+      3
+```
+
+And when it does not:
+```hy
+    print : + x 3 $ 4
+
+;   temporarily expanded internally as:
+    print : + x 3
+        4
+;       ↑
+;       will be placed at +4 spaces indent
+```
+
+<!-- __________________________________________________________________________/ }}}1 -->
+
+
+
+
+
 <!-- Intro ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
-# Wy — Hy-lang without parenthesis
+# Wy — Hy-lang without parentheses
 
 ```hy
 defn #^ int                             | (defn #^ int
@@ -128,8 +340,8 @@ Also, when line starts with literal bracket (or any macro-bracket), continuator 
 ## Bracket-openers at different positions
 
 There are 5 bracket-openers (`:`, `L`, `C`, `#:` and `#C`) and any of them can be prefixed with hy macro-symbols (`` ` ``, `'`, `~` and `~@`).
-They all behave differently:
-- at start of the line
+Their behaviour depends on their position, which can be:
+- at the start of the line
 - in the middle of the line
 
 For simplicity we will focus on `:` bracket-opener, but described behaviour is the same for other bracket-openers.
@@ -172,69 +384,6 @@ Same rules apply to other openers:
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
-<!-- wy: one-liners ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
-
-## Syntax elements for one-liners
-
-There are 4 symbols to be discussed: `::`, `LL`, `,` and `$`
-
-`::` and `LL` are literal `)(` and `LL`. There 2 cases where they may be convenient:
-```hy
-    print : + 1 2 :: + 3 4  |   (print (+ 1 2) (+ 3 4))
-
-    print                   |   (print
-        + 1 2 :: + 3 4      |        (+ 1 2) (+ 3 4))
-```
-
-`,` is emulation of new line (while actually staying on the same line):
-```hy
-    print
-        3 , 4
-
-;   temporarily expanded internally as:
-
-    print
-        3
-        4
-```
-
-Be aware that you may require using continuator `\` after `,`:
-```hy
-    print       |   (print
-        \x , y  |       x (y))
-
-;   y is parenthesized because above code is
-;   temporarily expanded internally as:
-
-    print       |   (print
-       \x       |       x
-        y       |       (y))
-```
-
-`$` is placing code on +1 indent level and acts differently if line is started with bracket-opener (like `:`) or if it does not.
-
-Case when line starts with bracket-opener:
-```hy
-    : fn [x] (pow x 2) $ 3
-
-;   temporarily expanded internally as:
-    :
-      fn [x] (pow x 2)
-      3
-```
-
-And when it does not:
-```hy
-    print : + x 3 $ 4
-
-;   temporarily expanded internally as:
-    print : + x 3
-        4
-;       ↑
-;       will be placed at +4 spaces indent
-```
-
-<!-- __________________________________________________________________________/ }}}1 -->
 
 <!-- wy2hy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
@@ -271,6 +420,7 @@ pip install git+https://github.com/rmnavr/wy.git@0.0.1
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
+
 
 
 
