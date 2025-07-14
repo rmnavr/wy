@@ -88,15 +88,15 @@ print                   | (print
     + y z               |      (+ y z))
 ;   ↑ notice that for line "\x" indent is seen exactly where arrow shows
 
-; use single ":" to add +1 parentheses level:
+; use line consisting only of ":" to add +1 parentheses level:
 :                       | (
   fn [x] : + pow 2      |   (fn [x] (pow x 2))
   3                     |   3)
 ```
 
 Notice that since indent of for example `\x` counts from `x` position (not from `\` position), 
-you'll have this behaviour if `\x` is used without empty spaces before it:
-```
+you'll have this behaviour in following cases:
+```hy
 y       | (y 
 \x      |    x)
 
@@ -109,18 +109,19 @@ Wy also has special policy about empty lines — you can't have empty lines insi
 ```hy
 ; Code below will be seen as 3 distinct s-expressions:
 
-    print x     |   (print x)
-                |
-        + z y   |       (+ z y)
-                |    
-        + k n   |       (+ k n)
+print x     |   (print x)
+            |
+    + z y   |       (+ z y)
+            |    
+    + k n   |       (+ k n)
 
 ; Use comment line (at any indent level) to unite them in single expression:
-    print x     |   (print x
-        ;       |       ;
-        + z y   |       (+ z y)
-        ;       |       ;
-        + k n   |       (+ k n))
+
+print x     |   (print x
+    ;       |       ;
+    + z y   |       (+ z y)
+    ;       |       ;
+    + k n   |       (+ k n))
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
@@ -211,6 +212,7 @@ And you may also need to use continuator `\`:
      \x                         |   x)
 
 ; Case 2 : line does not start with ":"
+
     print : + x 1 $ x
     print : + x 1 $ \y
 
@@ -219,7 +221,7 @@ And you may also need to use continuator `\`:
         x
     print : + x 1
        \y
-;       ↑ new indent position is created at +4 spaces
+    ;   ↑ new indent position is created at +4 spaces
 ```
 
 Final example (although very contrived) shows how symbols `:`, `::`, `,` and `$` interact.
@@ -263,13 +265,14 @@ L 1 2 3 L 4 5 6 LL 7 8  |   [ 1 2 3 [4 5 6] [7 8]
  \k n C "x" 3 "y" 4     |     k n {"x" 3 "y" 4}
   L f 3 :: f 5          |     [ (f 3) (f 5) ]]
 
-; internally seen       |
-; as:                   |
+; internally seen as:   |
 L                       |   [
   1 2 3 L 4 5 6 LL 7 8  |     1 2 3 [4 5 6] [7 8]
- \k n C "x" 3 "y" 4     |     k n {"x" 3 "y" 4}]
+ \k n C "x" 3 "y" 4     |     k n {"x" 3 "y" 4}
+  L                     |     [
+    f 3 :: f 5          |       (f 3) (f 5) ]]
 
-; be aware that sometimes you'll need \ after L and similar:
+; be aware that due to how condensed syntax works, sometimes you may require \ after L (and same for C):
 L x y                   |   [(x y)]
 L\x y                   |   [x y]
 ```
