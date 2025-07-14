@@ -1,9 +1,3 @@
     
-    (print
-         x y)
     
-    
-    (print
-        x
-        (y))
-     
+    ( isPointInsideRect (get rects 0) pt ZoneN.Z1) 

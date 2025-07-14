@@ -1,0 +1,32 @@
+
+	Add functionality:
+		• :: LL CC :#: C#C
+		• reader macro
+		• full nested interaction of ":", "," and "$"
+			currently:
+			1) $ is split (first at line)
+			2) first : is split on every line
+			// so, «:» in «func1 $ : func2» will be seen as line-starter
+		• splitters $ :: : should not be seen in qstrings/icomment/ocomment
+		• special chars in :keywords
+
+	Refactoring:
+		+ Type[Shape]
+        + not the best name: hy_bracket_tokenQ (really it is hyopener + closer_bracket)
+        + insert_smart_indent should be done BEFORE split_linestarters (it makes no sense otherwise)
+		+ ADT: Literal "12" "23"
+
+	Bugs:
+		+ line "    : " is seen not as line "    :"
+		- LRiba is seen as «L Riba» lol
+        - bug: ~@ is not added currently (true?)
+
+	Robust:
+		+ forbid , and $ at line start (and things like that)
+		+ performance: recursion limit in pyparser -> quick solution: split code by empty lines (and parse)
+
+	Prettify:
+		• L LL C CC namings issue
+        + pass closing bracket through comments to actual line where it belongs
+		+ nesting interaction: () : :: $ $$
+

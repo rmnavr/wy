@@ -228,15 +228,15 @@ Final example (although very contrived) shows how symbols `:`, `::`, `,` and `$`
 Symbol `,` has highest priority:
 
 ```hy
-    : fn [x] : + : * x 3 :: / x 4 $ : fn [x] : + x 2 $ \z , print t : + x 3
+: fn [x] : + : * x 3 :: / x 4 $ : fn [x] : + x 2 $ \z , print t : + x 3
 
-    ; code above is internally temporarily expanded to:
-    :                               | (
-      fn [x] : + : * x 3 :: / x 4   |   (fn [x] (+ (* x 3) (/ x 4))
-      :                             |   (
-        fn [x] : + x 2              |     (fn [x] (+ x 2))
-       \z                           |     z))
-    print t : + x 3                 | (print t (+ x 3))
+; code above is internally temporarily expanded to:
+:                               | (
+  fn [x] : + : * x 3 :: / x 4   |   (fn [x] (+ (* x 3) (/ x 4))
+  :                             |   (
+    fn [x] : + x 2              |     (fn [x] (+ x 2))
+   \z                           |     z))
+print t : + x 3                 | (print t (+ x 3))
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
@@ -272,7 +272,7 @@ L                       |   [
   L                     |     [
     f 3 :: f 5          |       (f 3) (f 5) ]]
 
-; be aware that due to how condensed syntax works, sometimes you may require \ after L (and same for C):
+; be aware that due to how condensed syntax works, sometimes you may require \ after L (or C):
 L x y                   |   [(x y)]
 L\x y                   |   [x y]
 ```

@@ -1,7 +1,5 @@
 
 
-; condensed syntax:
-
     ; ↓ indent will be assumed at this position
     : fn [x] : + pow 2      ; (fn [x] (pow x 2)
       3                     ;  3)
