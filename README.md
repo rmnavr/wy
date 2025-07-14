@@ -3,7 +3,9 @@
 
 # Wy — Hy-lang without parentheses
 
-Defining function in Wy (using `:`, `L` and `\` to control expression level):
+Let's start with examples.
+
+Defining function in Wy (example uses `:`, `L` and `\` to control expression level):
 
 ```hy
 defn #^ int                     | (defn #^ int
@@ -15,7 +17,7 @@ defn #^ int                     | (defn #^ int
            fibonacci : - n 2    |            (fibonacci (- n 2)))))
 ```
 
-Wy also has one-liners syntax (using `::`, `$` and `,`):
+Wy also has one-liners syntax (example shows usage of `::`, `$` and `,` symbols):
 
 ```hy
 setv x : range : abs -3 :: abs -10      | (setv x (range (abs -3) (abs -10)))
@@ -58,14 +60,14 @@ Table of Contents:
 
 # Wy syntax
 
+## Basic syntax
+
 Wy has many symbols for opening various kinds of hy brackets, but to get the basics 
 we will focus only on the most frequently used:
 - `:` opener — represents opening parenthesis `(` 
 - `\` continuator — suppresses automatic wrapping line in `(...)`
 
-## Basic syntax
-
-Here we see usage of `:` and `\` symbols:
+Here usage of `:` and `\` symbols is shown:
 
 ```hy
     ; ":" in the middle of the line adds parentheses,
@@ -77,9 +79,12 @@ Here we see usage of `:` and `\` symbols:
         x                   |      (x)
         + y z               |      (+ y z))
 
-    ; "\" prevents wrapping line in () :
+    ; "\" prevents wrapping line in (),
+    ; also syntax elements that are usually not head of expression
+    ; (like numbers) do not require "\":
     print                   | (print
        \x                   |      x
+        -3.0                |      -3.0
         + y z               |      (+ y z))
     ;   ↑ notice that for line "\x" indent is seen exactly where arrow shows
 
@@ -96,15 +101,15 @@ Here we see usage of `:` and `\` symbols:
 
 `:` symbol at the start of the line is internally temporarily expanded to +1 indent level:
 > Term "temporarily expanded" will be used a lot here. It actually means that:
-> 1. To better understand how `:` at the start of the line works, it is a good mental model to "expand" it first as shown below
+> 1. To better understand how `:` at the start of the line works (and some other symbols), it is a good mental model to "expand" it first as shown below
 > 2. But since wy2hy generates 1-to-1 line correspondent hy code, final hy code is not expanded
 
 ```hy
 ; Example 1:
 
     ; ↓ implied indent will be assumed at this position
-    : fn [x] : + pow 2      | (fn [x] (pow x 2)
-      3                     |  3)
+    : fn [x] : + pow 2      | ( (fn [x] (pow x 2))
+      3                     |   3)
 
     ; code above is internally temporarily expanded to:
     :                       | (
@@ -205,12 +210,17 @@ Symbol `,` has highest priority:
 
 We already saw how `:` works. There are also other elements that act in the same manner, but produce different brackets.
 
-Overall in wy ther are:
+Overall in wy there are:
 - bracket-openers `:`, `L`, `C`, `#:` and `#C` — represent opener brackets `(`, `[`, `{`, `#(` and `#{` respectively
 - any of these 5 openers can be combined with hy symbols for macros (there 4 of them: `` ` ``, `'`, `~` and `~@`),
   they must be combined without spaces, for example: `~@#:` is for `~@#(`
   > and of course you can use standalone hy macros symbols as usual
 - for one-liners there are `::`, `LL`, `CC`, `:#:` and `C#C` symbols — they represent `)(`, `][`, `}{`, `) #(` and `} #{` respectively
+
+> Yes, symbols `L`, `C`, `LL` and `CC` can never be used as variable names in wy.
+> For now you may use `L_` instead.
+>
+> I am working on solving this issue.
 
 Example:
 ```hy
