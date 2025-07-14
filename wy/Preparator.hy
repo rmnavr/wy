@@ -3,17 +3,19 @@
 
     (import pyparsing :as pp)
 
-    (import wy.Classes *)
+    (import Classes *)
 
     (import sys)
     (. sys.stdout (reconfigure :encoding "utf-8"))
 
-    (import  wy._fptk_local *)
-    (require wy._fptk_local *)
+    (import  _fptk_local *)
+    (require _fptk_local *)
 
 ; _____________________________________________________________________________/ }}}1
 
 ; helper funcs ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+    
+    ; not used currently
 
     (defn #^ WyCodeLine
         line_starts_with_keywordQ
@@ -83,6 +85,7 @@
         insert_midspace_marks
         [ #^ WyCodeLine line
         ]
+        (setv line (line.rstrip " "))
         ;                 (gr1                ) (gr2          )   (gr3)
         (re_sub (sconcat "(" $INDENT_MARK r"+)" $OMARKERS_REGEX r"(\s*)")
                 (fm (sconcat (%1.group 1) (%1.group 2) (* $MIDSPACE_MARK (len (%1.group 3)))))
@@ -91,8 +94,6 @@
 ; _____________________________________________________________________________/ }}}1
 
 ; assembly ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    ; TODO: make more efficient
 
     (defn #^ PreparedCodeFull
         prepare_code_for_pyparsing
@@ -104,7 +105,7 @@
              (lmap insert_indent_marks)   
              (str_join :sep "\n")
              ;
-             .splitlines ; this will NOT split at literal "\n" found in source code, because it is replaced with \"\\n\"
+             .splitlines 
              (lmap insert_midspace_marks)   
              (str_join :sep "\n")))
 

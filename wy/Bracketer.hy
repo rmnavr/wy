@@ -1,14 +1,14 @@
 
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (import wy.Classes *)
-    (import wy.Parser [omarker_tokenQ hy_bracket_tokenQ hy_opener_tokenQ closing_bracket_tokenQ])
+    (import Classes *)
+    (import Parser [omarker_tokenQ hy_bracket_tokenQ hy_opener_tokenQ closing_bracket_tokenQ])
 
     (import sys)
     (. sys.stdout (reconfigure :encoding "utf-8"))
 
-    (import  wy._fptk_local *)
-    (require wy._fptk_local *)
+    (import  _fptk_local *)
+    (require _fptk_local *)
 
 ; _____________________________________________________________________________/ }}}1
 
@@ -298,7 +298,7 @@
             (setv token_prev (get body_tokens (dec idx)))
             ;
             (cond ; (x
-                  (and (not_ hy_bracket_tokenQ      token_cur)      ; TODO: condense
+                  (and (fnot hy_bracket_tokenQ      token_cur)      ; TODO: condense
                        (     hy_opener_tokenQ       token_prev))
                   (_new_body.append &token)
                   ; ()
@@ -315,7 +315,7 @@
                   (_new_body.append &token)
                   ; x)
                   (and (     closing_bracket_tokenQ token_cur)
-                       (not_ hy_bracket_tokenQ      token_prev))
+                       (fnot hy_bracket_tokenQ      token_prev))
                   (_new_body.append &token)
                   ; all other
                   True
@@ -361,7 +361,7 @@
                  (+= _hy_code _closers " " _openers_and_body)
                  (+= _hy_code _closers _prev_comment "\n" _indent _openers_and_body))   ; for &idx=0 extra «\n» is added unwantedly
              (setv _prev_comment _comment))
-        (return ((p> rest str_join) _hy_code)))                                         ; this "\n" is removed here
+        (return ((p: rest str_join) _hy_code)))                                         ; this "\n" is removed here
 
 ; _____________________________________________________________________________/ }}}1
 

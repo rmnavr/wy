@@ -1,73 +1,76 @@
 
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (import  wy._fptk_local *)
-    (require wy._fptk_local *)
+    (import  _fptk_local *)
+    (require _fptk_local *)
 
     (import  sys)
     (. sys.stdout (reconfigure :encoding "utf-8"))
 
 ; _____________________________________________________________________________/ }}}1
 
-; markers (constants) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; wy marks and markers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (setv $INDENT_MARK    "✠")
-    (setv $BASE_INDENT    "✠✠✠✠")
-    (setv $ELIN           (len $BASE_INDENT)) ; [E]mpty [L]ine [I]ndents [N]
+    ; marks:
 
-    (setv $MIDSPACE_MARK  "■")
+        (setv $INDENT_MARK    "✠")
+        (setv $BASE_INDENT    "✠✠✠✠")
+        (setv $ELIN           (len $BASE_INDENT)) ; [E]mpty [L]ine [I]ndents [N]
 
-    ; ===============================================================================
+        (setv $MIDSPACE_MARK  "■")
 
-    ; can act as «smarkers» and «mmarkers»
-    (setv $OMARKERS [   ":"   "L"    "C"   "#:"   "#C"
-                       "':"  "'L"   "'C"  "'#:"  "'#C"
-                       "`:"  "`L"   "`C"  "`#:"  "`#C"
-                       "~:"  "~L"   "~C"  "~#:"  "~#C"
-                      "~@:" "~@L"  "~@C" "~@#:" "~@#C" ])
+    ; markers:
 
-    ; 1) for usage in regex «`» should be escaped (but in normal string it shouldn't be escaped) ;
-    ; 2) since regex is trying to take max possible chars match, no special ordering inside $OMARKERS_REGEX is required
-    (setv $OMARKERS_REGEX (+ r"("
-                             (->> $OMARKERS
-                                  (str_join :sep "|")
-                                  (re.sub r"\`" "\\`"))
-                             ")"))
+        ; «omarkers» (opener markers) can act as «smarkers» (start markers) and «mmarkers» (mid markers):
+        (setv $OMARKERS [   ":"   "L"    "C"   "#:"   "#C"
+                           "':"  "'L"   "'C"  "'#:"  "'#C"
+                           "`:"  "`L"   "`C"  "`#:"  "`#C"
+                           "~:"  "~L"   "~C"  "~#:"  "~#C"
+                          "~@:" "~@L"  "~@C" "~@#:" "~@#C" ])
 
-    (setv $DMARKERS [ "::" "LL" ])
+        ; 1) for usage in regex «`» should be escaped (but in normal string it shouldn't be escaped) ;
+        ; 2) since regex is trying to take max possible chars match, no special ordering inside $OMARKERS_REGEX is required
+        (setv $OMARKERS_REGEX (+ r"("
+                                 (->> $OMARKERS
+                                      (str_join :sep "|")
+                                      (re.sub r"\`" "\\`"))
+                                 ")"))
 
-    (setv $CMARKER  "\\")
-    (setv $AMARKER  "$")
-    (setv $JMARKER  ",")
+        (setv $DMARKERS [ "::" "LL" ])  ; double markers
 
-    ; used in pyparsing, so order is important
-    (setv $WY_MARKERS (sorted (lconcat $OMARKERS $DMARKERS [$CMARKER] [$AMARKER] [$JMARKER])
-                              :key len
-                              :reverse True))
+        (setv $CMARKER  "\\")           ; continuation marker
+        (setv $AMARKER  "$")            ; application marker
+        (setv $JMARKER  ",")            ; joiner marker
 
+        ; used in pyparsing, so order is important:
+        (setv $WY_MARKERS (sorted (lconcat $OMARKERS $DMARKERS [$CMARKER] [$AMARKER] [$JMARKER])
+                                  :key len
+                                  :reverse True))
 
-    ; ===============================================================================
+; _____________________________________________________________________________/ }}}1
+; hy syntax elements ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    ; used in pyparser, so order is important
+    ; used in pyparser, so order is important:
     (setv $HY_MACROMARKS [ "~@" "~" "`" "'"])
 
-    ; used in pyparser, so order is important
+    ; used in pyparser, so order is important:
     (setv $HY_OPENERS1 [ "~@#(" "~#(" "~@(" "'#(" "`#(" "#(" "`(" "'(" "~(" "("])
     (setv $HY_OPENERS2 [              "~@["                  "`[" "'[" "~[" "["])
     (setv $HY_OPENERS3 [ "~@#{" "~#{" "~@{" "'#{" "`#{" "#{" "`{" "'{" "~{" "{"])
 
-    ; used in tokenQ
+    ; used in tokenQ:
     (setv $HY_OPENERS  (lconcat $HY_OPENERS1 $HY_OPENERS2 $HY_OPENERS3))
 
     ; ===============================================================================
 
-    ; used in tokenQ
+    ; used in tokenQ:
     (setv $CLOSER_BRACKETS [ ")" "]" "}" ])
 
 ; _____________________________________________________________________________/ }}}1
+
 ; preparator ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    ; used both for condensed (source) and expanded grammar:
+    ; used both for condensed (source) and expanded syntax:
     (setv #_ DC WyCodeLine str)
     (setv #_ DC WyCodeFull str)
     (setv #_ DC PreparedCodeFull str)
@@ -78,21 +81,23 @@
     (setv #_ DC Token StrictStr)                      ; ":" | "(" | ";text" | ...
     (setv #_ DC TokenizedLine (of List StrictStr))    ; ["✠✠✠✠" ":" "func" "x" "x" "; text"]  
 
-    (defclass [] NumberedTLine [BaseModel]
+    (defclass [] NumberedTLine [BaseModel] 
+        "numbered tokenized line"
         (#^ StrictInt     origRow #_ "count starts from 0")
         (#^ TokenizedLine tline))
 
     ; ==========================================================================================================
+    ; Deconstructed Lines:
 
     (defclass [dataclass] GroupStarterDL []
-        (#^ Token smarker    #_ "like «:» and «#L» at beginning of the line"))
+        (#^ Token smarker #_ "like «:» and «#L» at beginning of the line"))
 
     (defclass [dataclass] ContinuatorDL []
         (#^ (of Optional Token) cmarker #_ "usually <\\>, None is for what regarded as openers (digits, strings, etc.)"))
 
     (defclass [dataclass] ImpliedOpenerDL [])
 
-    (defclass [dataclass] OnlyOCommentDL [])
+    (defclass [dataclass] OnlyOCommentDL []) ; OComment is comment that starts with ";"
 
     (defclass [dataclass] EmptyLineDL [])
 

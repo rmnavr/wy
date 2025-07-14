@@ -5,14 +5,14 @@
     (import os)
     (import subprocess)
 
-    (import wy.AppLayer [file_to_code convert_wy2hy])
-    (import wy.Classes *)
+    (import AppLayer [file_to_code convert_wy2hy])
+    (import Classes *)
 
     (import sys)
     (. sys.stdout (reconfigure :encoding "utf-8"))
 
-    (import  wy._fptk_local *)
-    (require wy._fptk_local *)
+    (import  _fptk_local *)
+    (require _fptk_local *)
 
 ; _____________________________________________________________________________/ }}}1
 
@@ -71,7 +71,7 @@
         [ #^ str filename #_ "possibly full filename"
         ]
         "will return full filenames"
-        (when (not_ os.path.isfile filename) (raise (Exception f"file {filename} does not exist")))
+        (when (fnot os.path.isfile filename) (raise (Exception f"file {filename} does not exist")))
         ; directory will be "" if no dir was provided
         ; directory will have no "\\" at the end
         (setv [directory filename_with_wy_extension] (os.path.split filename))
