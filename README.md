@@ -62,9 +62,9 @@ Table of Contents:
 
 ## Basic syntax
 
-Wy has many symbols for opening various kinds of hy brackets, but to get the basics 
+Wy has many symbols for opening various kinds of hy brackets, but to get the basics
 we will focus only on the most frequently used:
-- `:` opener — represents opening parenthesis `(` 
+- `:` opener — represents opening parenthesis `(`
 - `\` continuator — suppresses automatic wrapping line in `(...)`
 
 Here usage of `:` and `\` symbols is shown:
@@ -84,7 +84,7 @@ Here usage of `:` and `\` symbols is shown:
     ; (like numbers) do not require "\":
     print                   | (print
        \x                   |      x
-        -3.0                |      -3.0
+        3.0                 |      3.0
         + y z               |      (+ y z))
     ;   ↑ notice that for line "\x" indent is seen exactly where arrow shows
 
@@ -135,12 +135,17 @@ Here usage of `:` and `\` symbols is shown:
 
 Wy has 3 main symbols for writing one-liners: `::`, `,` and `$`.
 
-`::` is literal `)(`, and there are 2 main cases where it may be usefull:
+`::` is literal `)(`, and there are many cases where it may be usefull:
 ```hy
     print : + 1 2 :: + 3 4  |   (print (+ 1 2) (+ 3 4))
 
     print                   |   (print
         + 1 2 :: + 3 4      |        (+ 1 2) (+ 3 4))
+
+    : f 3 :: f 4            |   ((f 3) (f 4))
+    ; line above is internally temporarily expanded to:
+    :                       |   (
+      f 3 :: f 4            |     (f 3) (f 4))
 ```
 
 `,` is emulation of new line. Be aware that you may require using continuator `\`:
@@ -151,7 +156,7 @@ Wy has 3 main symbols for writing one-liners: `::`, `,` and `$`.
     ; code above is internally temporarily expanded to:
     print                   |   (print
         3                   |       3
-        f 3                 |       (f 3) 
+        f 3                 |       (f 3)
        \x                   |       x)
 ```
 
@@ -164,7 +169,7 @@ And you may also need to use continuator `\`:
 ```hy
 ; Case 1 : line starts with ":"
 
-;     ↓ this exact position will be used as indent level for $
+    ; ↓ this exact position will be used as indent level for $
     : fn [x] : pow x 2 $ f 3    | ((fn [x] (pow x 2)) (f 3))
     : fn [x] : pow x 2 $ \x     | ((fn [x] (pow x 2)) x)
 
@@ -185,7 +190,7 @@ And you may also need to use continuator `\`:
         x
     print : + x 1
        \y
-;       ↑ new indent position is created at +4 spaces 
+;       ↑ new indent position is created at +4 spaces
 ```
 
 Final example (although very contrived) shows how symbols `:`, `::`, `,` and `$` interact.
@@ -208,30 +213,32 @@ Symbol `,` has highest priority:
 
 ## Other types of openers
 
-We already saw how `:` works. There are also other elements that act in the same manner, but produce different brackets.
+We already saw how `:` works.
+There are also other elements that act in the same manner (including interacting with `$` and `,` symbols), but produce different brackets.
 
 Overall in wy there are:
 - bracket-openers `:`, `L`, `C`, `#:` and `#C` — represent opener brackets `(`, `[`, `{`, `#(` and `#{` respectively
-- any of these 5 openers can be combined with hy symbols for macros (there 4 of them: `` ` ``, `'`, `~` and `~@`),
+- any of these 5 openers can be combined with hy symbols for macros (there are 4 of them: `` ` ``, `'`, `~` and `~@`),
   they must be combined without spaces, for example: `~@#:` is for `~@#(`
   > and of course you can use standalone hy macros symbols as usual
 - for one-liners there are `::`, `LL`, `CC`, `:#:` and `C#C` symbols — they represent `)(`, `][`, `}{`, `) #(` and `} #{` respectively
 
 > Yes, symbols `L`, `C`, `LL` and `CC` can never be used as variable names in wy.
-> For now you may use `L_` instead.
+> For now you may use `L_` and such instead.
 >
-> I am working on solving this issue.
+> I am currently working on designing solution for this issue.
 
 Example:
 ```hy
     L 1 2 3 L 4 5 6 LL 7 8  |   [ 1 2 3 [4 5 6] [7 8]
-      9 0 C "x" 3 "y 4      |     9 0 {"x" 3 "y" 4}]
+     \k n C "x" 3 "y" 4     |     k n {"x" 3 "y" 4}
+      L f 3 :: f 5          |     [ (f 3) (f 5) ]]
 
 ;     internally seen       |
 ;     as:                   |
     L                       |   [
       1 2 3 L 4 5 6 LL 7 8  |     1 2 3 [4 5 6] [7 8]
-      7 8 9                 |     9 0 {"x" 3 "y" 4}]
+     \k n C "x" 3 "y" 4     |     k n {"x" 3 "y" 4}]
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
@@ -244,6 +251,7 @@ Several syntax elements (that are usually not head of s-expression) do not requi
     func                |   (func
         1               |       1
         .1              |       .1
+        -1              |       -1
         "string"        |       "string"
         :keyword        |       :keyword
         #^              |       #^
@@ -254,8 +262,8 @@ Several syntax elements (that are usually not head of s-expression) do not requi
         ~ x             |       ~ x
         ~@ x            |       ~@ x)
                         |
-                        |   ; this is obviously meaningless hy code,
-                        |   ; but it shows how wy syntax works
+                        |   ; this is obviously incorrect hy code,
+                        |   ; but it shows how wy2hy works
 ```
 
 Also, when line starts with literal bracket (or any macro-bracket), continuator `\` is also not needed:
@@ -269,9 +277,6 @@ Also, when line starts with literal bracket (or any macro-bracket), continuator 
         }               |       }
         ~@#{ x          |       ~@#{ x
         }               |       })
-                        |
-                        |   ; this is obviously meaningless hy code,
-                        |   ; but it shows how wy syntax works
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
