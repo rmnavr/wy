@@ -9,6 +9,7 @@
 			// so, «:» in «func1 $ : func2» will be seen as line-starter
 		• splitters $ :: : should not be seen in qstrings/icomment/ocomment
 		• special chars in :keywords
+		• tabs/spaces
 
 	Refactoring:
 		+ Type[Shape]
@@ -18,7 +19,6 @@
 
 	Bugs:
 		+ line "    : " is seen not as line "    :"
-		- LRiba is seen as «L Riba» lol
         - bug: ~@ is not added currently (true?)
 
 	Robust:

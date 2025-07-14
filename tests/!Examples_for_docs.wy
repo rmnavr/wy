@@ -1,31 +1,26 @@
+    
+    "
+    : fn
+    "
 
+    : : f x $ : g y "$"
 
-    ; ↓ indent will be assumed at this position
-    : fn [x] : + pow 2      ; (fn [x] (pow x 2)
-      3                     ;  3)
+    :
+     \: f x
+      : 
+        g y
 
-    ; internally it is first expanded to
-    :                       ; (
-      fn [x] : + pow 2      ;   fn [x] (pow x 2)
-      3                     ;   3)
-
-
-    : fn [x] : + : * x 3 :: / x 4 $ : fn [x] : + x 2 $ \z , print t : + x 3
-
-    ; internally is temporily expanded to:
-    :                               | (
-      fn [x] : + : * x 3 :: / x 4   |   (fn [x] (+ (* x 3) (/ x 4))
-      :                             |   (
-        fn [x] : + x 2              |     (fn [x] (+ x 2))
-       \z                           |     z))
-    print t : + x 3                 | (print t (+ x 3))
-
-          
-
-
-        fn [x] (+ x 2)
-       \z
-    print t (+ x 3)
-     
+    ;   : : f x $ : : g y $ \ x
+    ;                       ---
+    ;               -----------
+    ;           ---------------
+    ;    ----------------------
+    ;   -----------------------
+    ;  
+    ;   :
+    ;    \: f x
+    ;     : 
+    ;      \: g y
+    ;      \x
 
 
