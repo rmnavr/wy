@@ -11,42 +11,39 @@
 
 ; [=] wy marks and markers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    ; marks:
+    (setv $INDENT_MARK    "■")
+    (setv $NEWLINE_MARK   "☇|")
 
-        (setv $INDENT_MARK    "✠")
-        (setv $BASE_INDENT    "✠✠✠✠")
-        (setv $ELIN           (strlen $BASE_INDENT)) ; [E]mpty [L]ine [I]ndents [N]
+    ; =========================
 
-        (setv $MIDSPACE_MARK  "■")
+    ; «omarkers» (opener markers) can act as «smarkers» (start markers) and «mmarkers» (mid markers):
+    (setv $OMARKERS [   ":"   "L"    "C"   "#:"   "#C"
+                       "':"  "'L"   "'C"  "'#:"  "'#C"
+                       "`:"  "`L"   "`C"  "`#:"  "`#C"
+                       "~:"  "~L"   "~C"  "~#:"  "~#C"
+                      "~@:" "~@L"  "~@C" "~@#:" "~@#C" ])
 
-    ; markers:
+    (setv $DMARKERS [ "::" "LL" ])  ; double markers
 
-        ; «omarkers» (opener markers) can act as «smarkers» (start markers) and «mmarkers» (mid markers):
-        (setv $OMARKERS [   ":"   "L"    "C"   "#:"   "#C"
-                           "':"  "'L"   "'C"  "'#:"  "'#C"
-                           "`:"  "`L"   "`C"  "`#:"  "`#C"
-                           "~:"  "~L"   "~C"  "~#:"  "~#C"
-                          "~@:" "~@L"  "~@C" "~@#:" "~@#C" ])
+    (setv $CMARKER  "\\")           ; continuation marker
+    (setv $AMARKER  "$")            ; application marker
+    (setv $RMARKER  "<$")           ; reverse application marker
+    (setv $JMARKER  ",")            ; joiner marker
 
-        ; 1) for usage in regex «`» should be escaped (but in normal string it shouldn't be escaped) ;
-        ; 2) since regex is trying to take max possible chars match, no special ordering inside $OMARKERS_REGEX is required
-        (setv $OMARKERS_REGEX (+ r"("
-                                 (->> $OMARKERS
-                                      (str_join :sep "|")
-                                      (re.sub r"\`" "\\`"))
-                                 ")"))
+    ; used in pyparsing, so order is important:
+    (setv $WY_MARKERS (sorted (lconcat $OMARKERS $DMARKERS [$CMARKER $RMARKER $AMARKER $JMARKER])
+                              :key len
+                              :reverse True))
 
-        (setv $DMARKERS [ "::" "LL" ])  ; double markers
+    ; =========================
 
-        (setv $CMARKER  "\\")           ; continuation marker
-        (setv $AMARKER  "$")            ; application marker
-        (setv $RMARKER  "<$")           ; reverse application marker
-        (setv $JMARKER  ",")            ; joiner marker
-
-        ; used in pyparsing, so order is important:
-        (setv $WY_MARKERS (sorted (lconcat $OMARKERS $DMARKERS [$CMARKER] [$RMARKER] [$AMARKER] [$JMARKER])
-                                  :key len
-                                  :reverse True))
+    ; 1) for usage in regex «`» should be escaped (but in normal string it shouldn't be escaped) ;
+    ; 2) since regex is trying to take max possible chars match, no special ordering inside $OMARKERS_REGEX is required
+    (setv $OMARKERS_REGEX (+ r"("
+                             (->> $OMARKERS
+                                  (str_join :sep "|")
+                                  (re.sub r"\`" "\\`"))
+                             ")"))
 
 ; _____________________________________________________________________________/ }}}1
 ; [=] hy syntax elements ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -69,24 +66,117 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-; [C] Preparator ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+    (setv WyCode      StrictStr)
+    (setv WyCodeLine  StrictStr)
+    (setv PreparedCode StrictStr)
+    (setv Atom        StrictStr)
 
-    ; used both for condensed (source) and expanded syntax:
-    (setv #_ DC WyCodeLine StrictStr)
-    (setv #_ DC WyCodeFull StrictStr)
-    (setv #_ DC PreparedCodeFull StrictStr)
+
+; [F] atom checks ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    ; wy:
+
+        (defn #^ bool indent_atomQ  [#^ Atom atom] (re_test (sconcat r"^(" $INDENT_MARK r")+$") atom))
+        (defn #^ bool newline_atomQ [#^ Atom atom] (=  atom $NEWLINE_MARK))
+
+        (defn #^ bool omarker_atomQ [#^ Atom atom] (in atom $OMARKERS))
+        (defn #^ bool dmarker_atomQ [#^ Atom atom] (in atom $DMARKERS))
+        (defn #^ bool cmarker_atomQ [#^ Atom atom] (=  atom $CMARKER))
+        (defn #^ bool amarker_atomQ [#^ Atom atom] (=  atom $AMARKER))
+        (defn #^ bool rmarker_atomQ [#^ Atom atom] (=  atom $RMARKER))
+        (defn #^ bool jmarker_atomQ [#^ Atom atom] (=  atom $JMARKER))
+
+    ; hy: 
+
+        (defn #^ bool hy_opener_atomQ       [#^ Atom atom] (in atom $HY_OPENERS))
+        (defn #^ bool closing_bracket_atomQ [#^ Atom atom] (in atom $CLOSER_BRACKETS))
+
+        (defn #^ bool
+            hy_bracket_atomQ
+            [ #^ Atom atom
+            ]
+            (or (hy_opener_atomQ       atom)
+                (closing_bracket_atomQ atom)))
+
+        (defn #^ bool hy_macromark_atomQ    [#^ Atom atom] (in atom $HY_MACROMARKS))
+        (defn #^ bool digit_atomQ           [#^ Atom atom] (re_test r"^\.?\d" atom))
+        (defn #^ bool keyword_atomQ         [#^ Atom atom] (re_test r":\w+" atom))
+        (defn #^ bool unpacker_atomQ        [#^ Atom atom] (in atom ["#*" "#**"]))
+        (defn #^ bool qstring_atomQ         [#^ Atom atom] (re_test "^[rbf]?\"" atom))
+        (defn #^ bool annotation_atomQ      [#^ Atom atom] (= atom "#^"))
+        (defn #^ bool icomment_atomQ        [#^ Atom atom] (= atom "#_"))
+        (defn #^ bool ocomment_atomQ        [#^ Atom atom] (re_test "^;" atom))
+
+    ; unite:
+
+        (defn #^ bool
+            atom_regarded_as_continuatorQ
+            [ #^ Atom atom
+            ]
+            (or (digit_atomQ        atom)
+                (qstring_atomQ      atom)
+                (keyword_atomQ      atom)
+                (annotation_atomQ   atom)
+                (icomment_atomQ     atom)
+                (unpacker_atomQ     atom)
+                (hy_macromark_atomQ atom)
+                (hy_bracket_atomQ   atom)))
 
 ; _____________________________________________________________________________/ }}}1
+; [C] Token ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defclass [] TKind [Enum]
+        (setv NewLine       00  #_ "☇"                  )
+        (setv Indent        01  #_ "■"                  )
+        (setv OMarker       02  #_ "#: smarker/mmarker" )
+        (setv DMarker       05  #_ "LL ::"              )
+        (setv CMarker       06  #_ "\\"                 )
+        (setv AMarker       07  #_ "$"                  )
+        (setv RMarker       08  #_ "<$"                 )
+        (setv JMarker       09  #_ ","                  )
+        (setv OComment      10  #_ ";comment"           )
+        (setv RACont        11  #_ "( ) 1 #* #_ ..."    )  ; regarded as continuator
+        (setv RAOpener      12  #_ "everything else"    )  ; regarded as opener
+        ;
+        (defn __repr__ [self] (return self.name))
+        (defn __str__  [self] (return self.name))) 
+
+    (defclass [] Token [BaseModel]
+        (#^ TKind     kind)
+        (#^ StrictStr atom)
+        ;
+        (defn __init__ [self k a] (-> (super) (.__init__ :kind k :atom a)))
+        (defn __repr__ [self] (return (sconcat "<"(pad_string self.kind.name 9) ": \"" self.atom "\">")))
+        (defn __str__  [self] (return (self.__repr__))))
+
+    (defn #^ Token atom_to_token [#^ str atom]
+        (cond (newline_atomQ                 atom) (Token TKind.NewLine  atom)
+              (indent_atomQ                  atom) (Token TKind.Indent   atom)
+              (omarker_atomQ                 atom) (Token TKind.OMarker  atom)
+              (dmarker_atomQ                 atom) (Token TKind.DMarker  atom)
+              (cmarker_atomQ                 atom) (Token TKind.CMarker  atom)
+              (amarker_atomQ                 atom) (Token TKind.AMarker  atom)
+              (rmarker_atomQ                 atom) (Token TKind.RMarker  atom)
+              (jmarker_atomQ                 atom) (Token TKind.JMarker  atom)
+              (ocomment_atomQ                atom) (Token TKind.OComment atom)
+              (atom_regarded_as_continuatorQ atom) (Token TKind.RACont   atom)
+              True                                 (Token TKind.RAOpener atom)))
+; _____________________________________________________________________________/ }}}1
+
+
+
+
+
+
 ; [C] Parser ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; With below definitions, pydantic will:
     ; - NOT CHECK: Token, TokenizedLine
     ; - CHECK:     NumberedTLine
 
-    (setv #_ DC Token StrictStr)                      ; ":" | "(" | ";text" | ...
-    (setv #_ DC TokenizedLine (of List StrictStr))    ; ["✠✠✠✠" ":" "func" "x" "x" "; text"]  
+    (setv #_ DC TokenizedLine (of List Token))    ; ["✠✠✠✠" ":" "func" "x" "x" "; text"]
 
-    (defclass [] NumberedTLine [BaseModel] 
+    (defclass [] NumberedTLine [BaseModel]
         (#^ StrictInt     origRowN #_ "count starts from 0")
         (#^ TokenizedLine tline))
 
@@ -97,7 +187,7 @@
         (#^ Token smarker #_ "like : and #C at beginning of the line"))
 
     (defclass [dataclass] ContinuatorDL []
-        (#^ (of Optional Token) cmarker #_ "cmarker is \\ ; None is for what regarded as openers (digits, strings, etc.)"))
+        (#^ (of Optional Token) cmarker #_ "cmarker is \\ ; None is for what not regarded as openers (digits, strings, etc.)"))
 
     (defclass [dataclass] ImpliedOpenerDL [])
 
@@ -125,7 +215,7 @@
         "calcs structural opener brackets for current line"
         (#^ DeconstructedLine   dline)
         (#^ (of List Token)     closers #_ "elems of CLOSER_BRACKETS; closers are closing previous line - but this info is stored in cur line")
-        (#^ (of List Token)     openers #_ "elems of HY_OPENERS; openers are at the start for current line")) 
+        (#^ (of List Token)     openers #_ "elems of HY_OPENERS; openers are at the start for current line"))
 
     ; structural bracket processor
     (defclass [dataclass] SBP_Card []
@@ -139,55 +229,4 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-; token testers: is continuator ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    (defn #^ bool
-        token_regarded_as_continuatorQ
-        [ #^ Token token
-        ]
-        (or (digit_tokenQ        token)
-            (qstring_tokenQ      token)
-            (keyword_tokenQ      token)
-            (annotation_tokenQ   token)
-            (icomment_tokenQ     token)
-            (unpacker_tokenQ     token)
-            (hy_macromark_tokenQ token)
-            (hy_bracket_tokenQ   token)))
-
-; _____________________________________________________________________________/ }}}1
-; token testers: var ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    (defn #^ bool hy_opener_tokenQ       [#^ Token token] (in token $HY_OPENERS))
-    (defn #^ bool closing_bracket_tokenQ [#^ Token token] (in token $CLOSER_BRACKETS))
-
-    (defn #^ bool
-        hy_bracket_tokenQ
-        [ #^ Token token
-        ]
-        (or (hy_opener_tokenQ       token)
-            (closing_bracket_tokenQ token)))
-
-    (defn #^ bool hy_macromark_tokenQ    [#^ Token token] (in token $HY_MACROMARKS))
-
-    (defn #^ bool digit_tokenQ           [#^ Token token] (re_test r"^\.?\d" token))
-    (defn #^ bool keyword_tokenQ         [#^ Token token] (re_test r":\w+" token))
-    (defn #^ bool unpacker_tokenQ        [#^ Token token] (in token ["#*" "#**"]))
-    (defn #^ bool qstring_tokenQ         [#^ Token token] (re_test "^[rbf]?\"" token))
-    (defn #^ bool annotation_tokenQ      [#^ Token token] (= token "#^"))
-    (defn #^ bool icomment_tokenQ        [#^ Token token] (= token "#_"))
-
-    (defn #^ bool
-        ocomment_tokenQ
-        [ #^ Token token
-        ]
-        "ocomment is Outer Comment starting with ; symbol"
-        (re_test "^;" token))
-
-; _____________________________________________________________________________/ }}}1
-; token testers: wy token type ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    (defn #^ bool omarker_tokenQ [#^ Token token] (in token $OMARKERS))
-    (defn #^ bool cmarker_tokenQ [#^ Token token] (= token $CMARKER))
-
-; _____________________________________________________________________________/ }}}1
 

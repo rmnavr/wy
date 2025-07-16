@@ -1,5 +1,5 @@
 
-    ; this file is fptk 0.2.2.dev1 (it is here to have stable version)
+    ; this file is fptk 0.2.2.dev* (it is here to have stable version)
     ; - mods were made
 
 ; funcs ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -49,7 +49,10 @@
     (import pydantic    [StrictInt])
     (import pydantic    [StrictStr])
     (import pydantic    [StrictFloat])
-    (import pydantic    [validate_arguments :as validate_args]) #_ "decorator for type-checking function arguments (but not return type)"
+    (import pydantic    [validate_call]) #_ "decorator for type-checking func args"
+
+    #_ "same as validate_call but with option validate_return=True set (so, it validates args + return type)"
+    (setv validateF (validate_call :validate_return True))
 
     #_ "Int or Float"
     (setv StrictNumber (get Union #(StrictInt StrictFloat)))
@@ -355,11 +358,18 @@
     #_ "| checks literally if (= (len xs) 0)"
     (defn zerolenQ [xs] (= (len xs) 0))
 
-    #_ "(istype tp x) -> (= (type x) tp) |"
+    #_ "(oftypeQ tp x) -> (= (type x) tp) |"
     (defn oftypeQ [tp x] (= (type x) tp))
 
     #_ "(oflenQ xs n) -> (= (len xs) n) |"
     (defn oflenQ [xs n] (= (len xs) 3))
+
+    #_ "(on f check x y #* args) | (on len eq xs ys zs) -> checks if len of xs/ys/zs is the same, check has to be func of 2+ args"
+    (defn on [f check x y #* args]
+        (reduce check (lmap f [x y #* args])))
+
+
+
 
     (defn intQ   [x] (= (type x) int))
     (defn floatQ [x] (= (type x) float))
@@ -375,6 +385,7 @@
 
 ; ■ [GROUP] Strings ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
 
+    #_ "strlen(text) | rename of len, underlines usage on strings"
     (defn strlen [text] (len text))
 
     #_ "str_join(seq, sep='') | rearrangement of funcy.str_join"
@@ -653,7 +664,6 @@
 
 	; === Macroses ===
 
-
 ; ■ f:: ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
 
 	(defmacro f:: [#* macro_args]
@@ -864,6 +874,20 @@
 
 ; ________________________________________________________________________/ }}}2
 
-
 ; _____________________________________________________________________________/ }}}1
+
+    #_ "pad_string(string, required_len, fill_char=' ', pad_right=False | by default adds new symbols to the right"
+    (defn #^ str
+        pad_string
+        [ #^ str  string
+          #^ int  required_len
+          #^ str  [fill_char " "]
+          #^ bool [pad_right False]
+        ]
+        "returns string with len >= required_len"
+        (setv n_required (max 0 (- required_len (len string))))
+		(if (= pad_right False)
+			(setv outp (sconcat string (* fill_char n_required)))
+			(setv outp (sconcat (* fill_char n_required) string)))
+		(return outp))
     
