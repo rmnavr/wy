@@ -417,4 +417,18 @@
 
 ; _____________________________________________________________________________/ }}}1
 
+    (import Preparator [prepare_code_for_pyparsing])
+
+    (setv tline_condensed
+               ;✠ ■■■ 
+          (->> " :   \\   lmap : 3 4 $ 7\n "
+               prepare_code_for_pyparsing
+               run_pyparse
+               (lmap remove_garbage_from_token) 
+               split_tokens_to_tlines
+               ))
+
+    (lprint tline_condensed)
+
+
 

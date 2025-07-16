@@ -15,7 +15,7 @@
 
         (setv $INDENT_MARK    "✠")
         (setv $BASE_INDENT    "✠✠✠✠")
-        (setv $ELIN           (len $BASE_INDENT)) ; [E]mpty [L]ine [I]ndents [N]
+        (setv $ELIN           (strlen $BASE_INDENT)) ; [E]mpty [L]ine [I]ndents [N]
 
         (setv $MIDSPACE_MARK  "■")
 
@@ -40,10 +40,11 @@
 
         (setv $CMARKER  "\\")           ; continuation marker
         (setv $AMARKER  "$")            ; application marker
+        (setv $RMARKER  "<$")           ; reverse application marker
         (setv $JMARKER  ",")            ; joiner marker
 
         ; used in pyparsing, so order is important:
-        (setv $WY_MARKERS (sorted (lconcat $OMARKERS $DMARKERS [$CMARKER] [$AMARKER] [$JMARKER])
+        (setv $WY_MARKERS (sorted (lconcat $OMARKERS $DMARKERS [$CMARKER] [$RMARKER] [$AMARKER] [$JMARKER])
                                   :key len
                                   :reverse True))
 
@@ -71,12 +72,16 @@
 ; [C] Preparator ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; used both for condensed (source) and expanded syntax:
-    (setv #_ DC WyCodeLine str)
-    (setv #_ DC WyCodeFull str)
-    (setv #_ DC PreparedCodeFull str)
+    (setv #_ DC WyCodeLine StrictStr)
+    (setv #_ DC WyCodeFull StrictStr)
+    (setv #_ DC PreparedCodeFull StrictStr)
 
 ; _____________________________________________________________________________/ }}}1
 ; [C] Parser ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    ; With below definitions, pydantic will:
+    ; - NOT CHECK: Token, TokenizedLine
+    ; - CHECK:     NumberedTLine
 
     (setv #_ DC Token StrictStr)                      ; ":" | "(" | ";text" | ...
     (setv #_ DC TokenizedLine (of List StrictStr))    ; ["✠✠✠✠" ":" "func" "x" "x" "; text"]  
@@ -92,7 +97,7 @@
         (#^ Token smarker #_ "like : and #C at beginning of the line"))
 
     (defclass [dataclass] ContinuatorDL []
-        (#^ (of Optional Token) cmarker #_ "usually <\\>, and None is for what regarded as openers (digits, strings, etc.)"))
+        (#^ (of Optional Token) cmarker #_ "cmarker is \\ ; None is for what regarded as openers (digits, strings, etc.)"))
 
     (defclass [dataclass] ImpliedOpenerDL [])
 

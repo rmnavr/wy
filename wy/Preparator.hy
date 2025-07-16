@@ -19,12 +19,12 @@
 
     (defn #^ str remove_trailing_spaces [#^ str line] (line.rstrip " "))
 
-    (defn #^ str prepend_base_indent [#^ str line] (sconcat $BASE_INDENT line))
-
     (defn #^ str replace_leading_spaces_with_indent_marks [#^ str line]
         (re_sub r"^(\s+)"
                 (fm (* $INDENT_MARK (len (%1.group 1))))
                 line))
+
+    (defn #^ str prepend_base_indent [#^ str line] (sconcat $BASE_INDENT line))
 
     (defn #^ WyCodeLine
         insert_midspace_marks
@@ -40,14 +40,17 @@
 
     (defn #^ PreparedCodeFull
         prepare_code_for_pyparsing
-        [ #^ WyCodeLine code
+        [ #^ WyCodeFull code
         ]
         (->> code
              .splitlines ; btw, this will NOT split at literal "\n" found in source code, because it is replaced with \"\\n\"
              (lmap (p: tabs_to_spaces
                        remove_trailing_spaces
                        replace_leading_spaces_with_indent_marks
-                       prepend_base_indent
-                       insert_midspace_marks))
+                       insert_midspace_marks
+                       prepend_base_indent))
              (str_join :sep "\n")))
+
+    (print (prepare_code_for_pyparsing " #: : lmap : 3 4 $ 7"))
+
 
