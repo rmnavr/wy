@@ -10,8 +10,7 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    ; Step 1 : Atomization
-
+    ; 1) Atomize:
 ; pp atoms ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (setv ALPHAS    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
@@ -85,8 +84,8 @@
     (<<   SEXPR        (pp.Group (+ LPAR   CONTENT RPAR)))
     (<<   CEXPR        (pp.Group (+ LCRB   CONTENT RCRB)))
 
-    (<<   ICOMMENT     (pp.Group (+ (pp.Literal "#_") CONTENT)))
-    (<<   ANNOTATION   (pp.Group (+ (pp.Literal "#^") CONTENT)))
+    (<<   ICOMMENT     (pp.Group (+ (pp.Literal "#_") (| EXPR ATOM))))
+    (<<   ANNOTATION   (pp.Group (+ (pp.Literal "#^") (| EXPR ATOM))))
 
 ; _____________________________________________________________________________/ }}}1
 ; [step] run py parse               :: Prepared Code -> [Atom ...] ‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -104,40 +103,108 @@
 ; _____________________________________________________________________________/ }}}1
 ; [step] remove garbage from atoms  :: Atom -> Atom ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn #^ Token
-        remove_garbage_from_token
-        [#^ Token token]
-        "de facto removes indent/newline marks from qstring, for other tokens returns themselves"
-        (if (qstring_tokenQ token)
-            (->> token (re.sub (+ r"" $BASE_INDENT r"(" $INDENT_MARK "*)") (fm (%1.group 1)))    ; remove 4 artificial indent-marks from the start
-                       (re.sub (+ r"" $INDENT_MARK) " "))        ; replace remaining with spaces
-            token))
+    (defn #^ Atom
+        remove_garbage_from_atom
+        [#^ Atom atom]
+        "de facto removes indent/newline marks from qstring, for other atoms returns themselves"
+        (if (qstring_atomQ atom)
+            (->> atom 
+                 (re_sub $INDENT_MARK " ")
+                 (re_sub $NEWLINE_MARK ""))
+            atom))
 
 ; _____________________________________________________________________________/ }}}1
-; [step] split list of tokens into tlines :: [Token ...] -> [TLine ...] ‾‾‾‾‾‾‾\ {{{1
 
-    (defn #^ (of List TokenizedLine)
-        split_tokens_to_tlines
+    ; 2) Tokenize (see in Classes.hy) and split into Numbered Lines Of Tokens:
+; [step] all code tokens to NTLines :: [Token ...] -> [NTLine ...] ‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn [validateF] #^ (of List (of List Token))
+        split_tokens_by_newline_tokens
         [ #^ (of List Token) tokens 
         ]
+        "newline tokens themselves are removed"
         (when (= tokens []) (return []))
         (setv _tlines [])
         ;
-        (for [&elem tokens]
-            (if (re_test (sconcat "^" $INDENT_MARK) &elem)
-                (_tlines.append [&elem])
-                (. (last _tlines) (append &elem))))
+        (for [&token tokens]
+            (if (eq &token.kind TKind.NewLine)
+                (_tlines.append [])
+                (. (last _tlines) (append &token))))
         (return _tlines))
+
+    (defn [validateF] #^ (of List NTLine)
+        tokens_to_NTLines
+        [ #^ (of List Token) tokens 
+        ]
+        (setv _tlines (split_tokens_by_newline_tokens tokens))
+        (setv rowNs (range_ 1 (len _tlines)))
+        ;
+        (lmapm (NTLine :rowN           %2
+                       :tokens         %1
+                       :realRowN_start  0  ; to be done
+                       :realRowN_end    0) ; to be done
+               _tlines
+               rowNs))
+            
 
 ; _____________________________________________________________________________/ }}}1
 
+; indents count ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    ; ""  -> []
+    ; 
+    ;  ↓
+    ; "x" -> [1]
+    ; 
+    ;  ₁↓
+    ; " x" -> [2]
+    ; 
+    ;  ₁↓₃
+    ; "\ x"-> [2]
+    ;
+    ;  ₁↓₃₄↓₆₇₈↓₀₁₂₃₄₅₆↓
+    ; " L  #:  ~@#:   \ : x" -> [2 5 9 17]
+
+    (defn [validateF] #^ (of List Token)
+        count_indents_for_ntline [#^ NTLine ntline]
+        ;
+        (setv _indentable_tokens [])
+        (for [&token ntline.tokens]
+            (cond (eq &token.kind TKind.Indent)  (    += _indentable_tokens [&token])
+                  (eq &token.kind TKind.OMarker) (    += _indentable_tokens [&token])
+                  (eq &token.kind TKind.CMarker) (do (+= _indentable_tokens [&token]) (break))
+                  True                           (break)))
+        _indentable_tokens
+        )
+
+
+; _____________________________________________________________________________/ }}}1
+
+
+    (defn [validateF] #^ StrictInt
+        count_n_of_rows_that_tline_takes
+        [#^ (of List Token) tokens]
+        "searches for qstrings, and searches for \\n in them"
+        (->> tokens
+             (lmapm (len (re.findall "\n" line)))                                
+             sum
+             (plus 1)))
+
+
+;===========================================================================
+
     (import Preparator [prepare_code_for_pyparsing])
 
-    (setv _code " L x #: : ~@#:   : \\ 3 4 $ 7\n : riba\n1 2 \"\n\n  : L 2\"\n ; 123")
-
+    (setv _code " L #: : ~@#:   : x\\ 3 4 $ 7\n : #: riba\n1 2 \"\n\n  : L 2\"\n: \\ L 3")
+    ;(setv _code " L  #:  ~@#:   \\ 1")
     (setv _prepared_code (prepare_code_for_pyparsing _code))
-    (print _prepared_code)
 
-    (setv _atoms (prepared_code_to_atoms _prepared_code))
-    (lprint (lmap atom_to_token _atoms))
+    (setv _x
+        (->> _prepared_code
+             prepared_code_to_atoms
+             (lmap remove_garbage_from_atom)
+             (lmap atom_to_token)
+             tokens_to_NTLines))
+
+    (lprint _x)
 

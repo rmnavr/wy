@@ -11,8 +11,8 @@
 
 ; [=] wy marks and markers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (setv $INDENT_MARK    "■")
-    (setv $NEWLINE_MARK   "☇|")
+    (setv $INDENT_MARK    "■")  ; must be 1 symbol
+    (setv $NEWLINE_MARK   "☇¦")  ; must not contain spaces and regex operators like | and such
 
     ; =========================
 
@@ -66,50 +66,49 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    (setv WyCode      StrictStr)
-    (setv WyCodeLine  StrictStr)
+    (setv WyCode       StrictStr)
+    (setv WyCodeLine   StrictStr)
     (setv PreparedCode StrictStr)
-    (setv Atom        StrictStr)
-
+    (setv Atom         StrictStr)
 
 ; [F] atom checks ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; wy:
 
-        (defn #^ bool indent_atomQ  [#^ Atom atom] (re_test (sconcat r"^(" $INDENT_MARK r")+$") atom))
-        (defn #^ bool newline_atomQ [#^ Atom atom] (=  atom $NEWLINE_MARK))
+        (defn [validateF] #^ bool indent_atomQ  [#^ Atom atom] (re_test (sconcat r"^(" $INDENT_MARK r")+$") atom))
+        (defn [validateF] #^ bool newline_atomQ [#^ Atom atom] (=  atom $NEWLINE_MARK))
 
-        (defn #^ bool omarker_atomQ [#^ Atom atom] (in atom $OMARKERS))
-        (defn #^ bool dmarker_atomQ [#^ Atom atom] (in atom $DMARKERS))
-        (defn #^ bool cmarker_atomQ [#^ Atom atom] (=  atom $CMARKER))
-        (defn #^ bool amarker_atomQ [#^ Atom atom] (=  atom $AMARKER))
-        (defn #^ bool rmarker_atomQ [#^ Atom atom] (=  atom $RMARKER))
-        (defn #^ bool jmarker_atomQ [#^ Atom atom] (=  atom $JMARKER))
+        (defn [validateF] #^ bool omarker_atomQ [#^ Atom atom] (in atom $OMARKERS))
+        (defn [validateF] #^ bool dmarker_atomQ [#^ Atom atom] (in atom $DMARKERS))
+        (defn [validateF] #^ bool cmarker_atomQ [#^ Atom atom] (=  atom $CMARKER))
+        (defn [validateF] #^ bool amarker_atomQ [#^ Atom atom] (=  atom $AMARKER))
+        (defn [validateF] #^ bool rmarker_atomQ [#^ Atom atom] (=  atom $RMARKER))
+        (defn [validateF] #^ bool jmarker_atomQ [#^ Atom atom] (=  atom $JMARKER))
 
     ; hy: 
 
-        (defn #^ bool hy_opener_atomQ       [#^ Atom atom] (in atom $HY_OPENERS))
-        (defn #^ bool closing_bracket_atomQ [#^ Atom atom] (in atom $CLOSER_BRACKETS))
+        (defn [validateF] #^ bool hy_opener_atomQ       [#^ Atom atom] (in atom $HY_OPENERS))
+        (defn [validateF] #^ bool closing_bracket_atomQ [#^ Atom atom] (in atom $CLOSER_BRACKETS))
 
-        (defn #^ bool
+        (defn [validateF] #^ bool
             hy_bracket_atomQ
             [ #^ Atom atom
             ]
             (or (hy_opener_atomQ       atom)
                 (closing_bracket_atomQ atom)))
 
-        (defn #^ bool hy_macromark_atomQ    [#^ Atom atom] (in atom $HY_MACROMARKS))
-        (defn #^ bool digit_atomQ           [#^ Atom atom] (re_test r"^\.?\d" atom))
-        (defn #^ bool keyword_atomQ         [#^ Atom atom] (re_test r":\w+" atom))
-        (defn #^ bool unpacker_atomQ        [#^ Atom atom] (in atom ["#*" "#**"]))
-        (defn #^ bool qstring_atomQ         [#^ Atom atom] (re_test "^[rbf]?\"" atom))
-        (defn #^ bool annotation_atomQ      [#^ Atom atom] (= atom "#^"))
-        (defn #^ bool icomment_atomQ        [#^ Atom atom] (= atom "#_"))
-        (defn #^ bool ocomment_atomQ        [#^ Atom atom] (re_test "^;" atom))
+        (defn [validateF] #^ bool hy_macromark_atomQ    [#^ Atom atom] (in atom $HY_MACROMARKS))
+        (defn [validateF] #^ bool digit_atomQ           [#^ Atom atom] (re_test r"^\.?\d" atom))
+        (defn [validateF] #^ bool keyword_atomQ         [#^ Atom atom] (re_test r":\w+" atom))
+        (defn [validateF] #^ bool unpacker_atomQ        [#^ Atom atom] (in atom ["#*" "#**"]))
+        (defn [validateF] #^ bool qstring_atomQ         [#^ Atom atom] (re_test "^[rbf]?\"" atom))
+        (defn [validateF] #^ bool annotation_atomQ      [#^ Atom atom] (= atom "#^"))
+        (defn [validateF] #^ bool icomment_atomQ        [#^ Atom atom] (= atom "#_"))
+        (defn [validateF] #^ bool ocomment_atomQ        [#^ Atom atom] (re_test "^;" atom))
 
     ; unite:
 
-        (defn #^ bool
+        (defn [validateF] #^ bool
             atom_regarded_as_continuatorQ
             [ #^ Atom atom
             ]
@@ -146,10 +145,10 @@
         (#^ StrictStr atom)
         ;
         (defn __init__ [self k a] (-> (super) (.__init__ :kind k :atom a)))
-        (defn __repr__ [self] (return (sconcat "<"(pad_string self.kind.name 9) ": \"" self.atom "\">")))
+        (defn __repr__ [self] (return (sconcat "<" self.kind.name ": '" self.atom "'>")))
         (defn __str__  [self] (return (self.__repr__))))
 
-    (defn #^ Token atom_to_token [#^ str atom]
+    (defn [validateF] #^ Token atom_to_token [#^ str atom]
         (cond (newline_atomQ                 atom) (Token TKind.NewLine  atom)
               (indent_atomQ                  atom) (Token TKind.Indent   atom)
               (omarker_atomQ                 atom) (Token TKind.OMarker  atom)
@@ -161,11 +160,15 @@
               (ocomment_atomQ                atom) (Token TKind.OComment atom)
               (atom_regarded_as_continuatorQ atom) (Token TKind.RACont   atom)
               True                                 (Token TKind.RAOpener atom)))
+
 ; _____________________________________________________________________________/ }}}1
 
-
-
-
+    (defclass [] NTLine [BaseModel]
+        "Numbered Line of Tokens; Count starts from 1 (not 0) to be consistent with python errors messages (where 1st line of file is line 1, not line 0)"
+        (#^ StrictInt       rowN             #_ "ordered NTLine number; multiline qstrings do not increase this number")
+        (#^ StrictInt       realRowN_start   #_ "corresponds to raw wy-code line number; multiline qstrings are taken into account here")
+        (#^ StrictInt       realRowN_end)
+        (#^ (of List Token) tokens))
 
 
 ; [C] Parser ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -173,12 +176,6 @@
     ; With below definitions, pydantic will:
     ; - NOT CHECK: Token, TokenizedLine
     ; - CHECK:     NumberedTLine
-
-    (setv #_ DC TokenizedLine (of List Token))    ; ["✠✠✠✠" ":" "func" "x" "x" "; text"]
-
-    (defclass [] NumberedTLine [BaseModel]
-        (#^ StrictInt     origRowN #_ "count starts from 0")
-        (#^ TokenizedLine tline))
 
     ; ==========================================================================================================
     ; Deconstructed Lines:
