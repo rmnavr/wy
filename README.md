@@ -3,7 +3,7 @@
 
 # Wy — Hy-lang without parentheses
 
-Wy uses indents to wrap expressions (as many other lisp without parentheses projects).
+Wy uses indents to wrap expressions (similar to many other "LISP without parentheses" projects).
 
 What wy also brings to the table is:
 * Syntax for every possible hy opener, including macros: `(`, `#(`, `[`, `{`, `~@#(`, etc.
@@ -22,6 +22,8 @@ defn #^ int                     | (defn #^ int
        + : fibonacci : - n 1    |         (+ (fibonacci (- n 1))
            fibonacci : - n 2    |            (fibonacci (- n 2)))))
 ```
+> Notice that **wy** deliberately sacrifices letter L (and few others alike) to be used as special symbol.
+> The way to use L as variable name is described in [Other types of openers](#Other-types-of-openers) chapter.
 
 One-liners examples (they show usage of normal brackets, and `::`, `$`, `,` symbols):
 
