@@ -3,7 +3,13 @@
 
 # Wy — Hy-lang without parentheses
 
-Let's start with examples.
+Wy uses indents to wrap expressions (as many other lisp without parentheses projects).
+
+What wy also brings to the table is:
+* Syntax for every possible hy opener, including macros (`(`, `#(`, `[`, `{`, `~@#(`, etc.)
+* Sofisticated one-liners syntax with symbols `\`, `:`, `::`, `,`, `$`, `<$`
+
+Let's see some examples.
 
 Defining function in wy (example uses `:`, `L` and `\` to control expression level):
 
@@ -17,12 +23,12 @@ defn #^ int                     | (defn #^ int
            fibonacci : - n 2    |            (fibonacci (- n 2)))))
 ```
 
-Wy also has one-liners syntax (example shows usage of `::`, `$` and `,` symbols):
+One-liners examples (they show usage of `::`, `$` and `,` symbols):
 
 ```hy
-setv x : range : abs -3 :: abs -10      | (setv x (range (abs -3) (abs -10)))
+setv x : range : abs -3 :: abs -10 | (setv x (range (abs -3) (abs -10)))
 
-: . lens [1] : get $ L 1 2 3 , print x  | ((. lens [1] (get)) [1 2 3]) (print x)
+map $ fn [x] : + x 1 , range 0 10  | (map (fn [x] (+ x 1)) (range 0 10))
 ```
 
 Wy project consists of 2 parts:

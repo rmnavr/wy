@@ -39,10 +39,10 @@
 
     (setv INDENT       (pp.Word $INDENT_MARK))
     (setv NEW_LINE     (pp.Literal $NEWLINE_MARK))
-    (setv WY_MARKER    (| #* (lmap pp.Literal $WY_MARKERS)))    
+    (setv WY_MARKER    (| #* (lmap pp.Literal $WY_MARKERS)))
     (setv HYMACRO_MARK (| #* (lmap pp.Literal $HY_MACROMARKS)))
     (setv UNPACKER     (| (pp.Literal "#**") (pp.Literal "#*")))
-    (setv WORD         (pp.Word (+ ALPHAS WSYMBOLS) (+ ALPHAS NUMS WSYMBOLS ":")))      
+    (setv WORD         (pp.Word (+ ALPHAS WSYMBOLS) (+ ALPHAS NUMS WSYMBOLS ":")))
     (setv KEYWORD      (pp.Combine (+ ":" (pp.Word (+ ALPHAS "_") (+ ALPHAS "_" NUMS)))))
     (setv QSTRING      (pp.Combine (+  (pp.Optional (pp.oneOf "r f b"))
                                        (pp.QuotedString   :quoteChar "\""
@@ -108,7 +108,7 @@
         [#^ Atom atom]
         "de facto removes indent/newline marks from qstring, for other atoms returns themselves"
         (if (qstring_atomQ atom)
-            (->> atom 
+            (->> atom
                  (re_sub $INDENT_MARK " ")
                  (re_sub $NEWLINE_MARK ""))
             atom))
@@ -116,11 +116,30 @@
 ; _____________________________________________________________________________/ }}}1
 
     ; 2) Tokenize (see in Classes.hy) and split into Numbered Lines Of Tokens:
-; [step] all code tokens to NTLines :: [Token ...] -> [NTLine ...] ‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [step] all tokens to NTLines      :: [Token ...] -> [NTLine ...] ‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn [validateF] #^ (of List NTLine)
+        tokens_to_NTLines
+        [ #^ (of List Token) tokens
+        ]
+        (setv _tlines (split_tokens_by_newline_tokens tokens))
+        (setv rowNs      (range_ 1 (len _tlines)))
+        (setv rowsHs     (lmap count_n_of_rows_that_tline_takes _tlines))
+        (setv rowsEnds   (funcy.lsums rowsHs))
+        (setv rowsStarts (lmapm (- %1 %2 -1) rowsEnds rowsHs))
+        ;
+        (lmapm (NTLine :tokens         %1
+                       :rowN           %2
+                       :realRowN_start %3
+                       :realRowN_end   %4) 
+               _tlines
+               rowNs
+               rowsStarts
+               rowsEnds))
 
     (defn [validateF] #^ (of List (of List Token))
         split_tokens_by_newline_tokens
-        [ #^ (of List Token) tokens 
+        [ #^ (of List Token) tokens
         ]
         "newline tokens themselves are removed"
         (when (= tokens []) (return []))
@@ -132,33 +151,27 @@
                 (. (last _tlines) (append &token))))
         (return _tlines))
 
-    (defn [validateF] #^ (of List NTLine)
-        tokens_to_NTLines
-        [ #^ (of List Token) tokens 
-        ]
-        (setv _tlines (split_tokens_by_newline_tokens tokens))
-        (setv rowNs (range_ 1 (len _tlines)))
-        ;
-        (lmapm (NTLine :rowN           %2
-                       :tokens         %1
-                       :realRowN_start  0  ; to be done
-                       :realRowN_end    0) ; to be done
-               _tlines
-               rowNs))
-            
+    (defn [validateF] #^ Int
+        count_n_of_rows_that_tline_takes
+        [#^ (of List Token) tokens]
+        (->> tokens
+             (lmapm (len (re.findall "\n" %1.atom)))
+             sum
+             (plus 1)))
 
 ; _____________________________________________________________________________/ }}}1
+
 
 ; indents count ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; ""  -> []
-    ; 
+    ;
     ;  ↓
     ; "x" -> [1]
-    ; 
+    ;
     ;  ₁↓
     ; " x" -> [2]
-    ; 
+    ;
     ;  ₁↓₃
     ; "\ x"-> [2]
     ;
@@ -179,23 +192,11 @@
 
 
 ; _____________________________________________________________________________/ }}}1
-
-
-    (defn [validateF] #^ StrictInt
-        count_n_of_rows_that_tline_takes
-        [#^ (of List Token) tokens]
-        "searches for qstrings, and searches for \\n in them"
-        (->> tokens
-             (lmapm (len (re.findall "\n" line)))                                
-             sum
-             (plus 1)))
-
-
-;===========================================================================
+; run ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (import Preparator [prepare_code_for_pyparsing])
 
-    (setv _code " L #: : ~@#:   : x\\ 3 4 $ 7\n : #: riba\n1 2 \"\n\n  : L 2\"\n: \\ L 3")
+    (setv _code " L #: : ~@#:   : x\\ 3 4 $ 7\n : #: riba\n1 2 \"\n\n  : L 2\"\n: \\ L 3 \"riba\nbubr\"\"riba\nbubr\"\"riba\nbubr\"")
     ;(setv _code " L  #:  ~@#:   \\ 1")
     (setv _prepared_code (prepare_code_for_pyparsing _code))
 
@@ -208,3 +209,4 @@
 
     (lprint _x)
 
+; _____________________________________________________________________________/ }}}1

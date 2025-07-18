@@ -9,17 +9,11 @@
 			// so, «:» in «func1 $ : func2» will be seen as line-starter
 		• splitters $ :: : should not be seen in qstrings/icomment/ocomment
 		• special chars in :keywords
-		• tabs/spaces
 
 	Refactoring:
 		+ Type[Shape]
         + not the best name: hy_bracket_tokenQ (really it is hyopener + closer_bracket)
-        + insert_smart_indent should be done BEFORE split_linestarters (it makes no sense otherwise)
 		+ ADT: Literal "12" "23"
-
-	Bugs:
-		+ line "    : " is seen not as line "    :"
-        - bug: ~@ is not added currently (true?)
 
 	Robust:
 		+ forbid , and $ at line start (and things like that)

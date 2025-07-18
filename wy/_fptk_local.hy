@@ -1,8 +1,7 @@
 
-    ; this file is fptk 0.2.2.dev* (it is here to have stable version)
-    ; - mods were made
+    ; 0.2.2.dev
 
-; funcs ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; functions ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (require hyrule [comment])
 
@@ -46,16 +45,18 @@
     (import typing      [Type])
 
     (import pydantic    [BaseModel])
-    (import pydantic    [StrictInt])
-    (import pydantic    [StrictStr])
-    (import pydantic    [StrictFloat])
-    (import pydantic    [validate_call]) #_ "decorator for type-checking func args"
+    (import pydantic    [StrictInt   :as Int])
+    (import pydantic    [StrictStr   :as Str])
+    (import pydantic    [StrictFloat :as Float]) ;;
+
+    #_ "Int or Float"
+    (setv Number (get Union #(Int Float))) ;;
+
+    (import pydantic    [validate_call]) #_ "decorator for type-checking func args" ;;
 
     #_ "same as validate_call but with option validate_return=True set (so, it validates args + return type)"
     (setv validateF (validate_call :validate_return True))
 
-    #_ "Int or Float"
-    (setv StrictNumber (get Union #(StrictInt StrictFloat)))
 
     (import returns.result  [Result])
     (import returns.result  [Success])
@@ -406,6 +407,21 @@
     (defn #^ str  lstrip    [#^ str string] (string.lstrip))
     (defn #^ str  rstrip    [#^ str string] (string.rstrip))
 
+    #_ "pad_string(string, required_len, fill_char=' ', pad_right=False | by default adds new symbols to the right"
+    (defn #^ str
+        pad_string
+        [ #^ str  string
+          #^ int  required_len
+          #^ str  [fill_char " "]
+          #^ bool [pad_right False]
+        ]
+        "returns string with len >= required_len"
+        (setv n_required (max 0 (- required_len (len string))))
+		(if (= pad_right False)
+			(setv outp (sconcat string (* fill_char n_required)))
+			(setv outp (sconcat (* fill_char n_required) string)))
+		(return outp))
+
 ; ________________________________________________________________________/ }}}2
 ; ■ [GROUP] Regex ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
 
@@ -662,8 +678,6 @@
 
 ; ________________________________________________________________________/ }}}2
 
-	; === Macroses ===
-
 ; ■ f:: ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
 
 	(defmacro f:: [#* macro_args]
@@ -875,19 +889,3 @@
 ; ________________________________________________________________________/ }}}2
 
 ; _____________________________________________________________________________/ }}}1
-
-    #_ "pad_string(string, required_len, fill_char=' ', pad_right=False | by default adds new symbols to the right"
-    (defn #^ str
-        pad_string
-        [ #^ str  string
-          #^ int  required_len
-          #^ str  [fill_char " "]
-          #^ bool [pad_right False]
-        ]
-        "returns string with len >= required_len"
-        (setv n_required (max 0 (- required_len (len string))))
-		(if (= pad_right False)
-			(setv outp (sconcat string (* fill_char n_required)))
-			(setv outp (sconcat (* fill_char n_required) string)))
-		(return outp))
-    

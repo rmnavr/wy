@@ -10,13 +10,13 @@
 
 ; [steps] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn #^ StrictStr tabs_to_spaces [#^ StrictStr line] (line.expandtabs :tabsize 4))
+    (defn #^ Str tabs_to_spaces [#^ Str line] (line.expandtabs :tabsize 4))
 
-    (defn #^ StrictStr remove_trailing_spaces [#^ StrictStr line] (line.rstrip " "))
+    (defn #^ Str remove_trailing_spaces [#^ Str line] (line.rstrip " "))
 
-    (defn #^ StrictStr prepend_newline_mark [#^ StrictStr line] (sconcat $NEWLINE_MARK line))
+    (defn #^ Str prepend_newline_mark [#^ Str line] (sconcat $NEWLINE_MARK line))
 
-    (defn #^ StrictStr insert_indent_marks [#^ WyCodeLine line]
+    (defn #^ Str insert_indent_marks [#^ WyCodeLine line]
         ; requires rstrip to be already done to work correctly
         ;                 (gr1                ) (gr2          )   (gr3)
         (re_sub (sconcat r"^\s+(" $OMARKERS_REGEX r"\s+)*")
