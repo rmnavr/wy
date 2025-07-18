@@ -78,6 +78,9 @@ so you may end with incorrect hy code if used mindlessly:
 \x :: print                 |   x )( print
 ```
 
+There are also `LL`, `CC`, `:#:` and `C#C` symbols — they represent `][`, `}{`, `) #(` and `} #{` respectively.
+And they all act in the same manner as described for `::`.
+
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- , ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 

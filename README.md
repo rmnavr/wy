@@ -73,7 +73,7 @@ Table of Contents:
 Wy has many symbols for opening various kinds of hy brackets, but to get the basics
 we will focus for now only on the most frequently used:
 - `:` opener — represents new wrapper `(` level
-- `\` continuator — suppresses automatic wrapping 
+- `\` continuator — suppresses automatic wrapping
 
 Here usage of indent, `:` and `\` symbols is shown:
 
@@ -102,7 +102,7 @@ print                   | (print
     + y z               |      (+ y z))
 ;   ↑ notice that when \ is used, indent position is seen at next printable symbol after it,
 ;     so you have little bit of freedom of where to place \
-;     
+;
 ;     I personally like space-less continuator the most (like in "\x")
 
 ; use line consisting only of ":" to add +1 parentheses level:
@@ -110,11 +110,12 @@ print                   | (print
   fn [x] : + pow 2      |   (fn [x] (pow x 2))
   3                     |   3)
 
-; previous example can be condensed in 2 lines ... :
+; previous example can be condensed in 2 lines
+; (see condensed syntax chapter):
 : fn [x] (+ pow 2)      | ( (fn [x] (pow x 2))
   3                     |   3)
 
-; ... and even in 1 line (see one-liners chapter):
+; and even in 1 line (see one-liners chapter):
 : fn [x] : + pow 2 $ 3  | ((fn [x] (pow x 2)) 3)
 fn [x] : + pow 2 <$ 3   | ((fn [x] (pow x 2)) 3)
 ```
@@ -152,7 +153,7 @@ print x     |   (print x
 Expressions inside any types of hy brackets (including macros-brackets) are seen as original hy lang syntax
 (wy symbols will have no special recognition inside hy expressions). Those expressions can be multiline:
 ```hy
-print (+                  | (print (+ 
+print (+                  | (print (+
          x                |           x
          (ncut ys 1 : 3)) |           (ncut ys 1 : 3)))
 
@@ -224,7 +225,8 @@ Some examples:
 ## Other types of openers
 
 We already saw how `:` works both as smarker and mmarker.
-There are also other elements that act in the same manner (including condensed syntax and interacting with `$` and `,` symbols), but produce different brackets.
+There are also other elements that act in the same manner
+(including condensed syntax and interacting with one-liners), but produce different brackets.
 
 Overall in wy there are:
 - bracket-openers `:`, `L`, `C`, `#:` and `#C` — represent opener brackets `(`, `[`, `{`, `#(` and `#{` respectively
@@ -232,6 +234,7 @@ Overall in wy there are:
   they must be combined without spaces, for example: `~@#:` is for `~@#(`
   > and of course you can use standalone hy macros symbols as usual
 - for one-liners there are `::`, `LL`, `CC`, `:#:` and `C#C` symbols — they represent `)(`, `][`, `}{`, `) #(` and `} #{` respectively
+  > refer to one-liners chapter to understand how they work
 
 > Yes, symbols `L`, `C`, `LL` and `CC` cannot be directly used as variable names in wy.
 > Still, since everything wrapped in (...) and other brackets is seen as hy code,
@@ -325,16 +328,16 @@ func                |   (func
                     |   ; but it shows how wy2hy works
 ```
 
-When line starts with literal bracket (or any macro-bracket), continuator `\` is also not needed.
-And everything inside expressions will be interpreted as normal hy code (without recognizing special wy symbols):
+When line starts with valid hy bracket, eather opening (like `(`, `#{`, `~@{` and such) or closing one (`)`, `]`, or `}`), continuator `\` is also not needed.
+And everything inside these bracketed expressions will be interpreted as normal hy code (without recognizing special wy symbols):
 ```hy
 func                |   (func
     ( L             |       ( L     ; notice that here L is variable name, not bracket opener
     )               |       )
     [ C             |       [ C     ; notice that here C is variable name, not bracket opener
     ]               |       ]
-    {               |       {       ; notice that continuator \ was not used here
-      x             |         x
+    {               |       {
+      x             |         x     ; notice that continuator \ was not used here
     }               |       }
     ~@#{ x          |       ~@#{ x
     }               |       })
@@ -357,7 +360,7 @@ func
 
 ## Syntax for one-liners
 
-One-liners is advanced wy topics, that allows you to write dense code like:
+One-liners is advanced wy topic, that allows you to write dense code like:
 ```hy
 map $ fn [x y] : * : + x 3 :: + y 4 , \xs ys
 ; this transpiles into:
@@ -382,7 +385,7 @@ You don't need to use one-liners if you find them cumbersome.
 
 # Using wy2hy transpiler
 
-You need to have **hy** installed for w2h to work.
+You need to have **hy** installed for **wy2hy** to work.
 
 Usage example: run in the terminal
 
@@ -392,14 +395,14 @@ wy2hy _f your_source_name.wy
 
 > Options are given via "_" prefix (instead of traditional "-") to avoid messing with hy options.
 
-> If full filename for source file is given (like "C:\\users\\username\\proj1\\your_source_name.wy"), wy2hy will change script's current dir to dir of this file.
-> This enables your transpiled code to import other project files lying in the same dir, which is intended way of using `f` and `m` options.
 
-All possible run options (like _wm for example):
+All possible run options (like `_wm` for example):
 * `w` — [W]rite transpiled hy-file in the same dir as source wy-file
-* `f` — same as `w`, but after writing, immediately run transpiled [F]ile
-* `m` — transpile and run only from [M]emory (meaning, no file will be written on disk);
-  > please be aware, that in opposition to `f` option, if any error occurs in transpiled code, debug messages will be polluted with wy2hy.hy calls, so `f` is a preffered way of running
+* `f` — same as `w`, but after writing, immediately run transpiled [F]ile from it's dir 
+  > If full filename for source file is given (like "C:\\users\\username\\proj1\\your_source_name.wy"), wy2hy will change script's dir to dir of this file.
+  > This enables your transpiled code to import other project files lying in the same dir, which is intended way of using `f` and `m` options.
+* `m` — transpile and run only [M]emory (meaning, no file will be written on disk)
+  > be aware, that in opposition to `f` option, if any error occurs in transpiled code, debug messages will be polluted with wy2hy.hy calls, so `f` is a preffered way of running
 * `s` - [S]ilent mode, won't write any transpilation status messages
 
 
