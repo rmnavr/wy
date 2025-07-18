@@ -71,7 +71,7 @@ Table of Contents:
 ## Basic syntax
 
 Wy has many symbols for opening various kinds of hy brackets, but to get the basics
-we will focus only on the most frequently used:
+we will focus for now only on the most frequently used:
 - `:` opener — represents new wrapper `(` level
 - `\` continuator — suppresses automatic wrapping 
 
@@ -79,6 +79,9 @@ Here usage of indent, `:` and `\` symbols is shown:
 
 ```hy
 ; new line by default is wrapped in () :
+print 3 4               | (print 3 4)
+
+; indent introduces new wrap level:
 print                   | (print
     x                   |      (x)
     + y z               |      (+ y z))
@@ -99,12 +102,21 @@ print                   | (print
 ;   ↑ notice that when \ is used, indent position is seen at next printable symbol after it,
 ;     so you have little bit of freedom of where to place \
 ;     
-;     I personally like not space after continuator (like in "\x") the most.
+;     I personally like space-less continuator the most (like in "\x").
 
 ; use line consisting only of ":" to add +1 parentheses level:
 :                       | (
   fn [x] : + pow 2      |   (fn [x] (pow x 2))
   3                     |   3)
+
+; previous example can be condensed in 2 lines:
+: fn [x] (+ pow 2)      | ( (fn [x] (pow x 2))
+  3                     |   3)
+
+; ... and even in 1 line (see one-liners chapter):
+: fn [x] $ + pow 2 , 3  | ((fn [x] (pow x 2)) 3)
+: fn [x] : + pow 2 $ 3  | ((fn [x] (pow x 2)) 3)
+fn [x] : + pow 2 <$ 3   | ((fn [x] (pow x 2)) 3)
 ```
 
 Notice that since indent of for example `\x` counts from `x` position (not from `\` position),
@@ -138,7 +150,7 @@ print x     |   (print x
 ```
 
 Expressions inside any hy brackets (including macros-brackets) are seen as hy lang syntax with any modifications
-(wy symbols will have no special recognition inside them):
+(wy symbols will have no special recognition inside hy brackets):
 ```hy
 print (+                  | (print (+ 
          x                |           x
