@@ -90,9 +90,10 @@ print                   | (print
 ; (like numbers) do not require "\":
 print                   | (print
    \x                   |      x
+   \ y                  |      y
     3.0                 |      3.0
     + y z               |      (+ y z))
-;   ↑ notice that for line "\x" indent is seen exactly where arrow shows
+;   ↑ notice that when \ is used, indent position is next symbol after it even if it is space
 
 ; use line consisting only of ":" to add +1 parentheses level:
 :                       | (
@@ -100,10 +101,10 @@ print                   | (print
   3                     |   3)
 ```
 
-Notice that since indent of for example `\x` counts from `x` position (not from `\` position), 
+Notice that since indent of for example `\x` counts from `x` position (not from `\` position),
 you'll have this behaviour in following cases:
 ```hy
-y       | (y 
+y       | (y
 \x      |    x)
 
  y      | (y)
@@ -118,7 +119,7 @@ Wy also has special policy about empty lines — you can't have empty lines insi
 print x     |   (print x)
             |
     + z y   |       (+ z y)
-            |    
+            |
     + k n   |       (+ k n)
 
 ; Use comment line (at any indent level) to unite them in single expression:
@@ -128,6 +129,17 @@ print x     |   (print x
     + z y   |       (+ z y)
     ;       |       ;
     + k n   |       (+ k n))
+```
+
+Expressions inside any hy brackets (including macros-brackets) are seen as hy lang syntax with any modifications
+(you can't use wy symbols inside them):
+```hy
+print (+    | (print (+
+         x  |           x
+         y) |           y))
+
+; notice that x and y did not require continuator \, since everything
+; inside (...) is seen as hy code
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
@@ -140,28 +152,46 @@ print x     |   (print x
 > 1. To better understand how `:` at the start of the line works (and some other symbols), it is a good mental model to "expand" it first as shown below
 > 2. But since wy2hy generates 1-to-1 line correspondent hy code, final hy code is not expanded
 
+To grasp condensed syntax and also one-liners syntax (described in next chapter),
+one must clearly understand that `:` acts sligtly different depending on it's 2 possible positions:
+* `:` can be at the start of the line (this function of `:` is called "smarker" as for "starting marker")
+* `:` in mid of the line ("mmarker" as for "mid marker")
+
+```
+  ; smarkers
+  ; ↓ ↓
+    : : f : x : y
+  ;       ↑   ↑
+  ;       midmarkers
+```
+
 ```hy
 ; Example 1:
 
-    ; ↓ implied indent will be assumed at this position
+  ; wy sees indents at these positions
+  ; ↓ ↓
     : fn [x] : + pow 2      | ( (fn [x] (pow x 2))
       3                     |   3)
 
-    ; code above is internally temporarily expanded to:
+  ; code above is internally temporarily expanded to:
     :                       | (
       fn [x] : + pow 2      |   (fn [x] (pow x 2))
       3                     |   3)
 
 ; Example 2:
 
+  ; wy sees indents at these positions
+  ; ↓ ↓ ↓
     : : f x     | ( ( (f x)
-        3       |     3))
+        3       |     3)
+      4         |   4)
 
-    ; code above is internally temporarily expanded to:
+  ; code above is internally temporarily expanded to:
     :           | (
       :         |   (
         f x     |     (f x)
-        3       |     3))
+        3       |     3)
+      4         |   4)
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
@@ -169,83 +199,192 @@ print x     |   (print x
 
 ## Syntax for one-liners
 
-Wy has 3 main symbols for writing one-liners: `::`, `,` and `$`.
+Wy has following main symbols for writing one-liners (from highest priority to lowest):
+* `:` at the start of the line — smarker, highest level wrapper
+* `<$` — reverse applicator
+* `$` — applicator
+* `,` — joiner
+* `:` at mid of the line — mmarker, one line wrapper
 
-`::` is literal `)(`, and there are many cases where it may be usefull:
+Other important symbols are:
+* `::` — literal `)(`
+* `\` — continuator
+
+Realistically, there are just several readable one-liners patterns (that will be summarized in chapter's end).
+Still, one-liners have strict rules of interaction, which are good to know as a whole.
+
+Code examples in this chapter in most cases are not very meaningfull, still their aim is mostly to demonstrate how wy2hy will treat one-liners.
+
+<!-- ■ General ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2 -->
+
+### General rules
+
+Continuator `\` is allowed only in the following positions:
+```hy
+    : : : \f    ; after last smarker
+   \f           ; before line without smarkers
+   f $ \x       ; directly after $
+   f <$ \x      ; directly after <$
+   f , \x       ; directly after ,
+
+   f  $ : : \x  ; directly after last smarker after $
+   f <$ : : \x  ; directly after last smarker after <$
+   f ,  : : \x  ; directly after last smarker after ,
+```
+
+Symbols `,`, `$`, `<$` emulate new lines, this is why they can introduce smarkers:
+```
+  ; those are seen as smarkers
+  ; ↓         ↓         ↓          ↓
+    : f : x $ : g : y , : k : z <$ : m : t
+  ;     ↑         ↑         ↑          ↑
+  ;     those are seen as mmarkers
+```
+
+<!-- _____________________________________________________________________/ }}}2 -->
+<!-- ■ :: ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2 -->
+
+### Double mid brackets `::`
+Simliest symbol is `::`, it is literally `)(`, and that's it.
+There are at least 3 cases where it may be usefull:
+
 ```hy
 print : + 1 2 :: + 3 4  |   (print (+ 1 2) (+ 3 4))
 
 print                   |   (print
     + 1 2 :: + 3 4      |        (+ 1 2) (+ 3 4))
 
-: f 3 :: f 4            |   ((f 3) (f 4))
+: f 3 :: f 4 :: f 5     |   ((f 3) (f 4) (f 5))
 ; line above is internally temporarily expanded to:
 :                       |   (
   f 3 :: f 4            |     (f 3) (f 4))
 ```
 
+<!-- _____________________________________________________________________/ }}}2 -->
+<!-- ■ , ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2 -->
+
+### Joiner `,`
+
 `,` is emulation of new line. Be aware that you may require using continuator `\`:
 ```hy
-print                   |   (print
-    3 , f 3 , \x        |       3 (f 3) x)
+print
+    3 , f 3 , \x
 
 ; code above is internally temporarily expanded to:
-print                   |   (print
-    3                   |       3
-    f 3                 |       (f 3)
-   \x                   |       x)
+print
+    3
+    f 3
+   \x
 ```
 
-`$` is placing code on +1 indent level and acts differently depending on:
-- if line is started with `:`
-- if it does not start with `:`
+<!-- _____________________________________________________________________/ }}}2 -->
+<!-- ■ $ ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2 -->
 
-And you may also need to use continuator `\`:
+### Applicator `$`
 
+`$` is emulation of +1 indent. Be aware that you may require using continuator `\`:
 ```hy
-; Case 1 : line starts with ":"
+; Example 1:
 
-    ; ↓ this exact position will be used as indent level for $
-    : fn [x] : pow x 2 $ f 3    | ((fn [x] (pow x 2)) (f 3))
-    : fn [x] : pow x 2 $ \x     | ((fn [x] (pow x 2)) x)
+    f : x $ g : y $ k : m   | (f (x) (g (y) (k (m))))
 
     ; code above is internally temporarily expanded to:
-    :                           | (
-      fn [x] : pow x 2          |   (fn [x] (pow x 2))
-      f 3                       |   (f 3))
-    :                           | (
-      fn [x] : pow x 2          |   (fn [x] (pow x 2))
-     \x                         |   x)
+    f : x
+        g : y
+            k : m
 
-; Case 2 : line does not start with ":"
+; Example 2:
 
-    print : + x 1 $ x
-    print : + x 1 $ \y
+    map $ fn [x y] : + x y 3 , \xs , get yss 3
 
     ; code above is internally temporarily expanded to:
-    print : + x 1
-        x
-    print : + x 1
-       \y
-    ;   ↑ new indent position is created at +4 spaces
+    lmap
+        fn [x] : + x y 3
+       \xs
+        get yss 3
 ```
 
-Final example (although very contrived) shows how symbols `:`, `::`, `,` and `$` interact.
-Symbol `,` has highest priority:
+<!-- _____________________________________________________________________/ }}}2 -->
+<!-- ■ <$ ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2 -->
+
+### Reverse applicator `<$`
+
+`<$` wraps previous expression and applies it to given arguments.
+Be aware that you may require using continuator `\`:
 
 ```hy
-: fn [x] : + : * x 3 :: / x 4 $ : fn [x] : + x 2 $ \z , print t : + x 3
+object adder <$ \x  | ((object adder) x)
 
 ; code above is internally temporarily expanded to:
-:                               | (
-  fn [x] : + : * x 3 :: / x 4   |   (fn [x] (+ (* x 3) (/ x 4))
-  :                             |   (
-    fn [x] : + x 2              |     (fn [x] (+ x 2))
-   \z                           |     z))
-print t : + x 3                 | (print t (+ x 3))
+:
+  object adder
+ \x
 ```
+
+Multilevel example:
+```hy
+object adder <$ \x <$ + y 3 | (((object adder) x) (+ y 3))
+
+; code above is internally temporarily expanded to:
+:
+  :
+    object adder
+   \x
+  + y 3
+ ```
+
+<!-- _____________________________________________________________________/ }}}2 -->
+<!-- ■ smarker : interaction ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2 -->
+
+### Interaction with smarker `:`
+
+Since smarker `:` has highest priority, symbols that internally emulate new lines (`,`, `$`, `<$`),
+are expanded «before» it.
+
+How all of it interacts is shown in (although very contrived) this example:
+```hy
+  ;       all these ":" are seen as s-markers
+  ; ↓ ↓                ↓               ↓
+    : : f x : y :: z $ : k : m , \t <$ : x $ 7 <$ 5
+
+  ; first, leftmost smarkers are expanded:
+    :
+      :
+        f x : y :: z $ : k : m , \t <$ : x $ 7 <$ 5
+
+  ; then both <$ are expanded:
+    :
+      :
+        : : f x : y :: z $ : k : m , \t
+            : x $ 7
+          5
+
+  ; then $ are expanded
+    :
+      :
+        : : f x : y :: z
+            : k : m , \t
+            : x
+              7
+          5
+
+  ; , is the last one:
+    :
+      :
+        : : f x : y :: z
+            : k : m
+             \t
+            : x
+              7
+          5
+```
+
+
+
+<!-- _____________________________________________________________________/ }}}2 -->
 
 <!-- __________________________________________________________________________/ }}}1 -->
+
 <!-- wy: Other openers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
 ## Other types of openers
@@ -260,10 +399,21 @@ Overall in wy there are:
   > and of course you can use standalone hy macros symbols as usual
 - for one-liners there are `::`, `LL`, `CC`, `:#:` and `C#C` symbols — they represent `)(`, `][`, `}{`, `) #(` and `} #{` respectively
 
-> Yes, symbols `L`, `C`, `LL` and `CC` can never be used as variable names in wy.
-> For now you may use `L_` and such instead.
+> Yes, symbols `L`, `C`, `LL` and `CC` cannot be directly used as variable names in wy.
+> Still, since everything wrapped in (...) and other brackets is seen as hy code,
+> you can wrap L inside expression:
 >
-> I am currently working on designing solution for this issue.
+> ```
+> ; seeing this code, wy will strictly follow it's rules
+> ; and produce following hy code:
+> setv L 3  | (setv [3])
+>
+> ; so in order for L to be recognized as variable (not as [ opener)
+> ; you'll need to wrap it in brackets, and L will be seen as variable name:
+> (setv L 3)
+> ```
+>
+> I am currently working on designing better solution for this issue.
 
 Example:
 ```hy
@@ -281,6 +431,29 @@ L                       |   [
 ; be aware that due to how condensed syntax works, sometimes you may require \ after L (or C):
 L x y                   |   [(x y)]
 L\x y                   |   [x y]
+```
+
+Given rules described above, you are able to write nested lists like so:
+```hy
+setv xss
+    L L L 1 2 3 LL 4 5 6
+        L 7 8 9 LL 0 1 2
+      L L 1 2 3 LL 4 5 6
+        L 7 8 9 LL 0 1 2
+
+; this will be internally temporarily expanded to:
+   L
+     L
+       L
+         1 2 3 LL 4 5 6
+       L
+         7 8 9 LL 0 1 2
+   L
+     L
+       L
+         1 2 3 LL 4 5 6
+       L
+         7 8 9 LL 0 1 2
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
@@ -308,28 +481,16 @@ func                |   (func
                     |   ; but it shows how wy2hy works
 ```
 
-Also, when line starts with literal bracket (or any macro-bracket), continuator `\` is also not needed:
+As in hy, you can't have incorrect brackets (for which their pair is not found) in wy:
 ```hy
-func                |   (func
-    ( x             |       ( x
-    )               |       )
-    [ x             |       [ x
-    ]               |       ]
-    { x             |       { x
-    }               |       }
-    ~@#{ x          |       ~@#{ x
-    }               |       })
-```
+; this will give error:
+func
+    ( x
 
-Above means that you can write code close to orginal hy syntax, you'll just need to:
-- add occasional `\`
-- refrain from using empty lines:
-```hy
-(print              |   (print
-    \x              |       x
-     3              |       3
-     ;              |       ;
-     (* y 3))       |       (* y 3))
+; this will give error:
+func
+    x
+    )
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
