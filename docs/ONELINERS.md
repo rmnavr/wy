@@ -209,3 +209,21 @@ All of that can be understood in one (although very contrived and mostly unreada
 
 
 <!-- __________________________________________________________________________/ }}}1 -->
+
+<!-- TO SORT ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+
+# TO SORT
+
+- for one-liners there are `::`, `LL`, `CC`, `:#:` and `C#C` symbols — they represent `)(`, `][`, `}{`, `) #(` and `} #{` respectively
+
+Also, notice that `$` and such will successfully close not only `:` levels, but also `L` and `C` as expected:
+```hy
+    map : fn [x y] L y x $ xs ys    | (map (fn [x y] [y x]) xs ys)
+
+    ; line above will be internally temporarily expanded to:
+    map : fn [x y] L y x
+        xs ys
+```
+
+<!-- __________________________________________________________________________/ }}}1 -->
+
