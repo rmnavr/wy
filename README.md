@@ -7,7 +7,7 @@ Wy offers prentheses-less syntax for [Hy lang](https://github.com/hylang/hy) by 
 
 * Indents for wrapping expressions
 * Syntax for every valid hy opener (like `:` for `(`, `~@#L` for `~@#[` and others)
-* Sofisticated one-liners syntax via symbols like `$` and `<$`
+* Sofisticated one-liners syntactic sugar via symbols like `$` and `<$`
 
 Wy does not change anything about hy rather than removing parentheses.
 
@@ -192,8 +192,8 @@ L                   | [
 L \x y L z t        | [ x y [z t]]
 ```
 
-Prefixing macros with `:` (and getting openers like `':`) may seem to work counter-intuitively,
-but logic actually stays consistent: **rules are the same for any of 25 wy openers**.
+Prepending macro-symbols to `:` (thus getting openers like `':`) may seem to work counter-intuitively,
+but logic actually stays consistent: **rules are the same for any of 25 wy openers**:
 ```hy
 ; let's say we want to generate following hy code:
 `(get ~x ~indx)
@@ -284,7 +284,7 @@ func
 
 ## Syntax for one-liners
 
-One-liners is advanced wy topic, that allows you to write dense code like:
+One-liners is advanced wy topic, that allows you to write dense (can we call it "point-free"?) code like:
 ```hy
 ; Example 1:
 
@@ -299,7 +299,8 @@ One-liners is advanced wy topic, that allows you to write dense code like:
     (((Constructor x) y) z)
 ```
 
-You don't need to use one-liners if you find them cumbersome.
+Internally wy one-liners symbols are just syntactic sugar for indenting and wrapping.
+You don't need to use them if you don't want to.
 
 One-liners rely on:
 - Already discussed 25 bracket openers (from `:` to `~@#C` and such)
