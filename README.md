@@ -3,7 +3,8 @@
 
 # Wy — Hy-lang without parentheses
 
-Wy offers prentheses-less syntax for [https://github.com/hylang/hy](Hy-lang) by usage of:
+Wy offers prentheses-less syntax for [Hy lang](https://github.com/hylang/hy) by usage of:
+
 * Indents for wrapping expressions
 * Syntax for every valid hy opener (like `:` for `(`, `~@#L` for `~@#[` and others)
 * Sofisticated one-liners syntax via symbols like `$` and `<$`
@@ -13,17 +14,17 @@ Wy does not change anything about hy rather than removing parentheses.
 Example code:
 
 ```hy
-defn #^ int                        | (defn #^ int
-   \fibonacci                      |     fibonacci
-    L #^ int n                     |     [#^ int n]
-    if (<= n 1)                    |     (if (<= n 1)
-      \n                           |         n
-       + : fibonacci : - n 1       |         (+ (fibonacci (- n 1))
-           fibonacci : - n 2       |            (fibonacci (- n 2)))))
-                                   |
-setv x : range : abs -3 :: abs -10 | (setv x (range (abs -3) (abs -10)))
-                                   |
-map $ fn [x] : + x 1 , range 0 10  | (map (fn [x] (+ x 1)) (range 0 10))
+defn #^ int                         | (defn #^ int
+   \fibonacci                       |     fibonacci
+    L #^ int n                      |     [#^ int n]
+    if (<= n 1)                     |     (if (<= n 1)
+      \n                            |         n
+       + : fibonacci : - n 1        |         (+ (fibonacci (- n 1))
+           fibonacci : - n 2        |            (fibonacci (- n 2)))))
+                                    |
+setv x : range : abs -3 :: abs -10  | (setv x (range (abs -3) (abs -10)))
+                                    |
+map $ fn [x] : + x 1 , range 0 10   | (map (fn [x] (+ x 1)) (range 0 10))
 ```
 
 ---
@@ -45,11 +46,11 @@ So, running transpiled *.hy file will give meaningfull number lines in debug mes
 
 Table of Contents:
 - [Wy syntax](#Wy-syntax)
-  - [Basic syntax](##Basic-syntax)
-  - [Condensed syntax](##Condensed-syntax)
-  - [Other kidns of openers](##Other-kinds-of-openers)
-  - [Elements that do not require continuator](##Elements-that-do-not-require-continuator)
-  - [Syntax for one liners](##Syntax-for-one-liners)
+  - [Basic syntax](#Basic-syntax)
+  - [Condensed syntax](#Condensed-syntax)
+  - [Other kidns of openers](#Other-kinds-of-openers)
+  - [Elements that do not require continuator](#Elements-that-do-not-require-continuator)
+  - [Syntax for one liners](#Syntax-for-one-liners)
 - [wy2hy transpiler](#Using-wy2hy-transpiler)
 - [Installation](#Installation)
 
@@ -191,7 +192,7 @@ L                   | [
 L \x y L z t        | [ x y [z t]]
 ```
 
-Prefixing macros with `:` (and getting openers like `':` may seem to work counter-intuitively,
+Prefixing macros with `:` (and getting openers like `':`) may seem to work counter-intuitively,
 but logic actually stays consistent: **rules are the same for any of 25 wy openers**.
 ```hy
 ; let's say we want to generate following hy code:
@@ -210,7 +211,7 @@ but logic actually stays consistent: **rules are the same for any of 25 wy opene
 
 ### Sacrificing L and C
 
-Symbols `L`, `C` (also `LL` and `CC`, see [one-liners chapter](##Syntax-for-one-liners))
+Symbols `L`, `C` (also `LL` and `CC`, see [one-liners chapter](#Syntax-for-one-liners))
 cannot be directly used as variable names in wy.
 
 > I know this is kind of dumb, but hey, hy has lot's of brackets.
@@ -218,12 +219,12 @@ cannot be directly used as variable names in wy.
 Solution here is wrapping code inside hy brackets, since wy won't look inside them:
 ```hy
 ; Seeing this code, wy2hy will strictly follow wy rules
-; and produce corresponding incorrect hy code:
-setv L : + L 1    | (setv [ (+ L 1) ])
+; and produce corresponding non-working hy code:
+setv L : + L 1          | (setv [(+ [1])])
 
-; So, in order for L to be recognized as variable (and not as "[" bracket opener),
+; So, in order for L to be recognized as variable (as opposed to "[" bracket opener),
 ; L needs to be inside parentheses:
-(setv L (+ L 1))  | (setv L (+ L 1))
+(setv L (+ L 1))        | (setv L (+ L 1))
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
@@ -249,8 +250,10 @@ func                |   (func
                     |   ; but it shows how wy2hy works
 ```
 
-When line starts with valid hy bracket, eather opening (like `(`, `#{`, `~@{` and such) or closing one (`)`, `]`, or `}`), continuator `\` is also not needed.
-And as was already said, everything inside these bracketed expressions will be interpreted as normal hy code (without recognizing special wy symbols):
+When line starts with valid hy bracket, eather opening (like `(`, `#{`, `~@{` and such)
+or closing one (`)`, `]`, or `}`), continuator `\` is also not needed.
+And as was already said, everything inside these bracketed expressions
+will be interpreted as normal hy code:
 ```hy
 func                |   (func
     ( L             |       ( L     ; notice that here L is variable name, not bracket opener
@@ -298,7 +301,7 @@ One-liners is advanced wy topic, that allows you to write dense code like:
 
 You don't need to use one-liners if you find them cumbersome.
 
-Overall, one-liners rely on:
+One-liners rely on:
 - Already discussed 25 bracket openers (from `:` to `~@#C` and such)
 - Already discussed continuator `\`
 - 3 symbols controlling wrapping level:
@@ -312,7 +315,7 @@ Overall, one-liners rely on:
   - `:#:` to represent `) #(`
   - `C#C` to represent `} #{`
 
-One-liners in details are described in separate doc file:
+One-liners in details are described in:
 [docs/ONELINERS.md](https://github.com/rmnavr/wy/blob/main/docs/ONELINERS.md)
 
 <!-- __________________________________________________________________________/ }}}1 -->
