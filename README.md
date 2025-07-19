@@ -46,10 +46,10 @@ So, running transpiled *.hy file will give meaningfull number lines in debug mes
 Table of Contents:
 - [Wy syntax](#Wy-syntax)
   - [Basic syntax](##Basic-syntax)
-  - [Condensed syntax](#Condensed-syntax)
-  - [Other kidns of openers](#Other-kinds-of-openers)
-  - [Elements that do not require continuator](#Elements-that-do-not-require-continuator)
-  - [Syntax for one liners](#Syntax-for-one-liners)
+  - [Condensed syntax](##Condensed-syntax)
+  - [Other kidns of openers](##Other-kinds-of-openers)
+  - [Elements that do not require continuator](##Elements-that-do-not-require-continuator)
+  - [Syntax for one liners](##Syntax-for-one-liners)
 - [wy2hy transpiler](#Using-wy2hy-transpiler)
 - [Installation](#Installation)
 
@@ -85,18 +85,17 @@ print                   | (print
    \x                   |      x)
 
 ; Some syntax elements (like numbers) do not require "\" :
-print                   | (print 
+print                   | (print
     f x                 |      (f x)
     3.0                 |      3.0)
-
 
 ; When \ is used, indent position is seen at next printable symbol after it,
 ; so there is a little bit of stylistic freedom of where to place \
 print                   | (print
-   \x                   |      x 
+   \x                   |      x
 \   y                   |      y
   \ z                   |      z)
-;   ↑ 
+;   ↑
 ;   this is where wy will see indent level for all 3 "\"-prefixed lines
 
 ; Notice how described indent rule for \ works in following example:
@@ -151,8 +150,8 @@ This enables writing original hy syntax, or mixing it with wy syntax:
 > Valid hy brackets are described in next chapter.
 
 ```hy
-abs (+                  | (abs (+                   
-       x                |         x                 ; x did not require \
+abs (+                  | (abs (+
+       x                |         x                 ; x did not require "\"
        (ncut ys 1 : 3)) |         (ncut ys 1 : 3))) ; ":" was not recognized as wrapper
 ```
 
@@ -174,7 +173,7 @@ And in total it sums up to 5*(1+4) = 25 different kinds of opening brackets.
 ### Wy counterparts to hy openers
 
 To represent all of this variety, wy has 5 basic symbols:
-- `:` to represent `(` 
+- `:` to represent `(`
 - `L` to represent `[`
 - `C` to represent `{`
 - `#:` to represent `#(`
@@ -183,25 +182,30 @@ To represent all of this variety, wy has 5 basic symbols:
 They can also be combined with 4 macros symbols (without spaces), thus covering all 25 kinds of opening brackets in hy.
 For example, `~@#:` is valid wy opener.
 
-We already covered `:` in hy details.
-All the same rules apply to any of 25 wy openers:
+We already covered `:`. All the same rules apply to any of 25 wy openers:
 ```hy
-`: getattr ~iterable
-   ~: str : extract_attr indx
+L                   | [
+  \x y              |   x y
+   L\z t            |   [z t]]
 
-; transpiles to:
-`( getattr ~iterable
-   ~(str (extract_attr indx)))
+L \x y L z t        | [ x y [z t]]
 ```
 
-Rules for `\` also apply:
+Prefixing macros with `:` (and getting openers like `':` may seem to work counter-intuitively,
+but logic actually stays consistent: **rules are the same for any of 25 wy openers**.
 ```hy
-L            | [
-  \x y       |   x y
-   L 4 5     |   [4 5]]
+; let's say we want to generate following hy code:
+`(get ~x ~indx)
 
-; notice requirement of \ when condensing in one line:
-L \x y L 4 5 | [ x y [4 5]]
+; adding "`:" will generate unwanted wrapping:
+`: get ~x ~indx     | `( (get ~x ~indx))
+
+; standalone "`" is considered as continuator,
+; so it won't generate enough wrapping:
+` get ~x ~indx      | ` get ~x ~indx
+
+; so, viable wy syntax is the following:
+`: \get ~x ~indx    | `( get ~x ~indx)
 ```
 
 ### Sacrificing L and C
@@ -302,7 +306,7 @@ Overall, one-liners rely on:
   - applicator `$`
   - joiner `,`
 - 5 double markers:
-  - `::` to represent `)(` 
+  - `::` to represent `)(`
   - `LL` to represent `][`
   - `CC` to represent `}{`
   - `:#:` to represent `) #(`
