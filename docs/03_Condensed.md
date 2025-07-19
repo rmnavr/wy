@@ -87,9 +87,9 @@ Following described logic, see how continuator `\` works with `:` (and any other
 ```hy
  : x : y         | ((x (y)))
  :\x : y         | ( x (y))
- : x :\y         | ( x (y))  ; \ is allowed, but surves no purpose
+ : x :\y         | ((x (y))) ; allowed, but achieves nothing
 \: x : y         | ( x (y))  ; this is seen as single line, not as condensed line
- : x\: y         | ((x (y))  ; allowed, but surves no purpose
+ : x\: y         | ((x (y))  ; allowed, but achieves nothing
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
@@ -121,6 +121,8 @@ and see how they can be condensed:
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
+
+> \>\> Next chapter: [One-liners](https://github.com/rmnavr/wy/blob/main/docs/04_One_liners.md) 
 
     case: multiline (hy) indenting
 

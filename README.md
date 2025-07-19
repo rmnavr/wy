@@ -4,7 +4,7 @@
 # Wy — hy-lang without parentheses
 
 Wy offers prentheses-less syntax for [hy lang](https://github.com/hylang/hy)
-by usage of indents and collection of special symbols.
+by usage of indents and set of special symbols.
 
 Wy does not change anything about hy rather than removing parentheses.
 

@@ -183,13 +183,13 @@ L                   | [
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- L/C sacrifice ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
-# Sacrificing L and C
+# Explanation of sacrificing L and C
 
 Symbols `L`, `C` (and also `LL` and `CC`,
 see [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md))
 cannot be directly used as variable names in wy.
 
-I know this is kind of dumb, but hey, hy has lot's of various brackets.
+> I know this is kind of dumb, but hey, hy has lot's of various brackets.
 
 Solution here is wrapping code inside hy brackets, since wy won't look inside them (other than checking for correct nesting):
 ```hy
@@ -204,6 +204,7 @@ setv L : + L 1          | (setv [(+ [1])])
 
 <!-- __________________________________________________________________________/ }}}1 -->
 
+> \>\> Next chapter: [Condensed syntax](https://github.com/rmnavr/wy/blob/main/docs/03_Condensed.md)
 
 
 
