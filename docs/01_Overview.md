@@ -34,8 +34,4 @@ One-liners are considered to be advanced wy topics due to high amount of interac
 between different syntactic rules. Still, all the rules are consistent without exceptions,
 and one-liners make wy syntax shine with it's own (resembling pointfree) syntax style.
 
-It is recommended to first get acquainted with 
-[list of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md) 
-of wy (not necessarily understanding everything) and then procede to: 
-
 > Next chapter: [Basic syntax](https://github.com/rmnavr/wy/blob/main/docs/02_Basic.md) 

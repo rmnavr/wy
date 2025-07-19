@@ -8,6 +8,21 @@ Documentation:
 5. You are here -> [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
 ---
 
+<!-- hy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+
+# Original hy openers
+
+Hy itself has:
+- 3 kinds of closing bracket: `)`, `]` and `}`
+- 5 basic kinds of opening bracket: `(`, `#(`, `[`, `{`, `#{`
+- 4 macros symbols: `` ` ``, `'`, `~`, `~@`
+
+Macros symbols can prepend (without spaces) opening brackets, so for example `~@#(` is a valid hy bracket.
+And in total it sums up to 5*(1+4) = 25 different kinds of opening brackets.
+
+<!-- __________________________________________________________________________/ }}}1 -->
+<!-- wy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+
 # All of wy special symbols
 
 Basic syntax and also condensed syntax rely on:
@@ -19,12 +34,11 @@ Basic syntax and also condensed syntax rely on:
     - `C` to represent `{`
     - `#:` to represent `#(`
     - `#C` to represent `#{`
-  - 4 hy macro symbols (`` ` ``, `'`, `~` and `~@`) can be prepended to any of
-    5 basic openers without spaces (example: `~@#C` will represent `~@#{`),
-    thus generating mentioned number 25
+  - 4 hy macro symbols can be prepended to any of 5 basic openers without spaces (example: `~@#C` will represent `~@#{`),
+    thus generating 25 various openers
 - Continuator `\`
 
-One-liners:
+One-liners use:
 - 3 symbols that control wrapping level:
   - reverse applicator `<$`
   - applicator `$`
@@ -37,5 +51,6 @@ One-liners:
   - `C#C` to represent `} #{`
 
 > Yes, literal "L", "C" and others are used as special symbols.
-> This is deliberate design decision, explained in [Basic syntax](https://github.com/rmnavr/wy/blob/main/docs/02_Basic.md) doc
+> This is deliberate design decision, explained in [Basic syntax](https://github.com/rmnavr/wy/blob/main/docs/02_Basic.md)
 
+<!-- __________________________________________________________________________/ }}}1 -->

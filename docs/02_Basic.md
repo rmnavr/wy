@@ -8,26 +8,14 @@ Documentation:
 5. [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
 ---
 
-<!-- Intro ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
-
-# Wy — Basic syntax
-
-Table of Contents:
-- [Basic rules](#Basic-syntax)
-- [Elements that do not require continuator](#Elements-that-do-not-require-continuator)
-  - [Other kidns of openers](#Other-kinds-of-openers)
-  - [Condensed syntax](#Condensed-syntax)
-  - [Syntax for one liners](#Syntax-for-one-liners)
-- [wy2hy transpiler](#Using-wy2hy-transpiler)
-- [Installation](#Installation)
-
-<!-- __________________________________________________________________________/ }}}1 -->
-
 <!-- Basic rules ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
-# Basic rules
+# Basic syntax rules of wy
 
-Basic syntax uses indents, in-line opener `:` and continuator `\`:
+Basic syntax uses:
+* indents
+* in-line openers (for now we will only cover the most frequently used one, which is `:`)
+* continuator `\`
 
 ```hy
 ; New line by default is wrapped in () :
@@ -80,7 +68,7 @@ y                       | (y
   3                     |   3)
 ```
 
-Wy also has special policy about empty lines — **you can't have empty lines inside one expression**.
+Wy has special policy about empty lines — **you can't have empty lines inside one expression**.
 
 ```hy
 ; Code below will be seen as 3 distinct s-expressions:
@@ -138,6 +126,8 @@ When line starts with valid hy bracket, eather opening (like `(`, `#{`, `~@{` an
 or closing one (`)`, `]`, or `}`), continuator `\` is also not needed.
 And as was already said, everything inside these bracketed expressions
 will be interpreted as normal hy code:
+> List of all valid hy brackets is given in [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
+
 ```hy
 func                |   (func
     ( L             |       ( L     ; notice that here L is variable name, not bracket opener
@@ -168,30 +158,19 @@ func
 
 # Other kinds of openers
 
-## Original hy openers
-
-Hy itself has:
-- 3 kinds of closing bracket: `)`, `]` and `}`
-- 5 basic kinds of opening bracket: `(`, `#(`, `[`, `{`, `#{`
-- 4 macros symbols: `` ` ``, `'`, `~`, `~@`
-
-Macros symbols can prepend opening brackets, so for example `~@#(` is a valid hy bracket.
-And in total it sums up to 5*(1+4) = 25 different kinds of opening brackets.
-
-## Wy counterparts to hy openers
-
-To represent all of this variety, wy has 5 basic symbols:
+To represent variety of all valid hy brackets
+(summarized in [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)),
+wy has 5 basic symbols:
 - `:` to represent `(`
 - `L` to represent `[`
 - `C` to represent `{`
 - `#:` to represent `#(`
 - `#C` to represent `#{`
 
-They can also be combined with 4 macros symbols (without spaces),
-thus covering all 25 kinds of opening brackets in hy.
+They can also be combined with 4 hy macros symbols (without spaces).
 For example, `~@#:` is valid wy opener.
 
-We already covered `:`. **All the same rules apply to any of 25 wy openers**:
+We already covered `:`. And **all the same rules apply to any of 25 wy openers**:
 ```hy
 L                   | [
   \x y : f 3        |   x y (f 3)
@@ -201,14 +180,18 @@ L                   | [
    \get ~x ~indx    |    get ~x ~indx)
 ```
 
-### Sacrificing L and C
+<!-- __________________________________________________________________________/ }}}1 -->
+<!-- L/C sacrifice ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
-Symbols `L`, `C` (also `LL` and `CC`, see [one-liners chapter](#Syntax-for-one-liners))
+# Sacrificing L and C
+
+Symbols `L`, `C` (and also `LL` and `CC`,
+see [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md))
 cannot be directly used as variable names in wy.
 
-> I know this is kind of dumb, but hey, hy has lot's of brackets.
+I know this is kind of dumb, but hey, hy has lot's of various brackets.
 
-Solution here is wrapping code inside hy brackets, since wy won't look inside them:
+Solution here is wrapping code inside hy brackets, since wy won't look inside them (other than checking for correct nesting):
 ```hy
 ; Seeing this code, wy2hy will strictly follow wy rules
 ; and produce corresponding non-working hy code:
@@ -218,29 +201,6 @@ setv L : + L 1          | (setv [(+ [1])])
 ; L needs to be inside parentheses:
 (setv L (+ L 1))        | (setv L (+ L 1))
 ```
-
-<!-- __________________________________________________________________________/ }}}1 -->
-<!-- wy: One-liners ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
-
-# Syntax for one-liners
-
-One-liners is advanced wy topic, that enables writing even more condensed code like:
-```hy
-; Example 1:
-
-    map $ fn [x y] : * : + x 3 :: + y 4 , \xs ys
-    ; this transpiles into:
-    (map (fn [x y] (* (+ x 3) (+ y 4))) xs ys)
-
-; Example 2:
-
-    Constructor x <$ \y <$ \z
-    ; this transpiles into:
-    (((Constructor x) y) z)
-```
-
-Internally wy one-liners symbols are syntactic sugar for indenting and wrapping.
-You don't need to use them if you don't want to — basic and condensed syntax is already enough for writing code.
 
 <!-- __________________________________________________________________________/ }}}1 -->
 

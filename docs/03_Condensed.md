@@ -30,7 +30,6 @@ meaning that condensed syntax is internally processed in expanded form:
 *(by the way, this internal expansion does not mess with final numbering of generated code lines)*
 
 <!-- __________________________________________________________________________/ }}}1 -->
-
 <!-- smarker vs mmarker ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
 # Openers behaviour depending on position

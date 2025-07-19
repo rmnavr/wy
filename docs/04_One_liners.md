@@ -8,6 +8,35 @@ Documentation:
 5. [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
 ---
 
+<!-- Pre Intro ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+
+# One-liners
+
+One-liners is advanced wy topic, that enables writing even more condensed code like:
+
+```hy
+; Example 1:
+
+    map $ fn [x y] : * : + x 3 :: + y 4 , \xs ys
+
+    ; this transpiles into:
+    (map (fn [x y] (* (+ x 3) (+ y 4))) xs ys)
+
+; Example 2:
+
+    : Constructor x <$ \y <$ \z
+	  5
+
+    ; this transpiles into:
+    ((((Constructor x) y) z)
+	  5)
+```
+
+Internally wy one-liners symbols are syntactic sugar for indenting and wrapping.
+You don't need to use them if you don't want to — basic and condensed syntax is already enough for writing code.
+
+<!-- __________________________________________________________________________/ }}}1 -->
+
 <!-- Intro ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
 # Syntax for one-liners
@@ -30,7 +59,6 @@ Code examples in this chapter in most cases are not very meaningfull, still thei
 Also, please pay high attention to precedence order of symbols in the examples.
 
 <!-- __________________________________________________________________________/ }}}1 -->
-
 <!-- General rules ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
 # General rules
