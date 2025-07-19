@@ -1,9 +1,9 @@
 
 <!-- Intro ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
-# Wy — Hy-lang without parentheses
+# Wy — hy-lang without parentheses
 
-Wy offers prentheses-less syntax for [Hy lang](https://github.com/hylang/hy)
+Wy offers prentheses-less syntax for [hy lang](https://github.com/hylang/hy)
 by usage of indents and collection of special symbols.
 
 Wy does not change anything about hy rather than removing parentheses.
@@ -25,28 +25,14 @@ map $ fn [x] : + x 1 , range 0 10   | (map (fn [x] (+ x 1)) (range 0 10))
 
 ---
 
-Wy project consists of 2 parts:
-1. **wy** as a **syntax layer** for Hy-lang
-2. **wy2hy** transpiler — it produces hy-code from source wy-code
+Wy is a **syntax layer** for hy, meaning that wy is not a standalone language, but just a syntax modification to hy.
 
-> **Syntax layer** term means that wy is not a standalone language, but just a syntax modification to hy.
-> To run wy code, you first transpile it to hy code (using wy2hy), and then you deal with transpiled *.hy files as usual.
+To run wy code, you first transpile it into hy code using **wy2hy** transpiler, and then you deal with transpiled *.hy files as usual.
 
 **wy2hy** produces readable hy-code with 1-to-1 line correspondence to source wy-code.
 So, running transpiled *.hy file will give meaningfull number lines in debug messages.
 
 <!-- __________________________________________________________________________/ }}}1 -->
-<!-- ToC ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
-
----
-
-Table of Contents:
-- [Documentation](#Documentation)
-- [wy2hy transpiler](#Using-wy2hy-transpiler)
-- [Installation](#Installation)
-
-<!-- __________________________________________________________________________/ }}}1 -->
-
 <!-- Docs ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
 # Documentation
