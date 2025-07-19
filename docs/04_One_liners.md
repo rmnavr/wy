@@ -1,4 +1,13 @@
 
+---
+Documentation:
+1. [Syntax overview](https://github.com/rmnavr/wy/blob/main/docs/01_Overview.md)
+2. [Basic syntax](https://github.com/rmnavr/wy/blob/main/docs/02_Basic.md) 
+3. [Condensed syntax](https://github.com/rmnavr/wy/blob/main/docs/03_Condensed.md)
+4. You are here -> [One-liners](https://github.com/rmnavr/wy/blob/main/docs/04_One_liners.md) 
+5. [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
+---
+
 <!-- Intro ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
 # Syntax for one-liners
