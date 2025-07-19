@@ -25,11 +25,11 @@ One-liners is advanced wy topic, that enables writing even more condensed code l
 ; Example 2:
 
     : Constructor x <$ \y <$ \z
-	  5
+      5
 
     ; this transpiles into:
     ((((Constructor x) y) z)
-	  5)
+      5)
 ```
 
 Internally wy one-liners symbols are syntactic sugar for indenting and wrapping.

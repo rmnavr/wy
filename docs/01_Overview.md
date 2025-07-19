@@ -14,15 +14,15 @@ Wy has 3 distinct "levels" of syntax:
 
 1. Basic syntax *— quick to grasp and enough to write anything in wy*:
    > ```hy
-   > :						| (
-   >   fn [x] : + x 3		|   (fn [x] (+ x 3))
-   >   7					|   7)
+   > :                      | (
+   >   fn [x] : + x 3       |   (fn [x] (+ x 3))
+   >   7                    |   7)
    > ```
 
 2. Condensed syntax *— syntactic sugar for adding wrapping level at head of the expression*:
    > ```hy
-   > : fn [x] : + x 3		| ( (fn [x] (+ x 3))	
-   >   7                	|   7)
+   > : fn [x] : + x 3       | ( (fn [x] (+ x 3))    
+   >   7                    |   7)
    > ```
 
 3. One-liners *— sofisticated syntactic sugar for indenting and wrapping*:
