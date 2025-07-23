@@ -141,7 +141,7 @@ func                |   (func
     }               |       })
 ```
 
-Also wy2hy will refuse to transpile if it sees incorrect brackets (for which their pair is not found):
+Also wy2hy will refuse to transpile if it'll see incorrect brackets (for which their pair is not found):
 ```hy
 ; this will give error:
 func

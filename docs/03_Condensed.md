@@ -44,7 +44,7 @@ Notice that `:` behaviour is slightly different depending on it's placement:
 Logic of such behaviour is more clear in expanded form:
 ```hy
                 ; /--- 1st wrap is due to ":" at the start of the line
-                ; | /- 2nd wrap is due to "x" being autowrapped, since it startsnhe line
+                ; | /- 2nd wrap is due to "x" being autowrapped, since it starts the line
                 ; ↓ ↓
 :               | (
   x : y         |   (x (y)))
@@ -57,7 +57,7 @@ Logic of such behaviour is more clear in expanded form:
 # Indenting in condensed syntax
 
 You can have as many `:` at the start of the line as you like.
-Just be aware that such `:` introduces new indents, which must be respected by lines that follow it:
+Just be aware that such `:` introduce new indents, which must be respected by lines that follow it:
 
 ```hy
   ; wy will see indents at these positions due to ":"
@@ -68,7 +68,7 @@ Just be aware that such `:` introduces new indents, which must be respected by l
        4                 |    4)
 ```
 
-Everything after `\` switches off condensing (and thus new indent levels):
+Continuator `\` switches off condensing (and thus new indent levels) for symbols to the right:
 ```hy
   ; indents are created only at 2 positions:
   ; ↓  ↓
@@ -78,6 +78,7 @@ Everything after `\` switches off condensing (and thus new indent levels):
   ;    ":" at this position will not be seen as condensed
 
   ; expanded form:
+
     :                    | (
       \: f x : y         |    (f x (y))
        4                 |    4)
@@ -97,7 +98,7 @@ Following described logic, see how continuator `\` works with `:` (and any other
 
 # Examples of condensed syntax
 
-Let's get back to examples from [Other kidns of openers](#Other-kinds-of-openers) chapter
+Let's get back to examples from [Basic syntax](https://github.com/rmnavr/wy/blob/main/docs/02_Basic.md) chapter
 and see how they can be condensed:
 
 ```hy
@@ -111,6 +112,11 @@ and see how they can be condensed:
     L \x y : f 3        | [ x y (f 3)
        g 4 L 2 5        |   (g 4 [2 5])]
 
+	; notice that without continuator "\"
+	; we would get unwanted extra wrapping:
+    L  x y : f 3        | [ (x y (f 3))
+       g 4 L 2 5        |   (g 4 [2 5])]
+
 ; Example 2:
 
     `:                  | `(
@@ -118,13 +124,18 @@ and see how they can be condensed:
 
     ; condensed:
     `: \get ~x ~indx    | `( get ~x ~indx)
+
+	; notice that without continuator "\"
+	; we would get unwanted extra wrapping:
+    `: get ~x ~indx    | `( (get ~x ~indx))
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
 
 > \>\> Next chapter: [One-liners](https://github.com/rmnavr/wy/blob/main/docs/04_One_liners.md) 
 
-    case: multiline (hy) indenting
+
+TODO: multiline (hy) indenting
 
 
 

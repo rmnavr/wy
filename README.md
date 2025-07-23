@@ -1,6 +1,8 @@
 
 <!-- Intro ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
+> Project is not yet ready. Currently writing docs, then big parser upd is on the way.
+
 # Wy — hy-lang without parentheses
 
 Wy offers prentheses-less syntax for [hy lang](https://github.com/hylang/hy)
