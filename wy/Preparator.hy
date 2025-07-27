@@ -18,8 +18,7 @@
 
     (defn #^ StrictStr insert_indent_marks [#^ WyCodeLine line]
         ; requires rstrip to be already done to work correctly
-        ;                 (gr1                ) (gr2          )   (gr3)
-        (re_sub (sconcat r"^\s+(" $OMARKERS_REGEX r"\s+)*")
+        (re_sub (sconcat r"^\s*(" $OMARKERS_REGEX r"\s+)*" $CMARKER_REGEX r"*\s*")
                 (fm (re_sub r"\s" $INDENT_MARK (%1.group 0)))
                 line))
 

@@ -11,7 +11,7 @@
 
 ; [=] wy marks and markers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (setv $INDENT_MARK    "■")  ; must be 1 symbol
+    (setv $INDENT_MARK    "■")   ; must be 1 symbol
     (setv $NEWLINE_MARK   "☇¦")  ; must not contain spaces and regex operators like | and such
 
     ; =========================
@@ -26,6 +26,8 @@
     (setv $DMARKERS [ "::" "LL" ])  ; double markers
 
     (setv $CMARKER  "\\")           ; continuation marker
+    (setv $CMARKER_REGEX  r"\\")           
+
     (setv $AMARKER  "$")            ; application marker
     (setv $RMARKER  "<$")           ; reverse application marker
     (setv $JMARKER  ",")            ; joiner marker
@@ -59,10 +61,21 @@
     ; used in tokenQ:
     (setv $HY_OPENERS  (lconcat $HY_OPENERS1 $HY_OPENERS2 $HY_OPENERS3))
 
+    (setx $HY_OPENERS_REGEX (+ r"("
+                               (->> $HY_OPENERS
+                                    (str_join :sep "|")
+                                    (re_sub r"\`" "\\`")
+                                    (re_sub r"\(" "\\(")
+                                    (re_sub r"\[" "\\[")
+                                    (re_sub r"\{" "\\{")
+                                    )
+                               ")"))
+
     ; ===============================================================================
 
     ; used in tokenQ:
     (setv $CLOSER_BRACKETS [ ")" "]" "}" ])
+    (setv $CLOSER_BR_REGEX r"(\)|\]|\})")
 
 ; _____________________________________________________________________________/ }}}1
 
@@ -71,7 +84,7 @@
     (setv PreparedCode StrictStr)
     (setv Atom         StrictStr)
 
-; [F] atom checks ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [F] atom checks ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; wy:
 
@@ -86,6 +99,12 @@
         (defn [validateF] #^ bool jmarker_atomQ [#^ Atom atom] (=  atom $JMARKER))
 
     ; hy: 
+
+        (defn [validateF] #^ bool hyexpr_atomQ
+            [#^ Atom atom]
+            (re_test (sconcat r"^" $HY_OPENERS_REGEX ".*" $CLOSER_BR_REGEX "$")
+                      atom
+                      re.DOTALL))
 
         (defn [validateF] #^ bool hy_opener_atomQ       [#^ Atom atom] (in atom $HY_OPENERS))
         (defn [validateF] #^ bool closing_bracket_atomQ [#^ Atom atom] (in atom $CLOSER_BRACKETS))
@@ -112,7 +131,8 @@
             atom_regarded_as_continuatorQ
             [ #^ Atom atom
             ]
-            (or (digit_atomQ        atom)
+            (or (hyexpr_atomQ       atom)
+                (digit_atomQ        atom)
                 (qstring_atomQ      atom)
                 (keyword_atomQ      atom)
                 (annotation_atomQ   atom)
@@ -148,7 +168,7 @@
         (defn __repr__ [self] (return (sconcat "<" self.kind.name ": '" self.atom "'>")))
         (defn __str__  [self] (return (self.__repr__))))
 
-    (defn [validateF] #^ Token atom_to_token [#^ str atom]
+    (defn [validateF] #^ Token atom_to_token [#^ Atom atom]
         (cond (newline_atomQ                 atom) (Token TKind.NewLine  atom)
               (indent_atomQ                  atom) (Token TKind.Indent   atom)
               (omarker_atomQ                 atom) (Token TKind.OMarker  atom)
@@ -162,6 +182,7 @@
               True                                 (Token TKind.RAOpener atom)))
 
 ; _____________________________________________________________________________/ }}}1
+; [C] NTLine (numbered line of tokens) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defclass [] NTLine [BaseModel]
         "Numbered Line of Tokens; Count starts from 1 (not 0) to be consistent with python errors messages (where 1st line of file is line 1, not line 0)"
@@ -169,6 +190,15 @@
         (#^ StrictInt       realRowN_start   #_ "corresponds to raw wy-code line number; multiline qstrings are taken into account here")
         (#^ StrictInt       realRowN_end)
         (#^ (of List Token) tokens))
+
+    (defn ntl_print
+        [ #^ NTLine ntline ]
+        (setv token_line (lpluckm .atom ntline.tokens))
+        (print f"Line = {ntline.rowN} ({ntline.realRowN_start}-{ntline.realRowN_end}) | {token_line}"))
+
+; _____________________________________________________________________________/ }}}1
+
+
 
 
 ; [C] Parser ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1

@@ -10,7 +10,7 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    ; 1) Atomize:
+; 1) Atomize (atom is just str):
 ; pp atoms ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (setv ALPHAS    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
@@ -77,11 +77,11 @@
                            NEW_LINE
                            INDENT))
 
-    (setv EXPR         (| QEXPR SEXPR CEXPR))
+    (setv EXPR         (pp.originalTextFor (| QEXPR SEXPR CEXPR)))
 
     (setv CONTENT      (pp.Group (pp.ZeroOrMore (| EXPR ATOM))))
-    (<<   QEXPR        (pp.Group (+ LBRCKT CONTENT RBRCKT)))
     (<<   SEXPR        (pp.Group (+ LPAR   CONTENT RPAR)))
+    (<<   QEXPR        (pp.Group (+ LBRCKT CONTENT RBRCKT)))
     (<<   CEXPR        (pp.Group (+ LCRB   CONTENT RCRB)))
 
     (<<   ICOMMENT     (pp.Group (+ (pp.Literal "#_") (| EXPR ATOM))))
@@ -90,15 +90,20 @@
 ; _____________________________________________________________________________/ }}}1
 ; [step] run py parse               :: Prepared Code -> [Atom ...] ‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ (of List Atom)
+    (defn [validateF] #^ (of List Any) ; "Any" is because pydantic can't process pp.ParseResults for some reason
         prepared_code_to_atoms
         [ #^ PreparedCode prepared_code
         ]
         (->> prepared_code
              CONTENT.scanString
-             list                                ; generator to list
-             (map (fm (cut %1 None -2)) #_ here) ; remove column info
-             flatten))
+             list
+             (lmapm (get it 0)) ; remove column info
+             flatten
+             ))
+
+             ; list                                ; generator to list
+             ; (map (fm (cut_ %1 1 -3)) #_ here) ; remove column info
+             ; flatten))
 
 ; _____________________________________________________________________________/ }}}1
 ; [step] remove garbage from atoms  :: Atom -> Atom ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -106,8 +111,9 @@
     (defn [validateF] #^ Atom
         remove_garbage_from_atom
         [#^ Atom atom]
-        "de facto removes indent/newline marks from qstring, for other atoms returns themselves"
-        (if (qstring_atomQ atom)
+        "de facto removes indent/newline marks from qstring and bracketed HyExprs, for other atoms returns themselves"
+        (if (or (qstring_atomQ atom)
+                (hyexpr_atomQ  atom))
             (->> atom
                  (re_sub $INDENT_MARK " ")
                  (re_sub $NEWLINE_MARK ""))
@@ -115,7 +121,8 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    ; 2) Tokenize (see in Classes.hy) and split into Numbered Lines Of Tokens:
+; 2) Tokenize (see in Classes.hy) and split into Numbered Lines Of Tokens:
+; // atom2token is done by function from Classes.hy
 ; [step] all tokens to NTLines      :: [Token ...] -> [NTLine ...] ‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn [validateF] #^ (of List NTLine)
@@ -161,21 +168,89 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-; indents count ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; 3) Condensed to Expanded
+; [step] expand smarkers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn [validateF] #^ Token
+        tokens_to_indent_token
+        [#^ (of List Token) tokens]
+        "converts ['■', '~:'] to '■■■'"
+        (Token TKind.Indent
+               (smul $INDENT_MARK
+                     (sum
+                          (lmapm (len it.atom)
+                                 tokens)))))
+
+    (defn [validateF] #^ (of List NTLine)
+        expand_ntline
+        [#^ NTLine ntline]
+        "converts ['■', '~:'] to '■■■'"
+        (setv new_lines [ntline])
+        (setv [n1 n2] [1 0])
+        (while (neq n1 n2)
+            (setv n1 (len new_lines))
+            (setv new_lines (lconcat (drop -1 new_lines) (expand_one_smarker (last new_lines))))
+            (setv n2 (len new_lines)))
+        (return new_lines))
+
+    (defn [validateF] #^ (of List NTLine)
+        expand_one_smarker
+        [#^ NTLine ntline]
+        "when no smarker is found, return source [ntline], otherwise return [ntline1, ntline2]"
+        (when (<= (len ntline.tokens) 2) (return [ntline]))
+        ;
+        (setv token1 (first  ntline.tokens))
+        (setv token2 (second ntline.tokens))
+        (setv token3 (third  ntline.tokens))
+        (cond (and (eq token1.kind TKind.Indent)
+                   (eq token2.kind TKind.OMarker))
+              (do (setv ntline1_tokens [token1 token2])
+                  (if (= token3.kind TKind.Indent)
+                      (setv ntline2_tokens (lconcat [(tokens_to_indent_token [token1 token2 token3])]
+                                                    (cut_ ntline.tokens 4 -1)))
+                      (setv ntline2_tokens (lconcat [(tokens_to_indent_token [token1 token2])]
+                                                    (cut_ ntline.tokens 3 -1))))
+                  (return (lmapm (NTLine :rowN           ntline.rowN
+                                         :realRowN_start ntline.realRowN_start
+                                         :realRowN_end   ntline.realRowN_end
+                                         :tokens         it)
+                                 [ntline1_tokens ntline2_tokens])))
+              ;
+              (eq token1.kind TKind.OMarker)
+              (do (setv ntline1_tokens [token1])
+                  (if (= token2.kind TKind.Indent)
+                      (setv ntline2_tokens (lconcat [(tokens_to_indent_token [token1 token2])]
+                                                    (cut_ ntline.tokens 3 -1)))
+                      (setv ntline2_tokens (lconcat [(tokens_to_indent_token [token1])]
+                                                    (cut_ ntline.tokens 2 -1))))
+                  (return (lmapm (NTLine :rowN           ntline.rowN
+                                         :realRowN_start ntline.realRowN_start
+                                         :realRowN_end   ntline.realRowN_end
+                                         :tokens         it)
+                                 [ntline1_tokens ntline2_tokens]))))
+        ;
+        (return [ntline]))
+
+; _____________________________________________________________________________/ }}}1
+
+; [del] indents count ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; ""  -> []
     ;
     ;  ↓
-    ; "x" -> [1]
+    ; "x" -> [1] Column Number
     ;
     ;  ₁↓
     ; " x" -> [2]
     ;
-    ;  ₁↓₃
-    ; "\ x"-> [2]
+    ;  ₁₂↓
+    ; "\ x"-> [3]
     ;
-    ;  ₁↓₃₄↓₆₇₈↓₀₁₂₃₄₅₆↓
-    ; " L  #:  ~@#:   \ : x" -> [2 5 9 17]
+    ;  ₁₂₃↓
+    ; "\  x"-> [4]
+    ;
+    ;  ₁↓₃₄↓↓₇₈↓↓↓↓₃₄₅₆₇↓ (after \ only 1st symbol is used)
+    ; " L  #:  ~@#:   \ ~: x" -> [2, 5-6, 9-12, 18]
 
     (defn [validateF] #^ (of List Token)
         count_indents_for_ntline [#^ NTLine ntline]
@@ -193,18 +268,21 @@
 
     (import Preparator [prepare_code_for_pyparsing])
 
-    (setv _code " L #: : ~@#:   : x\\ 3 4 $ 7\n : #: riba\n1 2 \"\n\n  : L 2\"\n: \\ L 3 \"riba\nbubr\"\"riba\nbubr\"\"riba\nbubr\"")
-    ;(setv _code " L  #:  ~@#:   \\ 1")
-    (setv _prepared_code (prepare_code_for_pyparsing _code))
+    (setv _code1 " L #: : ~@#:   : x\\ (3 4) $ 7\n\n : #: riba\n1 2 \"\n\n  : L 2\"\n: \\ L 3 \"riba\nbubr\"\"riba\nbubr\"\"riba\nbubr\"")
+    (setv _code2 " (1) `(2 \n #(+ riba \nbubr) riba\n\n) \n bubr\"sss\n sss\" riba")
+    (setv _code3 " L  #:  ~@#:   \\ 1")
+    (setv _code4 " L  \\  x")
 
-    (setv _x
-        (->> _prepared_code
-             prepared_code_to_atoms
-             (lmap remove_garbage_from_atom)
-             (lmap atom_to_token)
-             tokens_to_NTLines))
-
-    (lprint _x)
+    (->> _code1
+         prepare_code_for_pyparsing
+         prepared_code_to_atoms
+         (lmap remove_garbage_from_atom)
+         (lmap atom_to_token)
+         tokens_to_NTLines
+         (lmap expand_ntline)
+         (f> (lconcat #* it))
+         (lmap ntl_print)
+         )
 
 ; _____________________________________________________________________________/ }}}1
 
