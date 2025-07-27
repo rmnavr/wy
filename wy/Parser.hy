@@ -103,7 +103,7 @@
 ; _____________________________________________________________________________/ }}}1
 ; [step] remove garbage from atoms  :: Atom -> Atom ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn #^ Atom
+    (defn [validateF] #^ Atom
         remove_garbage_from_atom
         [#^ Atom atom]
         "de facto removes indent/newline marks from qstring, for other atoms returns themselves"
@@ -151,7 +151,7 @@
                 (. (last _tlines) (append &token))))
         (return _tlines))
 
-    (defn [validateF] #^ Int
+    (defn [validateF] #^ StrictInt
         count_n_of_rows_that_tline_takes
         [#^ (of List Token) tokens]
         (->> tokens
@@ -160,7 +160,6 @@
              (plus 1)))
 
 ; _____________________________________________________________________________/ }}}1
-
 
 ; indents count ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
@@ -187,9 +186,7 @@
                   (eq &token.kind TKind.OMarker) (    += _indentable_tokens [&token])
                   (eq &token.kind TKind.CMarker) (do (+= _indentable_tokens [&token]) (break))
                   True                           (break)))
-        _indentable_tokens
-        )
-
+        _indentable_tokens)
 
 ; _____________________________________________________________________________/ }}}1
 ; run ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1

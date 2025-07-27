@@ -66,10 +66,10 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    (setv WyCode       Str)
-    (setv WyCodeLine   Str)
-    (setv PreparedCode Str)
-    (setv Atom         Str)
+    (setv WyCode       StrictStr)
+    (setv WyCodeLine   StrictStr)
+    (setv PreparedCode StrictStr)
+    (setv Atom         StrictStr)
 
 ; [F] atom checks ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
@@ -141,8 +141,8 @@
         (defn __str__  [self] (return self.name))) 
 
     (defclass [] Token [BaseModel]
-        (#^ TKind kind)
-        (#^ Str   atom)
+        (#^ TKind     kind)
+        (#^ StrictStr atom)
         ;
         (defn __init__ [self k a] (-> (super) (.__init__ :kind k :atom a)))
         (defn __repr__ [self] (return (sconcat "<" self.kind.name ": '" self.atom "'>")))
@@ -165,9 +165,9 @@
 
     (defclass [] NTLine [BaseModel]
         "Numbered Line of Tokens; Count starts from 1 (not 0) to be consistent with python errors messages (where 1st line of file is line 1, not line 0)"
-        (#^ Int             rowN             #_ "ordered NTLine number; multiline qstrings do not increase this number")
-        (#^ Int             realRowN_start   #_ "corresponds to raw wy-code line number; multiline qstrings are taken into account here")
-        (#^ Int             realRowN_end)
+        (#^ StrictInt       rowN             #_ "ordered NTLine number; multiline qstrings do not increase this number")
+        (#^ StrictInt       realRowN_start   #_ "corresponds to raw wy-code line number; multiline qstrings are taken into account here")
+        (#^ StrictInt       realRowN_end)
         (#^ (of List Token) tokens))
 
 
