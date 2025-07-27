@@ -66,8 +66,8 @@
 
     (defn [validateF] #^ (of List NTLine)
         expand_smarkers
-        [#^ NTLine ntline]
-        "converts ['■', '~:'] to '■■■'"
+        [ #^ NTLine ntline
+        ]
         (setv new_lines [ntline])
         (setv [n1 n2] [1 0])
         (while (neq n1 n2)
@@ -79,7 +79,7 @@
 ; _____________________________________________________________________________/ }}}1
 
 ;2) Expand RMarkers (at this stage no OMarker can be at NTLine start)
-; [util] some ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [util] var ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn [validateF] #^ (of List (of List Token))
         split_tokens_by_rmaker_tokens
@@ -100,6 +100,32 @@
                      (drop 1 tokens))
             (lconcat [(Token TKind.OMarker ":") (Token TKind.Indent $INDENT_MARK)]
                      tokens)))
+
+    (defn [validateF] #^ StrictInt tlen [#^ Token token] (return (len token.atom)))
+
+; ■ info ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
+
+    ; there may be several options:
+    ; |         0
+    ; |x        0
+    ; |■■       2
+    ; |\x       1
+    ; |■■x      2
+    ; |\■■x     3
+    ; |■■\x     3
+    ; |■■\■■x   5
+
+; ________________________________________________________________________/ }}}2
+
+    (defn [validateF] #^ StrictInt
+        calc_base_indent_of_line
+        [ #^ (of List Token) tokens
+        ]
+        "takes CMarker into account"
+        (setv indent_tokens (takewhile (fm (or (= it.kind TKind.Indent)
+                                               (= it.kind TKind.CMarker)))
+                                       tokens))
+        (tlen (tokens_to_indent_token indent_tokens)))
             
 ; _____________________________________________________________________________/ }}}1
 ; [assm] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -112,15 +138,16 @@
         (setv _chunks (split_tokens_by_rmaker_tokens tokens))
         (setv [_head_elem _tail] [(first _chunks) (drop 1 _chunks)])
         ;
-        (setv token1 (first tokens))
-        (setv _line_indent
-              (if (= token1.kind TKind.Indent)
-                  (strlen token1.atom)
-                  0))
-        ;
         (setv _head_elem_updated (apply_n (len _tail) prepend_rmarker_opener _head_elem))
-        (setv _tail_updated
-              (lmapm (lconcat [(Token TKind.Indent (smul $INDENT_MARK (+ _line_indent (mul %2 2))))]   ; 2 is len of ":■"
+        ;
+        (setv _head_indent (calc_base_indent_of_line _head_elem))
+        (setv _tail_updated 
+              (lmapm (lconcat [ (Token TKind.Indent
+                                       (smul $INDENT_MARK
+                                             (+ _head_indent
+                                                (if (= (getattrm (first %1) .kind) TKind.CMarker) -1 0)
+                                                (mul %2 2)))) ; 2 is len of ":■"
+                              ]   
                               %1)
                      _tail
                      (reversed (range_ 1 (len _tail)))))
@@ -139,6 +166,26 @@
 
 ; _____________________________________________________________________________/ }}}1
 
+;3) Expand AMarkers (again, no OMarker can be at NTLine start)
+; ....
+
+;+) Assm all expansions
+; [assm] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn [validateF] #^ (of List NTLine)
+        expand_ntlines
+        [ #^ (of List NTLine) ntlines
+        ]
+        (->> ntlines
+             (lmap expand_smarkers)
+             (f> (lconcat #* it))
+             (lmap expand_rmarkers)
+             (f> (lconcat #* it))
+             (lmap expand_smarkers)
+             (f> (lconcat #* it))
+             ))
+
+; _____________________________________________________________________________/ }}}1
 
 ; [del] indents count ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
@@ -176,16 +223,25 @@
     (import Preparator [wycode_to_prepared_code])
     (import Parser     [prepared_code_to_ntlines])
 
-    (setv _code1 " L #: : ~@#:   : x\\ (3 4) <$ 7\n\n : #: riba\n1 2 \"\n\n  : L 2\"\n: \\ L 3 <$ 7 \"riba\nbubr\"\"riba\nbubr\"\"riba\nbubr\"")
+    (setv _code1 "\\ y <$ #: L : x <$ z")
+
+    (defn cntl [ntline] (re_sub "■" " " (sconcat #* (pluckm .atom ntline.tokens))))
 
     (->> _code1
          wycode_to_prepared_code
          prepared_code_to_ntlines
-         (lmap expand_smarkers)
-         (f> (lconcat #* it))
-         (lmap expand_rmarkers)
-         (f> (lconcat #* it))
-         (lmap ntl_print))
+         expand_ntlines
+         (lmap cntl)
+         lprint)
 
 ; _____________________________________________________________________________/ }}}1
+
+    ; continue from: 
+;| :
+;|   :
+;|     \  f_x
+;|        3
+;|   ←←←4
+
+; probably forbid ' <$ x'
 
