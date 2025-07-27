@@ -8,7 +8,7 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-; [steps] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [step] many ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ StrictStr tabs_to_spaces [#^ StrictStr line] (line.expandtabs :tabsize 4))
 
@@ -23,10 +23,10 @@
                 line))
 
 ; _____________________________________________________________________________/ }}}1
-; [assembly] Prepare code for pyparsing ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [assm] Wycode to PreparedCode ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn [validateF] #^ PreparedCode
-        prepare_code_for_pyparsing
+        wycode_to_prepared_code
         [#^ WyCode raw_wy_code]
         (->> raw_wy_code
              .splitlines ; btw, this will NOT split at literal "\n" found in source code, because it is replaced with \"\\n\"

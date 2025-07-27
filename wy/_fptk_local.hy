@@ -99,10 +99,10 @@
     ;; list getters:
 
         #_ "rest(seq) -> List | drops 1st elem of list"
-        (defn rest [seq] "drops 1st elem of list" (get seq (slice 1 None)))
+        (defn rest [seq] "drops 1st elem of list" (cut seq 1 None))
 
         #_ "butlast(seq) -> List | drops last elem of list"
-        (defn butlast [seq] "drops last elem of list" (get seq (slice None -1)))
+        (defn butlast [seq] "drops last elem of list" (cut seq None -1))
 
         #_ "drop(n, seq) -> List | drops n>=0 elems from start of the list; when n<0, drops from end of the list"
         (defn drop [n seq]
@@ -324,6 +324,23 @@
     (import funcy [split_by   :as bisect_by])     #_ " bisect_by(pred, seq) -> taken, dropped | similar to (takewhile, dropwhile)"
     (import funcy [lsplit_by  :as lbisect_by])    #_ "lbisect_by(pred, seq) -> taken, dropped | list version of lbisect"
     ;;
+
+    #_ "lmulticut_by(pred, seq) -> list | cut at pred(elem)==True elems"
+    (defn lmulticut_by
+        [ pred
+          seq
+        ]
+        "cut at pred(elem)==True elems"
+        (when (= (len seq) 0) (return []))
+        (setv _newLists [])
+        ;
+        (for [&elem seq]
+            (if (pred &elem)
+                (_newLists.append [])
+                (if (= (len _newLists) 0)
+                    (_newLists.append [&elem])
+                    (. (last _newLists) (append &elem)))))
+        (return (lwithout [[]] _newLists)))
 
 ; ________________________________________________________________________/ }}}2
 ; [GROUP] APL: working with lists ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
