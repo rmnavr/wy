@@ -177,13 +177,9 @@
         [ #^ (of List NTLine) ntlines
         ]
         (->> ntlines
-             (lmap expand_smarkers)
-             (f> (lconcat #* it))
-             (lmap expand_rmarkers)
-             (f> (lconcat #* it))
-             (lmap expand_smarkers)
-             (f> (lconcat #* it))
-             ))
+             (funcy.mapcat expand_smarkers)
+             (funcy.mapcat expand_rmarkers)
+             (funcy.mapcat expand_smarkers)))
 
 ; _____________________________________________________________________________/ }}}1
 
@@ -223,7 +219,7 @@
     (import Preparator [wycode_to_prepared_code])
     (import Parser     [prepared_code_to_ntlines])
 
-    (setv _code1 "\\ y <$ #: L : x <$ z")
+    (setv _code1 (* "x y z\n" 3))
 
     (defn cntl [ntline] (re_sub "■" " " (sconcat #* (pluckm .atom ntline.tokens))))
 
@@ -237,11 +233,14 @@
 ; _____________________________________________________________________________/ }}}1
 
     ; continue from: 
-;| :
-;|   :
-;|     \  f_x
-;|        3
-;|   ←←←4
 
-; probably forbid ' <$ x'
+        ;| :
+        ;|   :
+        ;|     \  f_x
+        ;|        3
+        ;|   ←←←4
+
+        ; probably forbid ' <$ x'
+
+        ; bug: empty lines are cut away -> solution is good multicut function
 
