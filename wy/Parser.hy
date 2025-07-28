@@ -149,7 +149,7 @@
         [ #^ (of List Token) tokens
         ]
         "newline tokens themselves are removed"
-        (lmulticut_by (fm (eq it.kind TKind.NewLine)) tokens))
+        (lmulticut_by :keep_border False :merge_border False (fm (eq it.kind TKind.NewLine)) tokens))
 
     (defn [validateF] #^ StrictInt
         count_n_of_rows_that_tline_takes

@@ -86,7 +86,7 @@
         [ #^ (of List Token) tokens
         ]
         "rmarker tokens themselves are removed"
-        (lmulticut_by (fm (eq it.kind TKind.RMarker)) tokens))
+        (lmulticut_by :keep_border False :merge_border True (fm (eq it.kind TKind.RMarker)) tokens))
 
     (defn [validateF] #^ (of List Token)
         prepend_rmarker_opener
@@ -219,7 +219,8 @@
     (import Preparator [wycode_to_prepared_code])
     (import Parser     [prepared_code_to_ntlines])
 
-    (setv _code1 (* "x y z\n" 3))
+    (setv _code1 (double " : x <$ y <$ z"))
+    (print _code1)
 
     (defn cntl [ntline] (re_sub "■" " " (sconcat #* (pluckm .atom ntline.tokens))))
 

@@ -1,7 +1,7 @@
 
 ; This is local version of github.com/rmnavr/fptk lib.
 ; It's purpose is to have stable fptk inside other projects until fptk reaches stable version.
-; This file was generated from local git version: 0.2.4dev7
+; This file was generated from local git version: 0.2.4dev8
 
 ; functions and modules ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
@@ -118,7 +118,8 @@
         (defn pick [ns seq]
             " pics elems ns from seq,
               throws error if some of ns doesn't exist,
-              ns can be list of dicts keys"
+              ns can be list of dicts keys
+            "
             (lfor &n ns (get seq &n)))
 
         (import  funcy  [pluck])        #_ " pluck(key, mappings) -> generator | gets same key from every mapping, mappings can be list of lists, list of dicts, etc."
@@ -136,7 +137,8 @@
         " same as hy get macro, but with 1-based index,
           can also work with dict keys,
           will throw error for n=0,
-          will throw error if elem not found (just like hy get macro)"
+          will throw error if elem not found (just like hy get macro)
+        "
         (setv _ns_plus1 
             (lfor &n ns
                 (do (when (= &n 0) (raise (IndexError "n=0 can't be used with 1-based getter")))
@@ -149,7 +151,8 @@
     (defn nth_ [n seq] 
         " same as nth, but with 1-based index,
           will throw error for n=0,
-          will return None if elem not found (just like nth)"
+          will return None if elem not found (just like nth)
+        "
         (when (dictQ seq) (return (nth n seq)))
         (when (=  n 0) (raise (IndexError "n=0 can't be used with 1-based getter")))
         (when (>= n 1) (return (nth (dec n) seq)))
@@ -164,7 +167,8 @@
         " similar to py slice, but:
           - has 1-based index
           - won't take None for start and end arguments
-          - won't take 0 for start and end"
+          - won't take 0 for start and end
+        "
         (cond (>= start 1) (setv _start (dec start))
               (<  start 0) (setv _start start)
               (=  start 0) (raise (IndexError "start=0 can't be used with 1-based getter"))
@@ -180,7 +184,8 @@
     #_ "cut_(seq, start, end, step) -> List | same as cut, but with 1-based index (it doesn't understand None and 0 for start and end arguments)"
     (defn cut_ [seq start end [step None]]
         " same as hy cut macro, but with 1-based index,
-          - won't take None or 0 for start and end arguments"
+          - won't take None or 0 for start and end arguments
+        "
         (get seq (slice_ start end step)))
 
 ; ________________________________________________________________________/ }}}2
@@ -223,7 +228,8 @@
     (defn pflip
         [f a]
         " flips arguments and partially applies,
-          example: pflip(f, a)(b) = f(b, a)"
+          example: pflip(f, a)(b) = f(b, a)
+        "
         (fn [%x] (f %x a)))
 
 ; ________________________________________________________________________/ }}}2
@@ -252,9 +258,10 @@
 
     #_ "(on f check x y #* args) | (on len eq xs ys zs) -> checks if len of xs/ys/zs is the same, check has to be func of 2+ args"
     (defn on [f check x y #* args]
-        " inpired by Haskell's 'on' function,
+        " inspired by Haskell's 'on' function,
           applies f to x, y, and other args (if provided),
-          then applies reduce to them with check"
+          then applies reduce to them with check
+        "
         (reduce check (lmap f [x y #* args])))
 
 ; ________________________________________________________________________/ }}}2
@@ -266,7 +273,8 @@
     #_ "nested(n, f) | f(f(f(...f))), returns function"
     (defn nested [n f]
         " f(f(f(...f))), where nesting is n times deep,
-          returns function"
+          returns function
+        "
         (compose #* (list_n n f)))
 
     #_ "apply_n(n, f, *args, **kwargs) | f(f(f(...f(*args, **kwargs))"
@@ -274,7 +282,8 @@
         " applies f to args and kwargs,
           than applies f to result of prev application,
           and this is repeated in total for n times,
-          n=1 is simply f(args, kwargs)"
+          n=1 is simply f(args, kwargs)
+        "
         ((compose #* (list_n n f)) #* args #** kwargs))
 
 ; ________________________________________________________________________/ }}}2
@@ -306,6 +315,8 @@
 
     (import funcy [takewhile]) #_ "takewhile([pred, ] seq) | yields elems of seq as long as they pass pred"
     (import funcy [dropwhile]) #_ "dropwhile([pred, ] seq) | mirror of dropwhile"
+    (import funcy [takewhile]) #_ "takewhile([pred, ] seq) | yields elems of seq as long as they pass pred"
+    (import funcy [dropwhile]) #_ "dropwhile([pred, ] seq) | mirror of dropwhile"
 
     (import funcy [split      :as filter_split])  #_ "filter_split(pred, seq) -> passed, rejected |"
     (import funcy [lsplit     :as lfilter_split]) #_ "lfilter_split(pred,seq) -> passed, rejected | list(filter_split(...))"
@@ -316,7 +327,8 @@
     (defn lbisect_at [n seq]
         " splits seq to start and tail lists (returns tuple of lists),
           when n>=0, len of start will be = n (or less, when len(seq) < n),
-          when n<0, len of tail will be = n (or less, when len(seq) < abs(n))"
+          when n<0, len of tail will be = n (or less, when len(seq) < abs(n))
+        "
         (if (>= n 0)
             (funcy.lsplit_at n seq)
             (funcy.lsplit_at (max 0 (+ (len seq) n)) seq)))
@@ -325,30 +337,21 @@
     (import funcy [lsplit_by  :as lbisect_by])    #_ "lbisect_by(pred, seq) -> taken, dropped | list version of lbisect"
     ;;
 
-    #_ "lmulticut_by(pred, seq) -> list | cut at pred(elem)==True elems"
-    (defn lmulticut_by
-        [ pred
-          seq
-        ]
-        "cut at pred(elem)==True elems"
-        (when (= (len seq) 0) (return []))
-        (setv _newLists [])
-        ;
-        (for [&elem seq]
-            (if (pred &elem)
-                (_newLists.append [])
-                (if (= (len _newLists) 0)
-                    (_newLists.append [&elem])
-                    (. (last _newLists) (append &elem)))))
-        (return (lwithout [[]] _newLists)))
-
 ; ________________________________________________________________________/ }}}2
 ; [GROUP] APL: working with lists ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
 
     (import hyrule [flatten])   #_ "flattens to the bottom" ;;
 
-    #_ "lprint(seq) | literally just list(map(print,seq))"
-    (defn lprint [seq] "literally just list(map(print,seq))" (lmap print seq) (return None))
+    #_ "lprint(seq, sep=None) | literally just list(map(print,seq))"
+    (defn lprint [seq [sep None]]
+          " essentially list(map(print, seq))
+
+            with sep='---' (or some other) will print sep between seq elems
+          "
+          (if (= sep None)
+              (lmap print seq)
+              (lmap print (funcy.interpose sep seq)))
+          (return None))
 
     (comment "py | base | reversed | reversed(sequence) -> iterator |") 
 
@@ -382,6 +385,63 @@
     (import funcy [lpartition_by])  #_ "lpartition_by(f,seq) -> list of lists | list(partition_by(...))" ;;
 
     (import funcy [group_by] #_ "group_by(f, seq) -> defaultdict(list) | groups elems of seq keyed by the result of f")
+
+    #_ "lmulticut_by(pred, seq, keep_border=True, merge_border=False) -> list | cut at pred(elem)==True elems"
+    (defn #^ (of List list)
+        lmulticut_by 
+        [ pred
+          #^ list seq
+          [keep_border  True ]
+          [merge_border False]
+        ]
+        " cuts at elems which give pred(elem)=True
+          #
+          keep_border =True  will keep elements with pred(elem)=True
+          merge_border=True  will cut only at first of a sequence of pred(elem)=True elems 
+          #
+          in the example below oddQ is function that gives True for odd numbers,
+          that is cuts will happen at elems=1
+          #
+                                                 #  keep_b merge_b
+                                                 #  ------ -------
+          lmulticut_by(oddQ, [1, 0, 1, 1, 0, 0, 1], True , True ) # -> [[1, 0], [1, 1, 0, 0], [1]]
+          lmulticut_by(oddQ, [1, 0, 1, 1, 0, 0, 1], True , False) # -> [[1, 0], [1], [1, 0, 0], [1]]
+          lmulticut_by(oddQ, [1, 0, 1, 1, 0, 0, 1], False, True ) # -> [[0], [0, 0]]
+          lmulticut_by(oddQ, [1, 0, 1, 1, 0, 0, 1], False, False) # -> [[0], [], [0, 0], []]
+        "
+        (when (= (len seq) 0) (return []))
+        (setv _newLists [])
+        ;;
+        (for [&elem seq]
+            (if (pred &elem)
+                (_newLists.append [&elem])
+                (if (= (len _newLists) 0)
+                    (_newLists.append [&elem])
+                    (. (last _newLists) (append &elem)))))
+        ;;
+        (when (not keep_border)
+              (setv _newLists (lmap (fn [it] (if (pred (get it 0))
+                                                 (cut it 1 None)
+                                                 it))
+                                    _newLists)))
+        ;;
+        (when merge_border
+              (if keep_border
+                  (do (setv single_borders_pos [])
+                      (for [&i (range 0 (len _newLists))]
+                           (setv cur_list (get _newLists &i))
+                           (when (and (= (len cur_list) 1)
+                                      (pred (get cur_list 0)))
+                                 (single_borders_pos.append &i)))
+                      (for [&i single_borders_pos]
+                           (when (< &i (dec (len _newLists)))
+                                 (setv (get _newLists (inc &i)) (+ (get _newLists &i) (get _newLists (inc &i))))))
+                      (setv others_pos (list (- (set (range 0 (len _newLists))) (set single_borders_pos))))
+                      (when (in (dec (len _newLists)) single_borders_pos)
+                            (others_pos.append (dec (len _newLists))))
+                      (setv _newLists (pick others_pos _newLists)))
+                  (setv _newLists (lwithout [[]] _newLists))))
+        (return _newLists))
 
 ; ________________________________________________________________________/ }}}2
 ; [GROUP] APL: counting ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
@@ -589,20 +649,10 @@
             (funcy.str_join sep ss)
             (funcy.str_join ss)))
 
-    #_ "str_replace(string, old, new, count=-1) | str.replace method as a function"
-    (defn str_replace [string old new [count -1]]
-        "str.replace method as a function"
-        (string.replace old new count))
-
     #_ "lowercase(string) | str.lower method as a function"
     (defn #^ str lowercase [#^ str string]
         "str.lower method as a function"
         (string.lower))
-
-    #_ "endswith(string, suffix) -> bool | str.endswith method as a function (but can't take start/end params)"
-    (defn #^ bool endswith [#^ str string #^ str suffix]
-        "str.endswith method as a function (but can't take start/end params)"
-        (string.endswith suffix))
 
     #_ "strip(string, chars=None) | str.strip method as a function"
     (defn #^ str strip [#^ str string [chars None]]
@@ -620,21 +670,34 @@
         "str.rstrip method as a function"
         (string.rstrip chars))
 
-    #_ "enlengthen(string, target_len, char=' ', fill_tail=True) | adds char to string until target_len reached"
+    #_ "enlengthen(string, target_len, char=' ', on_tail=True) | adds char to string until target_len reached"
     (defn #^ str
         enlengthen
         [ #^ int  target_len
           #^ str  string
-          #^ str  [char " "]
-          #^ bool [fill_tail True]
+          #^ str  [char      " "]
+          #^ bool [on_tail   True]
+          #^ bool [force_len False]
         ]
-        " adds char to string until target_len reached,
-          if len(string) > target_len, will return string with no change,
-          with fill_tail=False will prepend chars rather than append"
+        " appends char to string until target_len reached
+
+          - if len(string) > target_len, will return string with no change
+          - with on_tail=False will prepend chars rather than append
+          - with force_len=True will cut string to target_len if required (taking on_tail option into account)
+          - when len(char)> 1 is given, repeats it's pattern, but still ensures target_len 
+        "
+        (when (< target_len 0) (raise (ValueError "target_len < 0 is not allowed")))
+        (when (= char "")      (raise (ValueError "empty char is not allowed")))
+        ;;
+        (when (and force_len 
+                   (> (len string) target_len))
+              (if on_tail (return (cut string target_len))
+                          (return (take (- target_len) string))))
+        ;;
         (setv n_required (max 0 (- target_len (len string))))
-		(if (= fill_tail True)
-			(setv outp (sconcat string (* char n_required)))
-			(setv outp (sconcat (* char n_required) string)))
+		(if on_tail
+			(setv outp (sconcat string (cut (* char n_required) 0 (- target_len (len string)))))
+			(setv outp (sconcat (cut (* char n_required) 0 (- target_len (len string))) string)))
 		(return outp))
 
 ; ________________________________________________________________________/ }}}2
@@ -1153,6 +1216,7 @@
                           (print ">>" ~_arg2 "=" ~arg2)
                           (except [e2 Exception]
                                   (print ">> Can't calc" ~_arg2 "|" (type e1) ":" e2)))
+                                  (print)
                      eFull )))
 
 	(defmacro gives_error_typeQ [expr error_type]
