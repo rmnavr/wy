@@ -145,8 +145,9 @@
 ; [C] Token ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defclass [] TKind [Enum]
-        (setv NewLine       00  #_ "☇"                  )
-        (setv Indent        01  #_ "■"                  )
+        (setv NewLine       00  #_ "¦☇"                 )
+        (setv Indent        01  #_ "■■■■"               )
+        (setv NegIndent     99  #_ "atom is '←', only one use case: 'x , \\ y'")
         (setv OMarker       02  #_ "#: smarker/mmarker" )
         (setv DMarker       05  #_ "LL ::"              )
         (setv CMarker       06  #_ "\\"                 )
@@ -197,18 +198,7 @@
         (print f"Line = {ntline.rowN} ({ntline.realRowN_start}-{ntline.realRowN_end}) | {token_line}"))
 
 ; _____________________________________________________________________________/ }}}1
-
-
-
-
-; [C] Parser ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    ; With below definitions, pydantic will:
-    ; - NOT CHECK: Token, TokenizedLine
-    ; - CHECK:     NumberedTLine
-
-    ; ==========================================================================================================
-    ; Deconstructed Lines:
+; [C] NDLine (numbered deconstructed line) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defclass [dataclass] GroupStarterDL []
         (#^ Token smarker #_ "like : and #C at beginning of the line"))
@@ -224,9 +214,9 @@
 
     (setv #_ DC StructuralKind (of Union GroupStarterDL ContinuatorDL OnlyOCommentDL EmptyLineDL ImpliedOpenerDL))
 
-    (defclass [dataclass] DeconstructedLine []
+    (defclass [] DeconstructedLine [BaseModel]
         (#^ StructuralKind      kind_spec)
-        (#^ int                 equiv_indent)     ; <- extra ✠✠✠✠ are dealt with at this stage; there is only one case where equiv_indent≠real_indent - only for continuator \
+        (#^ StrictInt           equiv_indent)     ; <- extra ✠✠✠✠ are dealt with at this stage; there is only one case where equiv_indent≠real_indent - only for continuator \
         (#^ (of List Token)     body_tokens)
         (#^ (of Optional Token) ending_comment))  ; <- OnlyOCommentDL stores it's comment here
 

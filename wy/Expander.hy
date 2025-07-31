@@ -10,8 +10,14 @@
 
 ; _____________________________________________________________________________/ }}}1
 
+; syntax info ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
     ; \ \ is forbidden      // first_indent_profile
     ; <$ <$ is forbidden?   // split_tokens_by_rmarker_tokens
+    ; \ $ is forbidden
+    ; indent after line with $ is not allowed?
+
+; _____________________________________________________________________________/ }}}1
 
 ; Utils used by all expanding steps:
 ; [util] General APL ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -174,15 +180,15 @@
         (setv _new_lines [ntline])
         ;
         (while (ntline_has_smarker_for_expandingQ (last _new_lines))
-            (setv _new_lines
-                  (lconcat (butlast _new_lines)
-                           (expand_one_smarker (last _new_lines)))))
+               (setv _new_lines
+                     (lconcat (butlast _new_lines)
+                              (expand_one_smarker (last _new_lines)))))
         ;
         (return _new_lines))
 
 ; _____________________________________________________________________________/ }}}1
 
-; 2) Expand RMarkers (at this stage no OMarker can be at NTLine start)
+; 2) Expand RMarkers (no OMarker is supposed to be at NTLine start at this stage)
 ; [util] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn [validateF] #^ (of List (of List Token))
@@ -207,7 +213,7 @@
                      (drop 1 tokens))
             (lconcat [(Token TKind.OMarker ":") (Token TKind.Indent $INDENT_MARK)]
                      tokens)))
-            
+
 ; _____________________________________________________________________________/ }}}1
 ; [assm] :: [Token ...] -> [[Token ...] ...] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
@@ -215,14 +221,14 @@
         expand_rmarkers_on_tokens
         [ #^ (of List Token) tokens
         ]
-        "| ⎤  f <$ ⎤ x <$ y     
+        "| ⎤  f <$ ⎤ x <$ y
          |
          |            ; ⎤ is continuator in this notation
          |■:■:■⎤■■f   ; _head_line
          |■■■■■■■⎤x   ; _expd_line1 (expanded)
          |■■■4        ; _expd_line2
         "
-        (unless (in (Token TKind.RMarker $RMARKER) tokens) (return [tokens])) 
+        (unless (in (Token TKind.RMarker $RMARKER) tokens) (return [tokens]))
         ;
         (setv _chunks (split_tokens_by_rmarker_tokens tokens))
         ;
@@ -239,9 +245,9 @@
                               (lreversed (range_ 1 (len _expd_lines)))
                               (lconcat [_i1] _iRest)))
         ;
-        (setv _expd_lines_updated 
+        (setv _expd_lines_updated
               (lmapm (lconcat [(indent_token (+ (if (= (getattrm (first %1) .kind) TKind.CMarker) -1 0)
-                                                %2))]   
+                                                %2))]
                               %1)
                      _expd_lines
                      _indents))
@@ -254,57 +260,157 @@
         expand_rmarkers
         [ #^ NTLine ntline
         ]
-        "this is just wrapping of 'expand_rmarkers_on_tokens' into ntline"
-        (setv tokenss (expand_rmarkers_on_tokens ntline.tokens))
-        (lmapm (NTLine :rowN           ntline.rowN
-                       :realRowN_start ntline.realRowN_start
-                       :realRowN_end   ntline.realRowN_end
-                       :tokens         it)
-               tokenss))
+        " this is just wrapping of 'expand_rmarkers_on_tokens' into ntline
+          + smarker expanding afterwards
+        "
+        (->> ntline.tokens
+             expand_rmarkers_on_tokens
+             (lmapm (NTLine :rowN           ntline.rowN
+                            :realRowN_start ntline.realRowN_start
+                            :realRowN_end   ntline.realRowN_end
+                            :tokens         it))
+             (mapcat expand_smarkers)))
 
 ; _____________________________________________________________________________/ }}}1
 
-;3) Expand AMarkers (again, no OMarker can be at NTLine start)
-; [assm] :: [Token ...] -> [[Token ...] ...] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; 3) Expand AMarkers (no OMarker is supposed to be at NTLine start at this stage)
+; [util] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn [validateF] #^ (of List (of List Token))
-        expand_one_amarker_on_tokens
+        split_tokens_by_amarker_tokens
         [ #^ (of List Token) tokens
         ]
-        "| ⎤  f $ ⎤ x $ : y     
-         |
-         |            ; ⎤ is continuator in this notation
-         | ⎤  f
-         |    →→→→⎤ x $ : y
+        "amarker tokens themselves are removed"
+        (lmulticut_by (fm (eq it.kind TKind.AMarker))
+                      tokens
+                      :keep_border  False
+                      :merge_border False))
+
+    (defn [validateF] #^ StrictInt
+        guaranteed_excessive_len_of_line
+        [ #^ (of List Token) tokens
+        ]
+        " this is intended for expanded lines after $ symbol;
+          for [':', 'x'] will return 3
         "
-        (unless (in (Token TKind.RMarker $RMARKER) tokens) (return [tokens])) 
+        (sum (lmap tlen (funcy.interpose (indent_token 1) tokens))))
+
+; _____________________________________________________________________________/ }}}1
+; [assm] :: [Token ...] -> [[Token ...] ...] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (setv $A_INDENT_LEN 4) ; extra indent generated by AMarkers
+
+    (defn [validateF] #^ (of List (of List Token))
+        expand_amarkers_on_tokens
+        [ #^ (of List Token) tokens
+        ]
+        "| ⎤  f $ : ⎤ x $ : y
+         |
+         |                      ; ⎤ is continuator in this notation
+         | ⎤  f                 ; line 1
+         |    →→→→: ⎤ x $ : y   ; line 2
+        "
+        (unless (in (Token TKind.AMarker $AMARKER) tokens) (return [tokens]))
         ;
-        (setv _chunks (split_tokens_by_rmarker_tokens tokens))
+        (setv _lines (split_tokens_by_amarker_tokens tokens))
+        (setv _line1 (first _lines))
+        (setv _rest_lines (list (rest _lines)))
         ;
-        (setv _head_line  (first _chunks))
-        (setv _expd_lines (drop 1 _chunks))
-        (setv _head_line_updated (apply_n (len _expd_lines) prepend_rmarker_opener _head_line))
+        ; indents 2+ :
+        (setv _lines_lens (lmap guaranteed_excessive_len_of_line _lines))
+        (setv _rest_indents
+              (lsums (lmapm (plus it $A_INDENT_LEN) _lines_lens)))
         ;
-        ; building indents for expd lines:
-        (setv indent_profile (first_indent_profile _head_line)) ; notice: here is head_line, not head_line_updated
-        (setv _i1    (sum indent_profile))
-        (setv _iRest (lrepeat (first indent_profile)
-                              (dec (len _expd_lines))))
-        (setv _indents (lmapm (+ (double %1) %2)
-                              (lreversed (range_ 1 (len _expd_lines)))
-                              (lconcat [_i1] _iRest)))
-        ;
-        (setv _expd_lines_updated 
-              (lmapm (lconcat [(indent_token (+ (if (= (getattrm (first %1) .kind) TKind.CMarker) -1 0)
-                                                %2))]   
-                              %1)
-                     _expd_lines
-                     _indents))
-        (return (lconcat [_head_line_updated] _expd_lines_updated)))
+        (setv _rest_lines_updated
+              (lmapm (lconcat [(indent_token %1)]
+                              %2)
+                     _rest_indents
+                     _rest_lines))
+        (return (lconcat [_line1] _rest_lines_updated)))
+
+; _____________________________________________________________________________/ }}}1
+; [assm] :: NTLine -> [NTLine ...] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+   (defn [validateF] #^ (of List NTLine)
+        expand_amarkers
+        [ #^ NTLine ntline
+        ]
+        " this is just wrapping of 'expand_amarkers_on_tokens' into ntline
+          + smarker expanding afterwards"
+        (->> ntline.tokens
+             expand_amarkers_on_tokens
+             (lmapm (NTLine :rowN           ntline.rowN
+                            :realRowN_start ntline.realRowN_start
+                            :realRowN_end   ntline.realRowN_end
+                            :tokens         it))
+             (mapcat expand_smarkers)))
 
 ; _____________________________________________________________________________/ }}}1
 
-;+) Assm all expansions
+; 4) Expand JMarkers (no OMarker is supposed to be at NTLine start at this stage)
+; [step] expand one jmarker  :: NTLine -> [NTLine ...] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn [validateF] #^ (of List NTLine)
+        expand_one_jmarker
+        [ #^ NTLine ntline
+        ]
+        "Processes first found smarker, also immediately smarker-expands line 2:
+         | ⎤  f , : ⎤ x , : y
+         |
+         |                ; ⎤ is continuator in this notation
+         | ⎤  f           ; line 1
+         |    :           ; / line 2, smarker-expanded
+         |      x , : y   ; \\ 
+        "
+        ; work on Tokens:
+        (setv tokens ntline.tokens)
+        (unless (in (Token TKind.JMarker $JMARKER) tokens) (return [ntline]))
+        ;
+        (setv [_line1 _line2]
+              (lbisect_by (fm (neq it.kind TKind.JMarker))
+                          tokens))
+        (setv _line2 (list (rest _line2))) ; remove JMarker itself
+        ;
+        (setv _indent (sum (first_indent_profile tokens)))
+        (setv _dedent (if (and (fnot zerolenQ _line2)
+                               (= (getattrm (first _line2) .kind) TKind.CMarker))
+                          -1
+                          0))
+        (setv _final_indent (plus _indent _dedent))
+        (setv _line2_updated 
+              (cond (= _final_indent  0) _line2
+                    (= _final_indent -1) (lconcat [(Token TKind.NegIndent "←")]   _line2)
+                    True                 (lconcat [(indent_token _final_indent)] _line2)))
+        ; work on NTLines:
+        (setv ntlines (lmapm (NTLine :rowN           ntline.rowN
+                                     :realRowN_start ntline.realRowN_start
+                                     :realRowN_end   ntline.realRowN_end
+                                     :tokens         it)
+                            [_line1 _line2_updated]))
+        (return (lconcat [(first ntlines)]
+                         (expand_smarkers (second ntlines)))))
+
+; _____________________________________________________________________________/ }}}1
+; [assm] expand all jmarkers :: NTLine -> [NTLine ...] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn [validateF] #^ (of List NTLine)
+        expand_jmarkers
+        [ #^ NTLine ntline
+        ]
+        "all the smarker expansion logic is inside expand_one_jmarker"
+        (setv _new_lines [ntline])
+        ;
+        (while (in (Token TKind.JMarker $JMARKER)
+                   (getattrm (last _new_lines) .tokens))
+               (setv _new_lines
+                     (lconcat (butlast _new_lines)
+                              (expand_one_jmarker (last _new_lines)))))
+        ;
+        (return _new_lines))
+
+; _____________________________________________________________________________/ }}}1
+
+; 5) Assm all expansions
 ; [assm] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn [validateF] #^ (of List NTLine)
@@ -312,58 +418,32 @@
         [ #^ (of List NTLine) ntlines
         ]
         (->> ntlines
-             (funcy.mapcat expand_smarkers)
-             (funcy.mapcat expand_rmarkers)
-             (funcy.mapcat expand_smarkers)))
+             (mapcat expand_smarkers)
+             (mapcat expand_rmarkers)
+             (mapcat expand_amarkers)
+             (mapcat expand_jmarkers)))
 
 ; _____________________________________________________________________________/ }}}1
 
-; [del] indents count ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    ; ""  -> []
-    ;
-    ;  ↓
-    ; "x" -> [1] Column Number
-    ;
-    ;  ₁↓
-    ; " x" -> [2]
-    ;
-    ;  ₁₂↓
-    ; "\ x"-> [3]
-    ;
-    ;  ₁₂₃↓
-    ; "\  x"-> [4]
-    ;
-    ;  ₁↓₃₄↓↓₇₈↓↓↓↓₃₄₅₆₇↓ (after \ only 1st symbol is used)
-    ; " L  #:  ~@#:   \ ~: x" -> [2, 5-6, 9-12, 18]
-
-    (defn [validateF] #^ (of List Token)
-        count_indents_for_ntline [#^ NTLine ntline]
-        ;
-        (setv _indentable_tokens [])
-        (for [&token ntline.tokens]
-            (cond (eq &token.kind TKind.Indent)  (    += _indentable_tokens [&token])
-                  (eq &token.kind TKind.OMarker) (    += _indentable_tokens [&token])
-                  (eq &token.kind TKind.CMarker) (do (+= _indentable_tokens [&token]) (break))
-                  True                           (break)))
-        _indentable_tokens)
-
-; _____________________________________________________________________________/ }}}1
 ; run ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (import Preparator [wycode_to_prepared_code])
     (import Parser     [prepared_code_to_ntlines])
 
-    (setv _code1 " L L 1 2 3 \n   L 2 3 4")
+    (setv _code1 "1 $ ~#: ~#: \\ : : : 3 $ 3\n")
 
     (defn cntl [ntline] (re_sub "■" " " (sconcat #* (pluckm .atom ntline.tokens))))
 
+    (dt_print)
     (->> _code1
          wycode_to_prepared_code
          prepared_code_to_ntlines
          expand_ntlines
-         (lmap cntl)
-         lprint)
+         (lmap ntl_print)
+         ;(lmap cntl)
+         ;lprint
+         )
+    (dt_print)
 
 ; _____________________________________________________________________________/ }}}1
 
