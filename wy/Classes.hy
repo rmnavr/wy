@@ -149,14 +149,14 @@
         (setv Indent        01  #_ "■■■■"               )
         (setv NegIndent     99  #_ "atom is '←', only one use case: 'x , \\ y'")
         (setv OMarker       02  #_ "#: smarker/mmarker" )
-        (setv DMarker       05  #_ "LL ::"              )
-        (setv CMarker       06  #_ "\\"                 )
-        (setv AMarker       07  #_ "$"                  )
-        (setv RMarker       08  #_ "<$"                 )
-        (setv JMarker       09  #_ ","                  )
-        (setv OComment      10  #_ ";comment"           )
-        (setv RACont        11  #_ "( ) 1 #* #_ ..."    )  ; regarded as continuator
-        (setv RAOpener      12  #_ "everything else"    )  ; regarded as opener
+        (setv DMarker       03  #_ "LL ::"              )
+        (setv CMarker       04  #_ "\\"                 )
+        (setv AMarker       05  #_ "$"                  )
+        (setv RMarker       06  #_ "<$"                 )
+        (setv JMarker       07  #_ ","                  )
+        (setv OComment      08  #_ ";comment"           )
+        (setv RACont        09  #_ "( ) 1 #* #_ ..."    )  ; regarded as continuator
+        (setv RAOpener      10  #_ "everything else"    )  ; regarded as opener
         ;
         (defn __repr__ [self] (return self.name))
         (defn __str__  [self] (return self.name))) 
@@ -200,37 +200,48 @@
 ; _____________________________________________________________________________/ }}}1
 ; [C] NDLine (numbered deconstructed line) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defclass [dataclass] GroupStarterDL []
-        (#^ Token smarker #_ "like : and #C at beginning of the line"))
+    (defclass [] SKind [Enum]
+        (setv GroupStarter   1)
+        (setv Continuator    2)
+        (setv ImpliedOpener  3)
+        (setv OnlyOComment   4)
+        (setv EmptyLine      5)
+        ;
+        (defn __repr__ [self] (return self.name))
+        (defn __str__  [self] (return self.name))) 
 
-    (defclass [dataclass] ContinuatorDL []
-        (#^ (of Optional Token) cmarker #_ "cmarker is \\ ; None is for what not regarded as openers (digits, strings, etc.)"))
+    (setv _tripleInt (of Tuple StrictInt StrictInt StrictInt))
 
-    (defclass [dataclass] ImpliedOpenerDL [])
+    (defclass [] NDLine [BaseModel]
+        (#^ SKind                kind)      
+        (#^ StrictInt            starts_at)            ; <- " \ x" is 4, " #:" is 2, "" (empty line) is 0, "x" is 1
+        (#^ (of List Token)      body_tokens)          ; <- starting cmarker is removed
+        (#^ _tripleInt           rowN)                 ; #(rowN realRowN_start realRowN_end) from source NTLine
+        ; below None is used for kinds where field not applicable:
+        (#^ (of Optional bool)   has_starting_cmarker) ; <- ContinuatorDL: True for lines actually starting with \\, False is for RACont: digits/strings/etc.
+        (#^ (of Optional Atom)   smarker)              ; <- GroupStarterDL stores it's smarker.atom here
+        (#^ (of Optional Atom)   ending_comment))      ; <- OnlyOCommentDL stores it's comment here
 
-    (defclass [dataclass] OnlyOCommentDL []) ; OComment is comment that starts with ";"
-
-    (defclass [dataclass] EmptyLineDL [])
-
-    (setv #_ DC StructuralKind (of Union GroupStarterDL ContinuatorDL OnlyOCommentDL EmptyLineDL ImpliedOpenerDL))
-
-    (defclass [] DeconstructedLine [BaseModel]
-        (#^ StructuralKind      kind_spec)
-        (#^ StrictInt           equiv_indent)     ; <- extra ✠✠✠✠ are dealt with at this stage; there is only one case where equiv_indent≠real_indent - only for continuator \
-        (#^ (of List Token)     body_tokens)
-        (#^ (of Optional Token) ending_comment))  ; <- OnlyOCommentDL stores it's comment here
-
-    (setv $BLANK_DL (DeconstructedLine :kind_spec      (EmptyLineDL)
-                                       :equiv_indent   0
-                                       :body_tokens    []
-                                       :ending_comment None))
+    (setv $BLANK_DL (NDLine :kind                 SKind.EmptyLine
+                            :starts_at            0
+                            :body_tokens          []
+                            :rowN                 #(0 0 0)
+                            ;
+                            :has_starting_cmarker None
+                            :smarker              None
+                            :ending_comment       None
+                            ))
 
 ; _____________________________________________________________________________/ }}}1
+
+
+
+
 ; [C] Bracketer ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defclass [dataclass] BracketedLine []
         "calcs structural opener brackets for current line"
-        (#^ DeconstructedLine   dline)
+        (#^ NDLine   dline)
         (#^ (of List Token)     closers #_ "elems of CLOSER_BRACKETS; closers are closing previous line - but this info is stored in cur line")
         (#^ (of List Token)     openers #_ "elems of HY_OPENERS; openers are at the start for current line"))
 

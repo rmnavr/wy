@@ -118,18 +118,6 @@
               (print "how")))
 
 ; _____________________________________________________________________________/ }}}1
-; [util] for NTLine ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    ; not used:
-    (defn [validateF] #^ bool
-        ntline_starts_with_indentQ
-        [#^ NTLine ntline]
-        "will also return False for empty lines"
-        (when (zerolenQ ntline.tokens) (return False))
-        (setv token1 (first  ntline.tokens))
-        (if (eq token1.kind TKind.Indent) True False))
-
-; _____________________________________________________________________________/ }}}1
 
 ; 1) Expand SMarkers
 ; [util] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -425,25 +413,4 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-; run ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    (import Preparator [wycode_to_prepared_code])
-    (import Parser     [prepared_code_to_ntlines])
-
-    (setv _code1 "1 $ ~#: ~#: \\ : : : 3 $ 3\n")
-
-    (defn cntl [ntline] (re_sub "■" " " (sconcat #* (pluckm .atom ntline.tokens))))
-
-    (dt_print)
-    (->> _code1
-         wycode_to_prepared_code
-         prepared_code_to_ntlines
-         expand_ntlines
-         (lmap ntl_print)
-         ;(lmap cntl)
-         ;lprint
-         )
-    (dt_print)
-
-; _____________________________________________________________________________/ }}}1
 
