@@ -8,6 +8,12 @@
 
 ; _____________________________________________________________________________/ }}}1
 
+    ; indent marks will be inserted like so (not further):
+    ; ☇¦■■:■:■■\■■: pups $ riba <$
+    ; ☇¦■■:■:■■\■■pups
+    ; ☇¦■■:■:■■:■■pups
+    ; ☇¦■■:■:■■:
+
 ; [step] many ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ StrictStr tabs_to_spaces [#^ StrictStr line] (line.expandtabs :tabsize 4))
