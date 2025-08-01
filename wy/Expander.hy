@@ -35,6 +35,7 @@
     (defn [validateF] #^ StrictInt
         tlen
         [#^ Token token]
+        (when (eq token.kind TKind.NegIndent) (return -1))
         (return (len token.atom)))
 
     (defn [validateF] #^ Token
@@ -72,7 +73,7 @@
         [ #^ (of List Token) tokens
         ]
         " returns 3 numbers:
-          - indent token len (>0 if present)
+          - indent token len (>0 if present) (-1 for NegIndent)
           - continuator (0 if not present)
           - indent token len (>0 if present)
           ;
@@ -97,14 +98,14 @@
               ;
               1
               (do (setv token1 (first tokens))
-                  (if (eq token1.kind TKind.Indent)
+                  (if (eq_any token1.kind [TKind.Indent TKind.NegIndent])
                       #((tlen token1) 0 0)
                       #(0 1 0)))
               ;
               2
               (do (setv token1 (first  tokens))
                   (setv token2 (second tokens))
-                  (if (eq token1.kind TKind.Indent)
+                  (if (eq_any token1.kind [TKind.Indent TKind.NegIndent])
                       #((tlen token1) 1 0)
                       #(0 1 (tlen token2))))
               ;

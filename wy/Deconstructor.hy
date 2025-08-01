@@ -2,36 +2,148 @@
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (import Classes *)
+    (import Expander [first_indent_profile])
 
     (import  _fptk_local *)
     (require _fptk_local *)
 
 ; _____________________________________________________________________________/ }}}1
 
-; [F] decide SKind ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; build NDLines
+; [F] decide SKind :: NTLine -> SKind ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    ; |■: groupstarter
-    ; |■1 continuator
+    ; |■:  groupstarter
+    ; |■1  continuator
     ; |■\\ continuator
-    ; |■; comment
-    ; |■x implied opener
+    ; |■;  comment
+    ; |■x  implied opener
 
-    (defn #^ SKind
+    (defn [validateF] #^ SKind
         decide_structural_kind
         [ #^ NTLine ntline
         ]
         (when (zerolenQ ntline.tokens) (return SKind.EmptyLine))
-        ; first 2 atoms are always enough to decide on SKind:
-        (setv _atoms (lpluckm .atom (cut_ ntline.tokens 1 2)))
-        (setv _decider_atom (first (lreject (fm (indent_atomQ it)) _atoms)))
+        ; first 2 tokens are always enough to decide on SKind:
+        (setv _tokens (cut_ ntline.tokens 1 2))
+        (setv _decider_token
+              (first
+                     (lreject (fm (eq_any it.kind [TKind.Indent TKind.NegIndent]))
+                              _tokens)))
         ;
-        (cond (ocomment_atomQ                _decider_atom) SKind.OnlyOComment
-              (atom_regarded_as_continuatorQ _decider_atom) SKind.Continuator
-              (omarker_atomQ                 _decider_atom) SKind.GroupStarter
-              True                                          SKind.ImpliedOpener))
+        (cond (eq     _decider_token.kind TKind.OComment)
+              SKind.OnlyOComment
+              ;
+              (eq_any _decider_token.kind [TKind.RACont TKind.CMarker])
+              SKind.Continuator
+              ;
+              (eq     _decider_token.kind TKind.OMarker )
+              SKind.GroupStarter
+              ;
+              True
+              SKind.ImpliedOpener))
+
+; _____________________________________________________________________________/ }}}1
+; [F] ntl2ndl :: NTLine -> NDLine ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn [validateF] #^ NDLine
+        ntl2ndl
+        [ #^ NTLine ntline
+        ]
+        (case (decide_structural_kind ntline)
+              SKind.EmptyLine     (build_ndl_EL ntline)
+              SKind.GroupStarter  (build_ndl_GS ntline)
+              SKind.OnlyOComment  (build_ndl_OC ntline)
+              SKind.ImpliedOpener (build_ndl_IO ntline)
+              SKind.Continuator   (build_ndl_C  ntline)))
+
+; ■ build_ndl_EL ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
+
+    (defn [validateF] #^ NDLine
+        build_ndl_EL
+        [ #^ NTLine ntline
+        ]
+        (NDLine :kind                 SKind.EmptyLine
+                :starts_at            0
+                :body_tokens          []
+                :rowN                 #(ntline.rowN ntline.realRowN_start ntline.realRowN_end)
+                :smarker              None
+                :ending_comment       None))
+
+; ________________________________________________________________________/ }}}2
+; ■ build_ndl_GS ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
+
+    (defn [validateF] #^ NDLine
+        build_ndl_GS
+        [ #^ NTLine ntline
+        ]
+        "can only have: indent/negindent + smarker (even ocomment is expanded on another line, so GS can't have it)"
+        (setv _smarker (fltr1st (fm (eq it.kind TKind.OMarker)) ntline.tokens))  ; must be found
+        (NDLine :kind               SKind.GroupStarter
+                :starts_at          (inc (sum (first_indent_profile ntline.tokens)))
+                :body_tokens        []
+                :rowN               #(ntline.rowN ntline.realRowN_start ntline.realRowN_end)
+                :t_smarker          _smarker   
+                :t_ocomment         None))
+
+; ________________________________________________________________________/ }}}2
+; ■ build_ndl_OC ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
+
+    (defn [validateF] #^ NDLine
+        build_ndl_OC
+        [ #^ NTLine ntline
+        ]
+        "can only have: indent/negindent + ocomment"
+        (setv _ocomment (fltr1st (fm (eq it.kind TKind.OComment)) ntline.tokens))  ; must be found
+        (NDLine :kind               SKind.OnlyOComment
+                :starts_at          (inc (sum (first_indent_profile ntline.tokens)))
+                :body_tokens        [] 
+                :rowN               #(ntline.rowN ntline.realRowN_start ntline.realRowN_end)
+                :t_smarker          None
+                :t_ocomment         _ocomment))
+
+; ________________________________________________________________________/ }}}2
+; ■ build_ndl_IO ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
+
+    (defn [validateF] #^ NDLine
+        build_ndl_IO
+        [ #^ NTLine ntline
+        ]
+        (->> ntline.tokens
+             (dropwhile  (fm (eq_any it.kind [TKind.Indent TKind.NegIndent])))
+             (lbisect_by (fm (neq    it.kind TKind.OComment)))
+             (setv [_body_list _ocomment_list]))
+        (NDLine :kind               SKind.ImpliedOpener
+                :starts_at          (inc (sum (first_indent_profile ntline.tokens)))
+                :body_tokens        _body_list
+                :rowN               #(ntline.rowN ntline.realRowN_start ntline.realRowN_end)
+                :t_smarker          None
+                :t_ocomment         (first _ocomment_list))) ; can be None
+
+; ________________________________________________________________________/ }}}2
+; ■ build_ndl_C  ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
+
+    (defn [validateF] #^ NDLine
+        build_ndl_C
+        [ #^ NTLine ntline
+        ]
+        (->> ntline.tokens
+             (dropwhile  (fm (eq_any it.kind [TKind.Indent TKind.NegIndent TKind.CMarker])))
+             (lbisect_by (fm (neq    it.kind TKind.OComment)))
+             (setv [_body_list _ocomment_list]))
+        (NDLine :kind               SKind.Continuator
+                :starts_at          (inc (sum (first_indent_profile ntline.tokens)))
+                :body_tokens        _body_list
+                :rowN               #(ntline.rowN ntline.realRowN_start ntline.realRowN_end)
+                :t_smarker          None
+                :t_ocomment         (first _ocomment_list))) ; can be None
+
+; ________________________________________________________________________/ }}}2
 
 ; _____________________________________________________________________________/ }}}1
 
+; at this stage:
+; - GroupStarters are having OMarkers acting as SMarkers
+; - only ImpliedOpener and Continuator can have OMarkers, and there they can be only MMarkers
 
 ; run ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
@@ -39,16 +151,17 @@
     (import Parser     [prepared_code_to_ntlines])
     (import Expander   [expand_ntlines])
 
-    (setv _code1 "1 $ ~#: (pupos) ~#: \\ : : : 3 $ 3\n  ; riba\n\npups")
+    (setv _code1 "\\: x")
 
+    (dt_print)
     (->> _code1
          wycode_to_prepared_code
          prepared_code_to_ntlines
          expand_ntlines
-         (setv _ntlines))
-
-    (lprint _ntlines)
-    (lprint (lmap decide_structural_kind _ntlines))
-
+         (lmap ntl2ndl)
+         (lprint)
+         )
+    (dt_print)
 
 ; _____________________________________________________________________________/ }}}1
+

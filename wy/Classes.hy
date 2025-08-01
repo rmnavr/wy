@@ -147,7 +147,7 @@
     (defclass [] TKind [Enum]
         (setv NewLine       00  #_ "¦☇"                 )
         (setv Indent        01  #_ "■■■■"               )
-        (setv NegIndent     99  #_ "atom is '←', only one use case: 'x , \\ y'")
+        (setv NegIndent     99  #_ "atom is '←', only one use case: 'x , \\ y'") ; tlen returns -1 for it; created only at jmarker expansion, and then used in Deconstructor
         (setv OMarker       02  #_ "#: smarker/mmarker" )
         (setv DMarker       03  #_ "LL ::"              )
         (setv CMarker       04  #_ "\\"                 )
@@ -214,22 +214,20 @@
 
     (defclass [] NDLine [BaseModel]
         (#^ SKind                kind)      
-        (#^ StrictInt            starts_at)            ; <- " \ x" is 4, " #:" is 2, "" (empty line) is 0, "x" is 1
-        (#^ (of List Token)      body_tokens)          ; <- starting cmarker is removed
         (#^ _tripleInt           rowN)                 ; #(rowN realRowN_start realRowN_end) from source NTLine
+        (#^ StrictInt            starts_at)            ; <- " \ x" is 4, " #:" is 2, "" (empty line) is 0, "x" is 1
+        (#^ (of List Token)      body_tokens)          ; <- other tokens, info on which not dubbed (in some way) in other fields 
         ; below None is used for kinds where field not applicable:
-        (#^ (of Optional bool)   has_starting_cmarker) ; <- ContinuatorDL: True for lines actually starting with \\, False is for RACont: digits/strings/etc.
-        (#^ (of Optional Atom)   smarker)              ; <- GroupStarterDL stores it's smarker.atom here
-        (#^ (of Optional Atom)   ending_comment))      ; <- OnlyOCommentDL stores it's comment here
+        (#^ (of Optional Token)  t_smarker)            ; <- used only by SKind.GroupStarter
+        (#^ (of Optional Token)  t_ocomment))          ; <- used by 3 SKinds: ImpliedOpener/Continuator/OnlyOComment
 
     (setv $BLANK_DL (NDLine :kind                 SKind.EmptyLine
                             :starts_at            0
                             :body_tokens          []
                             :rowN                 #(0 0 0)
                             ;
-                            :has_starting_cmarker None
-                            :smarker              None
-                            :ending_comment       None
+                            :t_smarker            None
+                            :t_ocomment           None
                             ))
 
 ; _____________________________________________________________________________/ }}}1
