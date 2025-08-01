@@ -4,3 +4,4 @@ private/
 *.~$lock.tmp
 *.~$lock
 *swp.tmp
+*.egg-info

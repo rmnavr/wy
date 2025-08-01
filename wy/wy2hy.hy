@@ -5,7 +5,7 @@
     (import os)
     (import subprocess)
 
-    (import AppLayer [file_to_code convert_wy2hy])
+    (import AppLayer [convert_wy2hy])
     (import Classes *)
 
     (import sys)
@@ -90,7 +90,7 @@
         [ #^ str  filename #_ "possibly full filename"
           #^ bool silent_mode
         ]
-        (setv _wy_code (file_to_code filename))
+        (setv _wy_code (read_file filename))
         (setv [_t_s prompt _hy_code] (with_execution_time (fm (convert_wy2hy _wy_code)) :tUnit "s"))
         (unless silent_mode (print f"[wy2hy] [V] transpilation is successful (done in {_t_s :.3f} seconds)"))
         (return _hy_code))
@@ -157,7 +157,6 @@
         ;
         (case $HOW_TO_RUN
               RunOption.FROM_MEM  (run_hy_code_from_memory _hy_code $SOURCE_DIR $SILENTQ)
-              RunOption.FROM_FILE (run_hy_code_from_file   $OUTPUT_FULL_FILENAME $SOURCE_DIR $SILENTQ))
-    )
+              RunOption.FROM_FILE (run_hy_code_from_file   $OUTPUT_FULL_FILENAME $SOURCE_DIR $SILENTQ)))
 
 
