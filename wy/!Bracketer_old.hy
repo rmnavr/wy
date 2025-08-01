@@ -71,7 +71,7 @@
         [ #^ SBP_Card          pcard
           #^ DeconstructedLine dline
         ]
-        (setv _card $CARD0)
+        (setv _card  $CARD0)
         (setv _bline (BracketedLine :dline   dline
                                     :closers pcard.brckt_stack ; closes full stack
                                     :openers []))
@@ -234,7 +234,6 @@
               EmptyLineDL     (process_EmptyLineDL     pcard dline)))
 
 ; _____________________________________________________________________________/ }}}1
-
 ; run processor (on all lines) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ (of List BracketedLine)

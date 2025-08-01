@@ -215,44 +215,39 @@
     (defclass [] NDLine [BaseModel]
         (#^ SKind                kind)      
         (#^ _tripleInt           rowN)                 ; #(rowN realRowN_start realRowN_end) from source NTLine
-        (#^ StrictInt            starts_at)            ; <- " \ x" is 4, " #:" is 2, "" (empty line) is 0, "x" is 1
+        (#^ StrictInt            indent)               ; <- " \ x" is 3, " #:" is 1, "" (empty line) is 0, "x" is 0
         (#^ (of List Token)      body_tokens)          ; <- other tokens, info on which not dubbed (in some way) in other fields 
         ; below None is used for kinds where field not applicable:
         (#^ (of Optional Token)  t_smarker)            ; <- used only by SKind.GroupStarter
         (#^ (of Optional Token)  t_ocomment))          ; <- used by 3 SKinds: ImpliedOpener/Continuator/OnlyOComment
 
     (setv $BLANK_DL (NDLine :kind                 SKind.EmptyLine
-                            :starts_at            0
+                            :indent               0
                             :body_tokens          []
                             :rowN                 #(0 0 0)
                             ;
                             :t_smarker            None
-                            :t_ocomment           None
-                            ))
+                            :t_ocomment           None))
 
 ; _____________________________________________________________________________/ }}}1
-
-
-
-
-; [C] Bracketer ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    (defclass [dataclass] BracketedLine []
-        "calcs structural opener brackets for current line"
-        (#^ NDLine   dline)
-        (#^ (of List Token)     closers #_ "elems of CLOSER_BRACKETS; closers are closing previous line - but this info is stored in cur line")
-        (#^ (of List Token)     openers #_ "elems of HY_OPENERS; openers are at the start for current line"))
+; [C] BLine (bracketed line), NDLineInfo ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; structural bracket processor
-    (defclass [dataclass] SBP_Card []
+    (defclass NDLineInfo [BaseModel]
         "gives info on previously processed line"
-        (#^ (of List int)   indents)
-        (#^ (of List str)   brckt_stack #_ "elems of CLOSER_BRACKETS: like [')' '}' ']'] where ')' is the first one to be closed")
-        (#^ type            skind       #_ "StructuralKind"))
+        (#^ (of List StrictInt) indents)
+        (#^ (of List StrictStr) brckt_stack #_ "elems of CLOSER_BRACKETS: like [')' '}' ']'] where ')' is the first one to be closed")
+        (#^ SKind               kind))
 
-    (setv #_ DC HyCodeFull str)
-    (setv #_ DC HyCodeLine str)
+    ; Bracketed line
+    (defclass BLine [BaseModel]
+        "calcs structural opener brackets for current line"
+        (#^ NDLine         ndline)
+        (#^ (of List Atom) prev_closers #_ "elems of CLOSER_BRACKETS; closers are closing previous line - but this info is stored in cur line")
+        (#^ (of List Atom) this_openers #_ "elems of HY_OPENERS; openers are at the start for current line"))
 
 ; _____________________________________________________________________________/ }}}1
 
+    (setv #_ DC HyCodeLine str)
+    (setv #_ DC HyCode     str)
 
