@@ -1,11 +1,11 @@
 
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (import Classes *)
-    (import Bracketer [omarker_to_hy_brackets])
+    (import wy.Classes *)
+    (import wy.Bracketer [omarker_to_hy_brackets])
 
-    (import  _fptk_local *)
-    (require _fptk_local *)
+    (import  wy._fptk_local *)
+    (require wy._fptk_local *)
 
 ; _____________________________________________________________________________/ }}}1
 

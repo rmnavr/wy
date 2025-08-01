@@ -5,14 +5,14 @@
     (import os)
     (import subprocess)
 
-    (import AppLayer [convert_wy2hy])
-    (import Classes *)
+    (import wy.AppLayer [convert_wy2hy])
+    (import wy.Classes *)
 
     (import sys)
     (. sys.stdout (reconfigure :encoding "utf-8"))
 
-    (import  _fptk_local *)
-    (require _fptk_local *)
+    (import  wy._fptk_local *)
+    (require wy._fptk_local *)
 
 ; _____________________________________________________________________________/ }}}1
 
@@ -85,7 +85,7 @@
 ; _____________________________________________________________________________/ }}}1
 ; [F] transpile ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn #^ HyCodeFull
+    (defn #^ HyCode
         transpile_code_from_wy_file
         [ #^ str  filename #_ "possibly full filename"
           #^ bool silent_mode
@@ -101,7 +101,7 @@
     (defn #^ None
         write_hy_file
         [ #^ str        filename #_ "possibly full filename"
-          #^ HyCodeFull code_to_write
+          #^ HyCode     code_to_write
           #^ bool       silent_mode
         ]
         (try (with [file (open filename
@@ -116,7 +116,7 @@
 
     (defn #^ None
         run_hy_code_from_memory
-        [ #^ HyCodeFull code_to_run
+        [ #^ HyCode     code_to_run
           #^ str        directory #_ "to run code from"
           #^ bool       silent_mode
         ]

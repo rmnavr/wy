@@ -1,19 +1,19 @@
 
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (import  _fptk_local *)
-    (require _fptk_local *)
+    (import  wy._fptk_local *)
+    (require wy._fptk_local *)
 
-    (import Classes *)
+    (import wy.Classes *)
 
     (sys.setrecursionlimit 2000) ; needed for pyparser, I saw it crash at 1300
 
-    (import Preparator    [wycode_to_prepared_code])
-    (import Parser        [prepared_code_to_ntlines])
-    (import Expander      [expand_ntlines])
-    (import Deconstructor [deconstruct_ntlines])
-    (import Bracketer     [bracktify_ndlines])
-    (import Writer        [blines_to_hcode])
+    (import wy.Preparator    [wycode_to_prepared_code])
+    (import wy.Parser        [prepared_code_to_ntlines])
+    (import wy.Expander      [expand_ntlines])
+    (import wy.Deconstructor [deconstruct_ntlines])
+    (import wy.Bracketer     [bracktify_ndlines])
+    (import wy.Writer        [blines_to_hcode])
 
 ; _____________________________________________________________________________/ }}}1
 
@@ -30,13 +30,11 @@
              bracktify_ndlines
              blines_to_hcode))
 
-    (when (= __name__ "__main__")
-
+(when (= __name__ "__main__")
         (-> "..\\tests\\_test6_TT.wy"
             read_file
             convert_wy2hy
             print
             )
-
-    )
+)
 

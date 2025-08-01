@@ -1,10 +1,10 @@
 
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (import Classes *)
+    (import wy.Classes *)
 
-    (import  _fptk_local *)
-    (require _fptk_local *)
+    (import  wy._fptk_local *)
+    (require wy._fptk_local *)
 
 ; _____________________________________________________________________________/ }}}1
 

@@ -889,7 +889,7 @@
         ;;
         (setv line_01       f"/ ({msg})")
         (setv line_02_time1 f"\\ {time_1 :.3f} {unit_str}")
-        (setv line_02_n     (str_replace f"average of {n :,} runs" "," "'"))
+        (setv line_02_n     (re_sub "," "'" f"average of {n :,} runs"))
         (setv line_02_timeN f"test duration: {seconds :.3f} s")
         ;;
         (setv _prompt (sconcat line_01 "\n"
