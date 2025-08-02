@@ -4,15 +4,15 @@
     import sys
     . sys.stdout : reconfigure :encoding "utf-8"
 
-    require hyrule L of as-> -> ->> doto case branch unless lif do_n list_n ncut
-    import  _hyextlink *
-    require _hyextlink L f:: fm p> pluckm lns &+ &+> l> l>=
+    import  fptk *
+    require fptk *
 
 ; _____________________________________________________________________________/ }}}1
 
-    setv data $ L L [101 102 103] [104 105 106] [107 108 109]
-                  L [201 202 203] [204 205 206] [207 208 209]
-                  L [301 302 303] [304 305 306] [307 308 309]
+    setv data
+        L L [101 102 103] [104 105 106] [107 108 109]
+          L [201 202 203] [204 205 206] [207 208 209]
+          L [301 302 303] [304 305 306] [307 308 309]
 
                   xxx
 

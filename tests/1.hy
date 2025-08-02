@@ -1,5 +1,7 @@
 
-    (require fptk [f> fm])
+    (import fptk *)
+    (require fptk [f>])
 
     (print
-        (f> (+ it 3) 4))
+        (f> (+ it 3) 7))
+

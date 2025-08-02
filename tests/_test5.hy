@@ -1,42 +1,15 @@
-    
+
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-    
+
     (import sys)
     (. sys.stdout (reconfigure :encoding "utf-8"))
-    
-    (require hyrule [of as-> -> ->> doto case branch unless lif do_n list_n ncut])
-    (import _hyextlink *)
-    (require _hyextlink [f:: fm p> pluckm lns &+ &+> l> l>=])
-    
+
+    (import fptk *)
+    (require fptk *)
+
 ; _____________________________________________________________________________/ }}}1
-    
-    (setv data [ [[101 102 103] [104 105 106] [107 108 109]]
-                  [ [201 202 203] [204 205 206] [207 208 209]]
-                  [ [301 302 303] [304 305 306] [307 308 309]]])
-    
-                  (xxx)
-    
-    (setv vrbl 3)
-    (setv data (list_n 3 [[1 2 3] [4 5 6] [7 8 9] ]))
-    (setv data1 [1 2 3])
-    
-    (lns 1 vrbl (- 1) [(- vrbl 1)] "str" .attr (Each))
-    (lns 1 (dndr> / 1))
-    (lns 1 2 (mut> .sort 1 :shallow True))
-    
-    (print
-        (&+> (list_n 3 data)
-              (lns 1)
-              (lns 2
-                  (Fork (& (lns 1) (lns 2)) (lns 2)))
-              (set "x")))
-    
-    (lns 2
-        (Fork
-            (& (lns 1) (lns 2))
-            (lns 2)))
-    
-    (lmap (p> (plus 100) neg str) (thru 1 10))
-    
-    
-    ( (lns (Each) 1 (set "xx")) (mul [[1 2]] 3)) 
+
+    (setv data
+        [ [ [101 102 103] [104 105 106] [107 108 109]]
+          [ [201 202 203] [204 205 206] [207 208 209]]
+          [ [301 302 303] [304 305 306] [307 308 309]]])

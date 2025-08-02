@@ -1,7 +1,10 @@
 
 <!-- Intro ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
-> Project is not yet ready. Currently writing docs, then big parser upd is on the way.
+> Project is actively developed and not yet ready.
+> Currently writing docs, then big parser upd is on the way.
+> 
+> Approx delivery at ~ Sep 2025.
 
 # Wy — hy-lang without parentheses
 
@@ -39,7 +42,6 @@ So, running transpiled *.hy file will give meaningfull number lines in debug mes
 
 # Documentation
 
-Documentation gradually covers all of the wy syntax:
 1. [Syntax overview](https://github.com/rmnavr/wy/blob/main/docs/01_Overview.md)
 2. [Basic syntax](https://github.com/rmnavr/wy/blob/main/docs/02_Basic.md) 
 3. [Condensed syntax](https://github.com/rmnavr/wy/blob/main/docs/03_Condensed.md)
