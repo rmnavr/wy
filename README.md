@@ -6,8 +6,6 @@
 Wy offers parentheses-less syntax for [hy lang](https://github.com/hylang/hy)
 by usage of indents and set of special symbols.
 
-> Wy is a **syntax layer** for hy, meaning that wy is not a standalone language, but just a syntax modification to hy.
-
 Wy does not change anything about hy rather than removing parentheses.
 
 Example code in wy:
@@ -26,6 +24,8 @@ map $ fn [x] : + x 1 , range 0 10   | (map (fn [x] (+ x 1)) (range 0 10))
 ```
 
 ---
+
+Wy is a **syntax layer** for hy, meaning that wy is not a standalone language, but just a syntax modification to hy.
 
 To run wy code, you first transpile it into hy code using **wy2hy** transpiler, and then you deal with transpiled *.hy files as usual.
 
@@ -56,7 +56,10 @@ wy2hy your_source_name.wy
 
 It will generate `your_source_name.hy` file and immediately run it.
 
-Run options (like `_wms` for example):
+There are also run options like for example:
+```
+wy2hy _wms your_source_name.wy
+```
 > Options are given via "_" prefix (instead of traditional "-") to avoid messing with hy options.
 * `_w` — only [W]rite transpiled hy-file in the same dir as source wy-file
 * `_f` (default) — same as `_w`, but after writing, immediately run transpiled [F]ile from it's dir
