@@ -28,7 +28,7 @@ libs_required = [
 
 setup(
     name='wy',
-    version='0.3.0rc1',
+    version='0.3.0',
     setup_requires=['wheel'] + libs_required,
     install_requires=libs_required,
     packages = setuptools.find_packages(exclude = ["private*", "tests*"]),
