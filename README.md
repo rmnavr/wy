@@ -27,6 +27,8 @@ Example code from real project:
 <img src="https://github.com/rmnavr/wy/blob/main/examples/RL_example.png?raw=true" alt="Wy example" />
 </p>
 
+> More examples: [/examples](https://github.com/rmnavr/wy/blob/main/examples)
+
 ---
 
 Wy is a **syntax layer** for hy, meaning that wy is not a standalone language, but just a syntax modification to hy.
@@ -107,6 +109,7 @@ There are some minor things on the TODO list:
 * Make tab length configurable (currenlty tab is considered to be 4 spaces wide)
 * Shebang line recognition
 * Make error mesages meaningfull
+* Rigorous testing for reader macros is required
 * Forbid user from writing meaningless code (like for example `$ <$ <$`)
 
 <!-- __________________________________________________________________________/ }}}1 -->
