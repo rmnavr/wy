@@ -19,8 +19,8 @@ Wy has 2 distinct "levels" of syntax:
    >   7                    |   7)
    > ```
 
-   In basic examples following special wy symbols will be highlighted:
-   - `:`, `L` and `C` — openers that represent new wrapping level starting with `(`, `[` and `{` correspondingly
+   Here 2 special symbols were used:
+   - `:` — opener that represent new wrapping level starting with `(`
    - `\` — continuator that supresses automatic wrapping
 
 2. Condensed syntax and one-liners *— syntactic sugar for indenting and wrapping*:
@@ -34,7 +34,8 @@ Wy has 2 distinct "levels" of syntax:
    Symbols `$`, `<$` and `,` are used to control indenting and wrapping.
 
 Aside from aforementioned symbols, overall wy has about 35 special symbols described in:
-[List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
+[List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md).
+
 > There are so many of them, because hy itself has 25 various kinds of brackets.
 > Wy has 25 wy openers derived from them, and the all obey the same rules.
 
