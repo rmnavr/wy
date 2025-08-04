@@ -10,7 +10,7 @@ Documentation:
 
 # Wy syntax overview
 
-Wy has 3 distinct "levels" of syntax:
+Wy has 2 distinct "levels" of syntax:
 
 1. Basic syntax *— quick to grasp and enough to write anything in wy*:
    > ```hy
@@ -19,19 +19,25 @@ Wy has 3 distinct "levels" of syntax:
    >   7                    |   7)
    > ```
 
-2. Condensed syntax *— syntactic sugar for adding wrapping level at head of the expression*:
+   In basic examples following special wy symbols will be highlighted:
+   - `:`, `L` and `C` — openers that represent new wrapping level starting with `(`, `[` and `{` correspondingly
+   - `\` — continuator that supresses automatic wrapping
+
+2. Condensed syntax and one-liners *— syntactic sugar for indenting and wrapping*:
    > ```hy
    > : fn [x] : + x 3       | ( (fn [x] (+ x 3))    
    >   7                    |   7)
-   > ```
-
-3. One-liners *— sofisticated syntactic sugar for indenting and wrapping*:
-   > ```hy
+   > 
    > fn [x] : + x 3 <$ 7    | ((fn [x] (+ x 3)) 7)
    > ```
 
-One-liners are considered to be advanced wy topics due to high amount of interactions
-between different syntactic rules. Still, all the rules are consistent without exceptions,
-and one-liners make wy syntax shine with it's own (resembling pointfree) syntax style.
+   Symbols `$`, `<$` and `,` are used to control indenting and wrapping.
+
+Aside from aforementioned symbols, overall wy has about 35 special symbols described in:
+[List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
+> There are so many of them, because hy itself has 25 various kinds of brackets.
+> Wy has 25 wy openers derived from them, and the all obey the same rules.
+
+---
 
 > \>\> Next chapter: [Basic syntax](https://github.com/rmnavr/wy/blob/main/docs/02_Basic.md) 

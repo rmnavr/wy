@@ -23,7 +23,7 @@
                        "~:"  "~L"   "~C"  "~#:"  "~#C"
                       "~@:" "~@L"  "~@C" "~@#:" "~@#C" ])
 
-    (setv $DMARKERS [ "::" "LL" ])  ; double markers
+    (setv $DMARKERS [ "::" "LL" "CC" ":#:" "C#C"])  ; double markers
 
     (setv $CMARKER  "\\")           ; continuation marker
     (setv $CMARKER_REGEX  r"\\")           
@@ -55,7 +55,7 @@
 
     ; used in pyparser, so order is important:
     (setv $HY_OPENERS1 [ "~@#(" "~#(" "~@(" "'#(" "`#(" "#(" "`(" "'(" "~(" "("])
-    (setv $HY_OPENERS2 [              "~@["                  "`[" "'[" "~[" "["])
+    (setv $HY_OPENERS2 [              "~@["             "#[" "`[" "'[" "~[" "["])
     (setv $HY_OPENERS3 [ "~@#{" "~#{" "~@{" "'#{" "`#{" "#{" "`{" "'{" "~{" "{"])
 
     ; used in tokenQ:

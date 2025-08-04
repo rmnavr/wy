@@ -31,7 +31,7 @@
              blines_to_hcode))
 
 (when (= __name__ "__main__")
-        (-> "..\\tests\\_test6_TT.wy"
+        (-> "..\\tests\\old\\_test6_TT.wy"
             read_file
             convert_wy2hy
             print

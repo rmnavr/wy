@@ -8,14 +8,14 @@ Documentation:
 5. [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
 ---
 
-<!-- Basic rules ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
-
-# Basic syntax rules of wy
-
 Basic syntax uses:
 * indents
-* in-line openers (for now we will only cover the most frequently used one, which is `:`)
+* inline openers (wi will focus for now mostly on `:`)
 * continuator `\`
+
+<!-- Indenting ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+
+# Basic indenting
 
 ```hy
 ; New line by default is wrapped in () :
@@ -26,7 +26,7 @@ print                   | (print
     x                   |      (x)
     + y z               |      (+ y z))
 
-; Unlike Python, new line does NOT have to start at column-0:
+; New line does NOT have to start at column-0:
     print 3 4           |      (print 3 4)
 
 ; ":" in the middle of the line adds parentheses,
@@ -41,10 +41,11 @@ print                   | (print
     t                   |      (t)
    \z                   |      z)
 
-; Some syntax elements (like numbers) do not require "\" :
+; Some syntax elements (like numbers) do not require "\" (you may still use it nontherless):
 print                   | (print
     f x                 |      (f x)
-    3.0                 |      3.0)
+    3.0                 |      3.0
+    4.0                 |      4.0)
 
 ; When \ is used, indent position is seen at next printable symbol after it,
 ; so there is a little bit of stylistic freedom of where to place \
@@ -68,6 +69,11 @@ y                       | (y
   3                     |   3)
 ```
 
+<!-- __________________________________________________________________________/ }}}1 -->
+<!-- Empty Lines ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+
+# Empty lines policy
+
 Wy has special policy about empty lines — **you can't have empty lines inside one expression**.
 
 ```hy
@@ -88,15 +94,19 @@ print x     |   (print x
     + k n   |       (+ k n))
 ```
 
-Wy will avoid looking inside expressions wrapped in valid hy brackets.
-Those expressions can also be multiline.
-This enables writing original hy syntax, or mixing it with wy syntax:
-> Valid hy brackets are described in next chapter.
+<!-- __________________________________________________________________________/ }}}1 -->
+<!-- Hy expressions ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+
+# Recognition of valid hy expressions
+
+Wy will avoid looking inside expressions wrapped in valid hy brackets (`(...)`, `~@#{...}` and such).
+Those expressions can also be multiline. This enables writing original hy syntax, or mixing it with wy syntax:
+> List of all valid hy brackets is given in [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
 
 ```hy
 abs (+                  | (abs (+
-       x                |         x                 ; x did not require "\"
-       (ncut ys 1 : 3)) |         (ncut ys 1 : 3))) ; ":" was not recognized as wrapper
+       x                |         x                 ; notice that x did not require "\"
+       (ncut ys 1 : 3)) |         (ncut ys 1 : 3))) ; notice that ":" was not recognized as wrapper
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
@@ -124,9 +134,7 @@ func                |   (func
 
 When line starts with valid hy bracket, eather opening (like `(`, `#{`, `~@{` and such)
 or closing one (`)`, `]`, or `}`), continuator `\` is also not needed.
-And as was already said, everything inside these bracketed expressions
-will be interpreted as normal hy code:
-> List of all valid hy brackets is given in [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
+And as was already said, everything inside these bracketed expressions will be interpreted as normal hy code:
 
 ```hy
 func                |   (func
@@ -135,10 +143,13 @@ func                |   (func
     [ C             |       [ C     ; notice that here C is variable name, not bracket opener
     ]               |       ]
     {               |       {
-      x             |         x     ; notice that continuator \ was not used here
+      x             |         x     ; notice that continuator \ was not required here
     }               |       }
     ~@#{ x          |       ~@#{ x
     }               |       })
+                    |
+                    |   ; this is obviously incorrect hy code,
+                    |   ; but it shows how wy2hy works
 ```
 
 Also wy2hy will refuse to transpile if it'll see incorrect brackets (for which their pair is not found):
@@ -158,48 +169,18 @@ func
 
 # Other kinds of openers
 
-To represent variety of all valid hy brackets
-(summarized in [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)),
-wy has 5 basic symbols:
-- `:` to represent `(`
-- `L` to represent `[`
-- `C` to represent `{`
-- `#:` to represent `#(`
-- `#C` to represent `#{`
+All other openers
+(summarized in [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md))
+obey the same rules:
 
-They can also be combined with 4 hy macros symbols (without spaces).
-For example, `~@#:` is valid wy opener.
-
-We already covered `:`. And **all the same rules apply to any of 25 wy openers**:
 ```hy
-L                   | [
-  \x y : f 3        |   x y (f 3)
-   g 4 L 2 5        |   (g 4 [2 5])]
-                    |
-`:                  | `(
-   \get ~x ~indx    |    get ~x ~indx)
-```
+    L                   | [
+      \x y : f 3        |   x y (f 3)
+       g 4 L 2 5        |   (g 4 [2 5])]
 
-<!-- __________________________________________________________________________/ }}}1 -->
-<!-- L/C sacrifice ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
-
-# Explanation of sacrificing L and C
-
-Symbols `L`, `C` (and also `LL` and `CC`,
-see [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md))
-cannot be directly used as variable names in wy.
-
-> I know this is kind of dumb, but hey, hy has lot's of various brackets.
-
-Solution here is wrapping code inside hy brackets, since wy won't look inside them (other than checking for correct nesting):
-```hy
-; Seeing this code, wy2hy will strictly follow wy rules
-; and produce corresponding non-working hy code:
-setv L : + L 1          | (setv [(+ [1])])
-
-; So, in order for L to be recognized as variable (as opposed to "[" bracket opener),
-; L needs to be inside parentheses:
-(setv L (+ L 1))        | (setv L (+ L 1))
+;   ↓ this is where wy will see indent level
+    `:                  | `(
+       \get ~x ~indx    |    get ~x ~indx)
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->

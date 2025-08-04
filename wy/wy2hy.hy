@@ -29,7 +29,7 @@
                                              "_ws"  "_ms"  "_fs"  "_wsm" "_msw" "_wsf" "_fsw" 
                                              "_wms" "_mws" "_wfs" "_fws" 
                                            ]
-                                  :default "_m"
+                                  :default "_f"
                                   :help    "options: f - write and run from file, w - write to file, m - run from memory, s - silent")
 
         (_cmd_parser.add_argument "filename"
@@ -123,7 +123,9 @@
         (unless (= directory "") (os.chdir directory))
         (unless silent_mode (do (print "[wy2hy] Running transpiled code from memory ...")
                                 (print "")))
-        (-> code_to_run hy.read_many hy.eval))
+        (-> code_to_run
+            hy.read_many
+            hy.eval))
 
     (defn #^ None
         run_hy_code_from_file
@@ -134,13 +136,13 @@
         "relies on <hy> command present in the system"
         ; info: dir from [filename] and [directory] may be different
         (unless (= directory "") (os.chdir directory))
+        (unless silent_mode (do (print f"[wy2hy] Running transpiled code from file {(second (os.path.split filename))} ...")
+                                (print "")))
         (setv _command (sconcat "hy \"" filename "\""))
         (setv result (subprocess.run _command
                                      :shell          True
                                      :text           True
                                      :capture_output True))
-        (unless silent_mode (do (print f"[wy2hy] Running transpiled code from file {(second (os.path.split filename))} ...")
-                                (print "")))
         (print result.stdout)
         (print result.stderr))
 

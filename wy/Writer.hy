@@ -29,6 +29,11 @@
                    (+= _new_body ["]" "["])
                    (= &a "CC")
                    (+= _new_body ["}" "{"])
+                   ;
+                   (= &a "C#C")
+                   (+= _new_body ["}" "#{"])
+                   (= &a ":#:")
+                   (+= _new_body [")" "#("])
                    True
                    (+= _new_body [&a])))
         (if (= _postfix "")

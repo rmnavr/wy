@@ -1,0 +1,7 @@
+
+    import fptk *
+    require fptk L f>
+
+    print
+        f> $ + it 3 , 7
+

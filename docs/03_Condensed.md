@@ -12,11 +12,8 @@ Documentation:
 
 # Condensed syntax
 
-> We will discuss condensed syntax by inspecting `:` opener behaviour.
-> However all the same rules apply for any of 25 kinds of openers.
-
-Condensing openers (like `:`) is considered to be a syntactic sugar,
-meaning that condensed syntax is internally processed in expanded form:
+Openers (like `:`) when they begin the line are considered to be **condensed**.
+Condensing is syntactic sugar, meaning that condensed openers are internally processed in expanded form:
 
 ```hy
 : fn [x] : + pow 2      | ( (fn [x] (pow x 2))
@@ -27,14 +24,24 @@ meaning that condensed syntax is internally processed in expanded form:
   fn [x] : + pow 2      |   (fn [x] (pow x 2))
   3                     |   3)
 ```
-*(by the way, this internal expansion does not mess with final numbering of generated code lines)*
+
+All the same rules apply to other openers:
+```hy
+~@: f y                 | ~@((f y))
+
+; internally, lines above will be processed as if they were expanded to:
+~@:                     | ~@(
+    f y                 |     (f y))
+```
+
+This internal expansion does not mess with final numbering of generated code lines.
 
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- smarker vs mmarker ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
 # Openers behaviour depending on position
 
-Notice that `:` behaviour is slightly different depending on it's placement:
+Notice that `:` behaviour is different depending on it's placement:
 ```hy
                 ; ↓↓ 2 wraps around x due to ":" at the start of the line
 : x : y         | ((x (y)))
@@ -84,19 +91,16 @@ Continuator `\` switches off condensing (and thus new indent levels) for symbols
        4                 |    4)
 ```
 
-Following described logic, see how continuator `\` works with `:` (and any other) openers:
+One more example of how `\` interacts with `:`:
 ```hy
- : x : y         | ((x (y)))
- :\x : y         | ( x (y))
- : x :\y         | ((x (y))) ; allowed, but achieves nothing
-\: x : y         | ( x (y))  ; this is seen as single line, not as condensed line
- : x\: y         | ((x (y))  ; allowed, but achieves nothing
+ : x :\y         | ((x (y))) ; this line has one ":" condensed
+\: x : y         | ( x (y))  ; this is seen as a single line, no condensing is happening
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- examples ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
-# Examples of condensed syntax
+# Examples with other openers
 
 Let's get back to examples from [Basic syntax](https://github.com/rmnavr/wy/blob/main/docs/02_Basic.md) chapter
 and see how they can be condensed:
@@ -112,8 +116,8 @@ and see how they can be condensed:
     L \x y : f 3        | [ x y (f 3)
        g 4 L 2 5        |   (g 4 [2 5])]
 
-	; notice that without continuator "\"
-	; we would get unwanted extra wrapping:
+    ; notice that without continuator "\"
+    ; we would get unwanted extra wrapping:
     L  x y : f 3        | [ (x y (f 3))
        g 4 L 2 5        |   (g 4 [2 5])]
 
@@ -125,8 +129,8 @@ and see how they can be condensed:
     ; condensed:
     `: \get ~x ~indx    | `( get ~x ~indx)
 
-	; notice that without continuator "\"
-	; we would get unwanted extra wrapping:
+    ; notice that without continuator "\"
+    ; we would get unwanted extra wrapping:
     `: get ~x ~indx    | `( (get ~x ~indx))
 ```
 
@@ -134,8 +138,6 @@ and see how they can be condensed:
 
 > \>\> Next chapter: [One-liners](https://github.com/rmnavr/wy/blob/main/docs/04_One_liners.md) 
 
-
-TODO: multiline (hy) indenting
 
 
 

@@ -1220,19 +1220,19 @@
 		(return `(fn [~@inputs] ~expr)))
 
 	(defmacro f> [lambda_def #* args]
-		(return `((hy.R._fptk_local.fm ~lambda_def) ~@args)))
+		(return `((fm ~lambda_def) ~@args)))
 
     (defmacro mapm [one_shot_fm #* args]
-		(return `(map (hy.R._fptk_local.fm ~one_shot_fm) ~@args)))
+		(return `(map (fm ~one_shot_fm) ~@args)))
 
     (defmacro lmapm [one_shot_fm #* args]
-		(return `(list (map (hy.R._fptk_local.fm ~one_shot_fm) ~@args))))
+		(return `(list (map (fm ~one_shot_fm) ~@args))))
 
     (defmacro filterm [one_shot_fm iterable]
-		(return `(filter (hy.R._fptk_local.fm ~one_shot_fm) ~iterable)))
+		(return `(filter (fm ~one_shot_fm) ~iterable)))
 
     (defmacro lfilterm [one_shot_fm iterable]
-		(return `(list (filter (hy.R._fptk_local.fm ~one_shot_fm) ~iterable))))
+		(return `(list (filter (fm ~one_shot_fm) ~iterable))))
 
 ; ________________________________________________________________________/ }}}2
 ; lns ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
@@ -1279,7 +1279,7 @@
 	(defmacro &+ [#* macro_args]
 		(setv lenses_ (butlast macro_args))
 		(setv func	 (get macro_args (- 1)))
-	   `(& ~@lenses_ (hy.R._fptk_local.lns ~func)))
+	   `(& ~@lenses_ (lns ~func)))
 
 	; compose lens, add setters/getters, apply
 
@@ -1287,19 +1287,19 @@
 		(setv variable (get macro_args 0))
 		(setv lenses   (butlast (rest macro_args)))
 		(setv func	   (get macro_args (- 1)))
-	   `((& ~@lenses (hy.R._fptk_local.lns ~func)) ~variable))
+	   `((& ~@lenses (lns ~func)) ~variable))
 
 	; construct lens, apply:
 
 	(defmacro l> [#* macro_args]
 		(setv variable	  (get macro_args 0))
 		(setv lenses_args (rest macro_args))
-	   `((hy.R._fptk_local.lns ~@lenses_args) ~variable))
+	   `((lns ~@lenses_args) ~variable))
 
 	(defmacro l>= [#* macro_args]
 		(setv variable	  (get macro_args 0))
 		(setv lenses_args (rest macro_args))
-	   `(&= ~variable (hy.R._fptk_local.lns ~@lenses_args)))
+	   `(&= ~variable (lns ~@lenses_args)))
 
 ; ________________________________________________________________________/ }}}2
 ; assertm, errortypeQ ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2

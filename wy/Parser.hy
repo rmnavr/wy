@@ -43,6 +43,7 @@
     (setv HYMACRO_MARK (| #* (lmap pp.Literal $HY_MACROMARKS)))
     (setv UNPACKER     (| (pp.Literal "#**") (pp.Literal "#*")))
     (setv WORD         (pp.Word (+ ALPHAS WSYMBOLS) (+ ALPHAS NUMS WSYMBOLS ":")))
+    (setv RMACRO       (pp.Combine (+ "#" WORD)))
     (setv KEYWORD      (pp.Combine (+ ":" (pp.Word (+ ALPHAS "_") (+ ALPHAS "_" NUMS)))))
     (setv QSTRING      (pp.Combine (+  (pp.Optional (pp.oneOf "r f b"))
                                        (pp.QuotedString   :quoteChar "\""
@@ -74,6 +75,7 @@
                            WY_MARKER
                            HYMACRO_MARK
                            NUMBER
+                           RMACRO
                            NEW_LINE
                            INDENT))
 

@@ -1,7 +1,13 @@
 
-    (import fptk *)
-    (require fptk [f>])
+    (print
+        3
+        4)
+
+     #[=[ pupos ]=]
+
+    (require hyrule :readers [%])
 
     (print
-        (f> (+ it 3) 7))
+        (#% (+ %1 2) 3))
+
 
