@@ -73,9 +73,9 @@ wy2hy _wms your_source_name.wy
   > If full filename for source file is given (like "C:\\users\\username\\proj1\\your_source_name.wy"), wy2hy will change script's dir to dir of this file.
   > This enables your transpiled code to import other project files lying in the same dir, which is intended way of using `f` and `m` options.
 * `_m` — transpile and run from [M]emory (meaning, no file will be written on disk)
-  > 1. If any error occurs in transpiled code, debug messages will be polluted with wy2hy.hy calls
-  > 2. `_m` might fail in case of tricky imports inside transpiled files
-  > In general `_f` is strongly recommended over `_m`
+  > Be aware that if any error occurs in transpiled code, debug messages will be polluted with wy2hy.hy calls
+  > Also `_m` might fail in case of tricky imports inside transpiled files. 
+  > In general `_f` is strongly recommended over `_m`.
 * `_s` - [S]ilent mode, won't write any transpilation status messages
 
 <!-- __________________________________________________________________________/ }}}1 -->
