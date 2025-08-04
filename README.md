@@ -105,11 +105,11 @@ Tested with:
 > This is my first serious opensource Python/Hy project, meaning I might be unaware of various caveats in Python packaging.
 
 There are some minor things on the TODO list:
+* **Make TAB length configurable** (currenlty TAB is considered to be 4 spaces wide)
 * Allow usage of unicode chars in names
-* Make tab length configurable (currenlty tab is considered to be 4 spaces wide)
 * Shebang line recognition
 * Make error mesages meaningfull
-* Rigorous testing for reader macros is required
+* Rigorous testing for reader macros transpiling is required
 * Forbid user from writing meaningless code (like for example `$ <$ <$`)
 
 <!-- __________________________________________________________________________/ }}}1 -->
