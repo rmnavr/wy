@@ -1,4 +1,4 @@
-    
+
     (defn _macro2 [riba] [bubr (ololo) (riba )]; comment
           ; comment
           ; comment
@@ -24,4 +24,4 @@
           ; comment
           )); comment
             (print ""))); comment
-     
+

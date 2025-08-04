@@ -1,0 +1,32 @@
+
+    import sys
+    sys.stdout.reconfigure :encoding "utf-8"
+    import dataclasses [dataclass]
+    import functools [reduce]
+
+    defclass [dataclass] Cost []
+        : #^ int cost
+        : #^ str description
+        defn __add__ L self other
+            if : isinstance other Cost
+                 return
+                    Cost : + self.cost other.cost
+                           + self.description ", " other.description
+                 return
+                    Cost : + self.cost other
+                           + self.description
+
+    setv costs
+        L Cost 9300 "tickets"
+          Cost  400 "tickets"
+          Cost  650 "coin 1"
+          Cost  200 "KFC"
+          Cost 1100 "coin 1"
+          Cost  650 "Rodeo"
+          Cost  900 "Bento 2"
+          Cost  600 "taxi"
+          Cost 1800 "food"
+          Cost  200 "KFC"
+
+    print
+        reduce $ fn [x y] (+ x y) ,\costs

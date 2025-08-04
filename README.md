@@ -21,6 +21,12 @@ setv x : range : abs -3 :: abs -10  | (setv x (range (abs -3) (abs -10)))
 map $ fn [x] : + x 1 , range 0 10   | (map (fn [x] (+ x 1)) (range 0 10))
 ```
 
+Example code from real project:
+
+<p align="center">
+<img src="https://github.com/rmnavr/wy/blob/main/examples/RL_example.png?raw=true" alt="Wy example" />
+</p>
+
 ---
 
 Wy is a **syntax layer** for hy, meaning that wy is not a standalone language, but just a syntax modification to hy.
@@ -97,16 +103,11 @@ Tested with:
 > This is my first serious opensource Python/Hy project, meaning I might be unaware of various caveats in Python packaging.
 
 There are some minor things on the TODO list:
-* Features to implement:
-  * Shebang line recognition
-  * Rigorously test reader macro
-  * Allow usage of unicode chars in names (currently unicode is recognized only in comments and quoted strings)
-  * Currently TAB symbol is seen as 4 spaces wide, make it configurable
-* Polishing:
-  * Make error mesages meaningfull
-  * Forbid user from writing meaningless code (like for example `$ <$ <$`)
-  * Increase performance (200 lines of wy code transpile in ~0.3s on my 16-core laptop, which is kind of slow)
-  * Remove dependency from lens and pydantic libs
+* Allow usage of unicode chars in names
+* Make tab length configurable (currenlty tab is considered to be 4 spaces wide)
+* Shebang line recognition
+* Make error mesages meaningfull
+* Forbid user from writing meaningless code (like for example `$ <$ <$`)
 
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- Install ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->

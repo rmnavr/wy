@@ -1,0 +1,262 @@
+
+    import fptk * , require fptk *
+    import pyparsing :as pp
+    import polars :as pl
+    pl.Config.set_tbl_formatting "ASCII_FULL_CONDENSED"
+    import plotnine :as p9
+
+; [C] MEMF Table Headers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    defclass [dataclass] MEMFh []
+        "headers of memf numtables"
+        setv N   "N"
+        setv F   "Freq"
+        ;
+        setv XTf "X_frac (T)"
+        setv XTs "tr: X"
+        setv YTf "Y_frac (T)"
+        setv YTs "tr: Y"
+        setv ZTf "Z_frac (T)"
+        setv ZTs "tr: Z"
+        ;
+        setv XRf "X_frac (R)"
+        setv XRs "rot: X"
+        setv YRf "Y_frac (R)"
+        setv YRs "rot: Y"
+        setv ZRf "Z_frac (R)"
+        setv ZRs "rot: Z"
+
+; _____________________________________________________________________________/ }}}1
+; Parser: Entities ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    ; [t]oken [o]riginal [r]esult [n]ame
+    defn t_orn L name token
+        -> token pp.originalTextFor : .setResultsName name
+
+    setv NUMS "0123456789"
+
+    setv INTEGER : pp.Word NUMS
+
+    setv FLOAT
+        pp.Combine
+            + INTEGER "." INTEGER "E" (pp.oneOf "+ -") INTEGER
+
+    setv MEMFT_HEADER
+        + #*
+            lmap pp.Literal
+                L "MODAL EFFECTIVE MASS FRACTION"
+                  "MODE" "FREQUENCY" "T1" "T2" "T3"
+                  "NO." "FRACTION" "SUM" "FRACTION" "SUM" "FRACTION" "SUM"
+
+    setv MEMFR_HEADER
+        + #*
+            lmap pp.Literal
+                L "MODAL EFFECTIVE MASS FRACTION"
+                  "MODE" "FREQUENCY" "R1" "R2" "R3"
+                  "NO." "FRACTION" "SUM" "FRACTION" "SUM" "FRACTION" "SUM"
+
+    setv MEMF_LINE
+        + INTEGER       ; n
+         \FLOAT         ; freq
+         \FLOAT FLOAT   ; x frac, x sum
+         \FLOAT FLOAT   ; y frac, y sum
+         \FLOAT FLOAT   ; z frac, z sum
+
+    setv MEMFT_BLOCK
+        + MEMFT_HEADER
+          t_orn "_PP_NUMTABLE" : pp.OneOrMore MEMF_LINE
+
+    setv MEMFR_BLOCK
+        + MEMFR_HEADER
+          t_orn "_PP_NUMTABLE" : pp.OneOrMore MEMF_LINE
+
+; _____________________________________________________________________________/ }}}1
+; Parser: extract memf data ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    defn #^ pl.DataFrame
+       \f06_to_T_df_numtable
+        L #^ str f06_content
+        ;
+        memf_numtable_to_df_numtable
+            find_memf_numtable f06_content MEMFT_BLOCK
+            L\MEMFh.N MEMFh.F MEMFh.XTf MEMFh.XTs MEMFh.YTf MEMFh.YTs MEMFh.ZTf MEMFh.ZTs
+
+    defn #^ pl.DataFrame
+       \f06_to_R_df_numtable
+        L #^ str f06_content
+        ;
+        memf_numtable_to_df_numtable
+            find_memf_numtable f06_content MEMFR_BLOCK
+            L\MEMFh.N MEMFh.F MEMFh.XRf MEMFh.XRs MEMFh.YRf MEMFh.YRs MEMFh.ZRf MEMFh.ZRs
+
+    defn #^ pl.DataFrame
+       \f06_to_TR_df_numtable
+        L #^ str f06_content
+        ;
+        setv dfNT : f06_to_T_df_numtable f06_content
+        setv dfNR : f06_to_R_df_numtable f06_content
+        pl.concat
+            L .select dfNT L MEMFh.F MEMFh.XTf MEMFh.XTs MEMFh.YTf MEMFh.YTs MEMFh.ZTf MEMFh.ZTs
+              .select dfNR L         MEMFh.XRf MEMFh.XRs MEMFh.YRf MEMFh.YRs MEMFh.ZRf MEMFh.ZRs
+            :how "horizontal"
+
+    defn #^ str
+       \find_memf_numtable
+        L #^ str  f06_content
+          #^ "pp" MEMF_BLOCK    #_ "should have '_PP_NUMTABLE' t_orn"
+        "works both for T and R numtables"
+        setv #^ Generator                     block_search : MEMF_BLOCK.search_string f06_content
+        setv #^ (of Optional pp.ParseResults) result_1     : first block_search
+        when : noneQ result_1 :: raise : Exception "MEMF TABLE not found!"
+        return result_1._PP_NUMTABLE
+
+    defn #^ str
+       \memf_numtable_to_df_numtable
+        L #^ str           numtable
+          #^ (of List str) headers_names    #_ "[n f xf xs yf ys zf zs]"
+        "works both for T and R numtables"
+        setv lines_search : MEMF_LINE.search_string numtable
+        ;
+        pl.DataFrame : lmap typecast_memf_line lines_search
+                     :schema headers_names
+                     :orient "row"
+
+    defn typecast_memf_line [line]
+        ;
+        setv [n f xf xs yf ys zf zs] line
+        return
+            #: int n
+               float f
+               float xf :: float xs
+               float yf :: float ys
+               float zf :: float zs
+
+; _____________________________________________________________________________/ }}}1
+
+; [F] aux funcs for plotting ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    defn #^ (of Tuple float float)
+       \initialize_x_lims
+        L #^ bool                   x_log
+          #^ (of Tuple float float) x_lims
+        ;
+        setv linear_default [ 0 2000]
+        setv log_default    [10 2000]
+        ;
+        when
+            = x_lims [None None]
+            if  x_log
+                setv x_lims log_default
+                setv x_lims linear_default
+        when
+            and
+               \x_log
+                <= (first x_lims) 0
+            setv x_lims [1 (second x_lims)] 
+        return x_lims
+
+; _____________________________________________________________________________/ }}}1
+; [F] Plotting memf sums ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    defn plot_memf_sums
+        L #^ pl.DataFrame           numtable_df_TR
+          #^ bool                   [x_log  False]
+          #^ bool                   [y_log  False] #_ "has no effect"
+          #^ (of Tuple float float) [x_lims [None None]]
+        ;
+        p9.theme_set : p9.theme_linedraw
+        setv x_lims : initialize_x_lims x_log x_lims
+        ;
+        when : = x_lims [None None]
+               if x_log : setv x_lims [10 2000] :: setv x_lims [0  2000]
+        when : and x_log : <= (first x_lims) 0
+               setv x_log 1
+        ;
+        setv _curves_order L MEMFh.XTs MEMFh.YTs MEMFh.ZTs MEMFh.XRs MEMFh.YRs MEMFh.ZRs
+        setv _df_unpivoted
+            .unpivot numtable_df_TR :index         MEMFh.F
+                                    :on            _curves_order
+                                    :variable_name "curve"
+                                    :value_name    "freq"
+        ;
+        + : p9.ggplot : .to_pandas _df_unpivoted
+            p9.aes  :x        MEMFh.F
+                   \:y        "freq"
+                    :color    "curve"
+                    :linetype "curve"
+                    :alpha    "curve"
+            p9.geom_line :size 1
+	        p9.scale_color_manual    : dict : zip _curves_order ["red" "green" "blue" "red" "green" "blue"]
+	        p9.scale_linetype_manual : dict : zip _curves_order ["solid" "solid" "solid" "dashed" "dashed" "dashed"]
+	        p9.scale_alpha_manual    : dict : zip _curves_order [1.0 1.0 1.0 0.3 0.3 0.3]
+            p9.labs :title    "MEMF Cumulative sums"
+                    :x        "Freq, Hz"
+                    :y        "MEMF"
+            if  x_log
+                p9.scale_x_log10      :limits x_lims :expand [0 0]
+                p9.scale_x_continuous :limits x_lims :expand [0 0]
+            p9.scale_y_continuous :limits [0 1]  :expand [0 0]
+
+; _____________________________________________________________________________/ }}}1
+; [F] Plotting memf fracs ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    defn plot_memf_fracs
+        L #^ pl.DataFrame           numtable_df_TR
+          #^ bool                   [x_log  False]
+          #^ bool                   [y_log  False]
+          #^ (of Tuple float float) [x_lims [None None]]
+        ;
+        p9.theme_set : p9.theme_linedraw
+        setv x_lims : initialize_x_lims x_log x_lims
+        ;
+        setv _curves_order L MEMFh.XTf MEMFh.YTf MEMFh.ZTf MEMFh.XRf MEMFh.YRf MEMFh.ZRf
+        setv _df_unpivoted
+            .unpivot numtable_df_TR :index         MEMFh.F
+                                    :on            _curves_order
+                                    :variable_name "curve"
+                                    :value_name    "freq"
+        ;
+        + : p9.ggplot : .to_pandas _df_unpivoted
+            p9.aes  :x        MEMFh.F
+                    :y        "freq"
+                    :color    "curve"
+                    :linetype "curve"
+                    :alpha    "curve"
+            p9.geom_line
+            p9.geom_point
+	        p9.scale_color_manual    : dict : zip _curves_order ["red" "green" "blue" "red" "green" "blue"]
+	        p9.scale_linetype_manual : dict : zip _curves_order ["solid" "solid" "solid" "dashed" "dashed" "dashed"]
+	        p9.scale_alpha_manual    : dict : zip _curves_order [1.0 1.0 1.0 0.3 0.3 0.3]
+            p9.labs :title    "MEMF Cumulative sums"
+                    :x        "Freq, Hz"
+                    :y        "MEMF"
+            if  x_log
+                p9.scale_x_log10      :limits x_lims :expand [0 0]
+                p9.scale_x_continuous :limits x_lims :expand [0 0]
+            if  y_log
+                p9.scale_y_log10                     :expand [0 0]
+                p9.scale_y_continuous                :expand [0 0]
+
+; _____________________________________________________________________________/ }}}1
+; [F] Plot API ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    defn plot_from_f06
+        L #^ str  f06_filepath
+          #^ bool [sums True]   #_ "False to plot fracs"
+          #** plot_params       #_ "see in further plots functions"
+        ;
+        setv _content : read_file $FILEPATH
+        setv _df_TR   : f06_to_TR_df_numtable    _content
+        setv plotter  : if sums plot_memf_sums plot_memf_fracs
+        setv _plot    : plotter _df_TR #** plot_params
+        return _plot
+
+; _____________________________________________________________________________/ }}}1
+
+; ========================================================
+
+    setv $FILEPATH "tests/memf_200.f06"
+
+    -> $FILEPATH
+       plot_from_f06 :sums True :x_log False :x_lims [0 2000] :y_log False
+       .show

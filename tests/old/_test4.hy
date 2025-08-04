@@ -1,34 +1,34 @@
-    
+
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-    
+
     (import os)
-    
+
     (import sys)
     (. sys.stdout (reconfigure :encoding "utf-8"))
-    
+
     (require hyrule [of as-> -> ->> doto case branch unless lif do_n list_n ncut])
     (import _hyextlink *)
     (require _hyextlink [f:: fm p> pluckm lns &+ &+> l> l>=])
-    
+
 ; _____________________________________________________________________________/ }}}1
 ; Classes ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-    
+
     (setv #_ DC FileBody str)
     (setv #_ DC FileName str #_ "like < pupos.nau >")
     (setv #_ DC FileNameWithPath str #_ "like < journal//pupos.nau >")
     (setv #_ DC DirPath str #_ "like < journal//folder1 >")
-    
+
     (import datetime [date])
     (setv #_ DC Date date; just a renaming to Uppercase
     ); works as: (Date :year 2025 :month 3 :day 33)
-    
+
     ; # Tag
     ; # Category Tag
-    
+
     (defclass [dataclass] JTag []
         ( #^ (of Optional str) category)
         ( #^ (of Optional str) tag))
-    
+
     (defclass [dataclass] JFile []
         ( #^ FileName name)
         ( #^ DirPath path)
@@ -38,21 +38,21 @@
         );
         (defn __str__ [self] f"<{self.path}//{self.name} | {self.date} | {self.tags}>")
         (defn __repr__ [self] (self.__str__)))
-    
+
     (setv #_ DC IFilesReader (f:: DirPath -> (of List str) => (of List JFile)))
-    
-    
-    
+
+
+
 ; _____________________________________________________________________________/ }}}1
-    
+
 ; scan dir for files ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-    
+
     (defn #^ (of List FileNameWithPath)
         flatscan_for_files
         [ #^ DirPath directory
           #^ (of List str) [extensions []]]
         (first (flatscan_for_dirs_and_files directory extensions)))
-    
+
     (defn #^ #((of List FileNameWithPath) (of List DirPath))
         flatscan_for_dirs_and_files
         [ #^ DirPath directory
@@ -63,7 +63,7 @@
         (setv _files (lfilter os.path.isfile _fullNames))
         (setv _files (lfilter (rpartial does_extension_match extensions) _files))
         (return #(_files _dirs)))
-    
+
     (defn #^ bool
         does_extension_match
         [ #^ FileNameWithPath fullFileName
@@ -74,11 +74,11 @@
             (lfor ext (lmap lowercase extensions)
                  (-> fullFileName (lowercase)
                                    (endswith f".{ext}")))))
-    
-    
+
+
 ; _____________________________________________________________________________/ }}}1
 ; extract date ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-    
+
     (defn #^ (of Optional Date)
         extract_date_from_filename
         [ #^ FileName filename
@@ -98,10 +98,10 @@
                  :month m
                  :day d)
             (except [e Exception] None)))
-    
+
 ; _____________________________________________________________________________/ }}}1
 ; file to content ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-    
+
     (defn #^ FileBody
         file_to_content
         [ #^ FileNameWithPath fullFileName]
@@ -112,9 +112,9 @@
                    :encoding "utf-8")]
             (setv outp (file.read)))
         (return outp))
-    
+
 ; _____________________________________________________________________________/ }}}1
-    
+
     (defn #^ (of List JFile)
         build_jfiles #_ IO
         [ #^ DirPath directory
@@ -130,5 +130,5 @@
                   :tags _tags
                   :content _content
                   :date _date)))
-    
-     
+
+
