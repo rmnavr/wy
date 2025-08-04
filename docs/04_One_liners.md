@@ -46,13 +46,13 @@ Wy has following symbols for writing one-liners (from highest precedence to lowe
 * `<$` — reverse applicator
 * `$` — applicator
 * `,` — joiner
-* `:` (and other openers) at mid of the line — one line wrapper
+* `:` (and other openers) at mid of the line — single line wrapper
 
 Other important symbols that have their special rules are:
 * `\` — continuator
 * `::` (and other similar) — literal `)(`
 
-> Those "other openers" and "other similar" are described in [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md))
+> Those "other openers" and "other similar" are described in [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
 
 Realistically, there are just several readable one-liners patterns.
 Still, one-liners have strict rules of interaction, which are good to know as a whole system.
@@ -82,13 +82,13 @@ Continuator `\` is allowed only in the following positions:
    f , \x       ; directly after ,
 
 ; this placement of \ is illegal (since it makes no sense):
-; : x \ y
+   : x \ y
 
 ;       will be seen as condensed opener
 ;       ↓
-   f  $ : \: x  ; openers openers coming after $  and preceading \ will be seen as condensed openers
-   f <$ : \: x  ; openers openers coming after <$ and preceading \ will be seen as condensed openers
-   f ,  : \: x  ; openers openers coming after ,  and preceading \ will be seen as condensed openers
+   f  $ : \: x  ; openers coming after $  and preceading \ will be seen as condensed openers
+   f <$ : \: x  ; openers coming after <$ and preceading \ will be seen as condensed openers
+   f ,  : \: x  ; openers coming after ,  and preceading \ will be seen as condensed openers
 
    ; space after \ is allowed:
    : \   f <$ \   x
@@ -186,8 +186,8 @@ object1 adder <$ \x <$ + y 3    | (((object1 adder) x) (+ y 3))
 <!-- :: ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
 # Double mid brackets `::`
-Simliest symbol is `::`, it is literally `)(`, and that's it. No other special rules apply.
-There are at least 3 cases where it may be usefull:
+Simpliest one-liner symbol is `::`, it is literally `)(`, and that's it. No other special rules apply.
+There are several cases where it may be usefull:
 
 ```hy
 print : + 1 2 :: + 3 4      |   (print (+ 1 2) (+ 3 4))
@@ -232,7 +232,7 @@ Remember precedence order of one-liners:
 2. Then respectively `<$`, `$`, `,` and mmarker `:` 
 3. `\` and `::` have their own rules, that are "orthogonal" to precedence order logic
 
-There are 2 rules that help understanding how symbols internally emulating new lines (`,`, `$`, `<$`) interact with smarker:
+There are 2 rules that help understanding how symbols internally emulating new lines (`,`, `$`, `<$`) interact with condensed openers (like `:`) :
 1. Symbols `,`, `$` and `<$` do NOT expand into additional wrapping levels represented by condensed openers
 2. Code after `,`, `$` and `<$` symbols can introduce new condensed openers in the middle of the line (see [General rules (for one-liners)](#General-rules))
 
@@ -287,3 +287,5 @@ All of that can be understood in one (although very contrived and mostly unreada
 
 
 <!-- __________________________________________________________________________/ }}}1 -->
+
+> \>\> Next chapter: [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)

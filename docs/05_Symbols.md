@@ -80,7 +80,7 @@ setv L : + L 1          | (setv [(+ [1])])
 (setv L (+ L 1))        | (setv L (+ L 1))
 ```
 
-BTW, this solution also works with `ncut` macro, that uses `:` for slicing:
+Another common usage of original hy syntax might be using of `ncut` macro (it uses `:` for slicing):
 ```hy
 ; Seeing this code, wy2hy will strictly follow wy rules
 ; and produce corresponding non-working hy code:

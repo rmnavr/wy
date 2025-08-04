@@ -10,7 +10,7 @@ Documentation:
 
 Basic syntax uses:
 * indents
-* inline openers (wi will focus for now mostly on `:`)
+* inline openers (we will focus for now mostly on `:`)
 * continuator `\`
 
 <!-- Indenting ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
