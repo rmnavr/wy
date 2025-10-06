@@ -110,6 +110,25 @@ abs (+                  | (abs (+
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
+<!-- Other openers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+
+# Other kinds of openers
+
+All other openers
+(summarized in [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md))
+obey the same rules:
+
+```hy
+    L                   | [
+      \x y : f 3        |   x y (f 3)
+       g 4 L 2 5        |   (g 4 [2 5])]
+
+;   ↓ this is where wy will see indent level
+    `:                  | `(
+       \get ~x ~indx    |    get ~x ~indx)
+```
+
+<!-- __________________________________________________________________________/ }}}1 -->
 <!-- No continuator required ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
 # Elements that do not require continuator
@@ -162,25 +181,6 @@ func
 func
     x
     )
-```
-
-<!-- __________________________________________________________________________/ }}}1 -->
-<!-- Other openers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
-
-# Other kinds of openers
-
-All other openers
-(summarized in [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md))
-obey the same rules:
-
-```hy
-    L                   | [
-      \x y : f 3        |   x y (f 3)
-       g 4 L 2 5        |   (g 4 [2 5])]
-
-;   ↓ this is where wy will see indent level
-    `:                  | `(
-       \get ~x ~indx    |    get ~x ~indx)
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->

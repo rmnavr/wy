@@ -1,4 +1,6 @@
 
+// old ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
 	Add functionality:
 		• :: LL CC :#: C#C
 		• reader macro
@@ -24,3 +26,32 @@
         + pass closing bracket through comments to actual line where it belongs
 		+ nesting interaction: () : :: $ $$
 
+
+// ____________________________________________________________________________/ }}}1
+
+	Docs
+		Dev mmap
+		Cheetshets
+
+	Functionality
+		unicode + etc
+		shebang
+		reader macro tests (rmacro doesn't require continuator?)
+
+	Prettify
+		Error handling
+	  	edge cases (excessive \ , empty $ , etc. )
+	  	cli upd (Linux? in folder?)
+		tests
+
+	Optional
+		Refactor
+	  	Performance
+			lenses (remove)
+			pydantic
+			fptk unused macro
+
+	Vim
+		Wy VPLL
+		Wy REPL
+		Wy WEXP (minimal)

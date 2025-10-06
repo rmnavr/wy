@@ -37,8 +37,8 @@ Aside from aforementioned symbols, overall wy has about 35 special symbols.
 Wy sacrifices `L` and `C` to be recognized as `[` and `{` wrappers respectively.
 This is described in: [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
 
-> There are so many of wy symbols, because hy itself has 25 various kinds of brackets.
-> Wy has 25 wy openers derived from them, and the all obey the same rules.
+> There are so many wy symbols, because hy itself has 25 various kinds of brackets.
+> Wy has 25 wy openers derived from them, and the all obey they same rules.
 
 ---
 

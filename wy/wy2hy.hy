@@ -19,8 +19,7 @@
 ; [F] setup cmd parser ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn
-        setup_cmd_parser
-        [ ]
+        setup_cmd_parser []
         (setv _cmd_parser (argparse.ArgumentParser :description "Process a command line argument"))
         (_cmd_parser.add_argument "options"
                                   :nargs   "?" ; optional
@@ -31,7 +30,6 @@
                                            ]
                                   :default "_f"
                                   :help    "options: f - write and run from file, w - write to file, m - run from memory, s - silent")
-
         (_cmd_parser.add_argument "filename"
                                   :type    str
                                   :default None

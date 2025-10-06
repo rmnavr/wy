@@ -30,11 +30,6 @@
              bracktify_ndlines
              blines_to_hcode))
 
-(when (= __name__ "__main__")
-        (-> "..\\tests\\old\\_test6_TT.wy"
-            read_file
-            convert_wy2hy
-            print
-            )
-)
+    (when (= __name__ "__main__")
+          (print 1))
 
