@@ -1,6 +1,10 @@
 
 ; Doc ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
+    ; incv          // only prompts found cur ver
+    ; incv -info    // same
+
+    ; incv -major   // 0.3.0.dev10 -> 1.0.0
     ; incv -minor   // 0.3.0.dev10 -> 0.4.0
     ; incv -patch   // 0.3.0.dev10 -> 0.3.1 
 
@@ -27,7 +31,7 @@
         (setv UPD_MINOR 1)
         (setv UPD_PATCH 2)
         (setv UPD_DEV   3)
-        (setv NONE      4))
+        (setv INFO      4))
 
     (defclass [dataclass] Version []
         (#^ int major)
@@ -65,11 +69,11 @@
           #^ CLI_CMD target  ; major, minor, patch, dev
         ]
         (case target
-              CLI_CMD.UPD_MAJOR (dc_replace v0 :major (inc v0.major) :dev None)
-              CLI_CMD.UPD_MINOR (dc_replace v0 :minor (inc v0.minor) :dev None)
+              CLI_CMD.UPD_MAJOR (dc_replace v0 :major (inc v0.major) :minor 0 :patch 0 :dev None)
+              CLI_CMD.UPD_MINOR (dc_replace v0 :minor (inc v0.minor) :patch 0 :dev None)
               CLI_CMD.UPD_PATCH (dc_replace v0 :patch (inc v0.patch) :dev None)
               CLI_CMD.UPD_DEV   (dc_replace v0 :dev   (if (noneQ v0.dev) 1 (inc v0.dev)))
-              CLI_CMD.NONE      v0))
+              CLI_CMD.INFO      v0))
 
 ; _____________________________________________________________________________/ }}}1
 ; /test/ ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -98,13 +102,15 @@
         (parser.add_argument "-minor" :action "store_true")
         (parser.add_argument "-patch" :action "store_true")
         (parser.add_argument "-dev"   :action "store_true")
+        (parser.add_argument "-info"  :action "store_true")
         (setv args (parser.parse_args))
         ;
         (cond args.major CLI_CMD.UPD_MAJOR
               args.minor CLI_CMD.UPD_MINOR
               args.patch CLI_CMD.UPD_PATCH
               args.dev   CLI_CMD.UPD_DEV
-              True       CLI_CMD.NONE))
+              args.info  CLI_CMD.INFO
+              True       CLI_CMD.INFO))
 
 ; _____________________________________________________________________________/ }}}1
 
@@ -113,7 +119,7 @@
     (setv $SOURCE_FILE  "../setup.py")
 
     (setv _file_content (read_file $SOURCE_FILE))
-    (setv _cli_cmd (get_cli_cmd))
+    (setv #^ CLI_CMD _cli_cmd (get_cli_cmd))
 
     ; exit when no "proj_version = " string was found
     (when (noneQ (re_find r"proj_version = '(.*)'" _file_content))
@@ -126,10 +132,10 @@
     (print "Found cur version: " (str _v0))
 
     ; when no args were given — only prompt cur version
-    (when (eq _cli_cmd CLI_CMD.NONE)
+    (when (eq _cli_cmd CLI_CMD.INFO)
           (print "\nno version upd made, since instruction was not provided"
                  "\n(options: -major, -minor, -patch, -dev)")
-          (sys.exit 1))
+          (sys.exit 0))
 
     (setv _v1 (inc_version _v0 _cli_cmd))
 
