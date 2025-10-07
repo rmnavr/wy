@@ -1,7 +1,8 @@
 *.swp
 __pycache__/
 private/
-wy.egg-info/
+build/
+*.egg-info/
 *.~$lock.tmp
 *.~$lock
 *swp.tmp
