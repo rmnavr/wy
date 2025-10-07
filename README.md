@@ -51,39 +51,15 @@ It means that running transpiled *.hy file will give meaningfull number lines in
 5. [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
 
 <!-- __________________________________________________________________________/ }}}1 -->
-<!-- wy2hy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+<!-- Install ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
-# Using wy2hy transpiler
-
-Once wy is installed (see [Install](#Install) section) you can run in the terminal:
+# Installation
 
 ```
-wy2hy your_source_name.wy
+pip install git+https://github.com/rmnavr/wy.git@main
 ```
 
-It will generate `your_source_name.hy` file and immediately run it.
-
-There are also run options like for example:
-```
-wy2hy _wms your_source_name.wy
-```
-> Options are given via "_" prefix (instead of traditional "-") to avoid messing with hy options.
-* `_w` — only [W]rite transpiled hy-file in the same dir as source wy-file
-* `_f` (default) — same as `_w`, but after writing, immediately run transpiled [F]ile from it's dir
-  > If full filename for source file is given (like "C:\\users\\username\\proj1\\your_source_name.wy"), wy2hy will change script's dir to dir of this file.
-  > This enables your transpiled code to import other project files lying in the same dir, which is intended way of using `f` and `m` options.
-* `_m` — transpile and run from [M]emory (meaning, no file will be written on disk)
-  > Be aware that if any error occurs in transpiled code, debug messages will be polluted with wy2hy.hy calls.
-  > Also `_m` might fail in case of tricky imports inside transpiled files. 
-  > In general `_f` is strongly recommended over `_m`.
-* `_s` - [S]ilent mode, won't write any transpilation status messages
-
-<!-- __________________________________________________________________________/ }}}1 -->
-<!-- Dependencies ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
-
-# Dependencies
-
-Tested with:
+Dependencies (with versions tested):
 * hy 1.0.0
 * hyrule 1.0.0
 * funcy 2.0
@@ -92,12 +68,33 @@ Tested with:
 * lenses 1.2.0
 
 <!-- __________________________________________________________________________/ }}}1 -->
-<!-- Changelog ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+<!-- wy2hy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
-# Changelog
+# Using wy2hy transpiler
 
-* 07 oct 2025 (0.4.0) — updated wy2hy API
-* 04 aug 2025 (0.3.0) — first public release
+Once wy is installed, you acquire `wy2hy` executable
+(usually placed at smth like `conda/Scripts` dir), which can be used as follows.
+
+Transpiling single file:
+```
+wy2hy user_file.wy            // transpile to user_file.hy (inherits name from *.wy file)
+wy2hy 1.wy output/1.hy        // specifies target *.hy filename 
+wy2hy user_file.wy -stdout    // do not write hy code to file, write it to stdout instead
+```
+
+Transpiling several files:
+```
+wy2hy 1.wy 2.wy 3.wy          // will be transpiled to 1.hy, 2.hy and 3.hy (with inherited names)
+wy2hy 1.wy 2.wy go/2.hy 4.wy  // you can also optionally specify target names for some files
+
+// [-stdout] option cannot be used with multiple files
+```
+
+Except when using `-stdout` option, you can use `-silent` option to
+suppress transpilation messages:
+```
+wy2hy 1.wy -silent            // will not write any transpilation messages
+```
 
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- Status ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
@@ -106,28 +103,20 @@ Tested with:
 
 **Wy and wy2hy are fully documented and fully usable.**
 
-> There might be some obscure edge cases that transpile improperly, which I didn't discover yet.
-> Also, tested only on Windows.
-> 
-> Please reach out to me if you are experiencing difficulties in launching wy2hy.
-> This is my first serious opensource Python/Hy project, meaning I might be unaware of various caveats in Python packaging.
-
-There are some minor things on the TODO list:
+On the TODO list:
 * **Make TAB length configurable** (currenlty TAB is considered to be 4 spaces wide)
 * Allow usage of unicode chars in names
-* Shebang line recognition
 * Make error mesages meaningfull
 * Rigorous testing for reader macros transpiling is required
 * Forbid user from writing meaningless code (like for example `$ <$ <$`)
 
 <!-- __________________________________________________________________________/ }}}1 -->
-<!-- Install ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+<!-- Changelog ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
-# Installation
+# Changelog
 
-```
-pip install git+https://github.com/rmnavr/wy.git@0.3.0
-```
+* 07 oct 2025 (0.4.0) — updated wy2hy API
+* 04 aug 2025 (0.3.0) — first public release
 
 <!-- __________________________________________________________________________/ }}}1 -->
 
