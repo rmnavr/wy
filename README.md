@@ -85,7 +85,7 @@ wy2hy user_file.wy -stdout    // do not write hy code to file, write it to stdou
 Transpiling several files:
 ```
 wy2hy 1.wy 2.wy 3.wy          // will be transpiled to 1.hy, 2.hy and 3.hy (with inherited names)
-wy2hy 1.wy 2.wy go/2.hy 4.wy  // you can also optionally specify target names for some files
+wy2hy 1.wy 2.wy aa/2.hy 4.wy  // target names can be optionally specified for some or all files
 
 // [-stdout] option cannot be used with multiple files
 ```

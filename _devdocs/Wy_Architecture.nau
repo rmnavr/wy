@@ -1,20 +1,23 @@
 
-	__init__.py
-  	__init_hy__.hy
-
+	__init__.py		// lib header
+  	__init_hy__.hy	// lib header
   	_fptk_local.hy	// Collection of FP-utility functions
 
 
-	// ↓ main pipe	      // ↓ DD-stem for whole app
+	Backend:
 
-	Preparator.hy		|
-	Parser.hy			| Classes.hy    
-	Expander.hy			|
-	Deconstructor.hy	|
-	Bracketer.hy		|
-	Writer.hy			|
-	AppLayer.hy			|
-	
-  	wy2hy.hy	// CLI 
+		// ↓ main pipe	      // ↓ DD-stem for whole app
 
-    
+		Preparator.hy		|
+		Parser.hy			|
+		Expander.hy			| Classes.hy
+		Deconstructor.hy	| 
+		Bracketer.hy		|
+		Writer.hy			|
+		Assembler.hy		|
+
+	Frontend:
+
+		wy2hy.hy	// CLI App
+
+

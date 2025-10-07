@@ -12,8 +12,8 @@
 
     (import argparse)
 
-    (import  wy.Classes  [HyCode])
-    (import  wy.AppLayer [convert_wy2hy])
+    (import wy.Classes   [HyCode])
+    (import wy.Assembler [convert_wy2hy])
 
 ; _____________________________________________________________________________/ }}}1
 
@@ -146,6 +146,15 @@
         (print _hy_code))
 
 ; _____________________________________________________________________________/ }}}1
+; Info message ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (setv $INFO_MSG (sconcat   "\nwy2hy usage:"
+                             "\n\n  [-h] [-silent] [-stdout] file [file ...]"
+                             "\n\n  - files can be only of *.wy and *.hy extensions"
+                               "\n  - *.hy can only follow *.wy file"
+                               "\n  - only one *.wy file can be used for -stdout mode"))
+
+; _____________________________________________________________________________/ }}}1
 
     (defn run_wy2hy_script []
         ;
@@ -155,13 +164,7 @@
         (setv _m_stdout  (. wy2hy_args stdout_mode))
         ;
         (when (oflenQ _filenames 0)
-              (exit_with_msg (sconcat "wy2hy usage:"
-                                      "\n  [-h] [-silent] [-stdout] file [file ...]"
-                                      "\n"
-                                      "\n  - files can be only of *.wy and *.hy extensions"
-                                      "\n  - *.hy can only follow *.wy file"
-                                      "\n  - only one *.wy file can be used for -stdout mode")
-                             :errorN 0))
+              (exit_with_msg $INFO_MSG :errorN 0))
         ;
         (when _m_stdout (when (fnot oflenQ _filenames 1)
                               (exit_with_msg "ERROR: only one *.wy file should be used with -stdout mode"))
@@ -171,7 +174,9 @@
         ;
         (setv _pairs (generate_wy_hy_filename_pairs _filenames))
         (lstarmap (fm (transpile_wy_file %1 %2 :silent_mode _m_silent)) _pairs)
-        (exit_with_msg "Transpilation is done successfully" :errorN 0))
+        (if _m_silent
+            (normal_exit)
+            (exit_with_msg "Transpilation is done successfully" :errorN 0)))
 
     ; (run_wy2hy_script)
     ; why wy2hy_new.hy test_dir/1.wy
