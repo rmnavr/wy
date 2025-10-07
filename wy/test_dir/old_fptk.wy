@@ -1,11 +1,7 @@
 
 ; This is local version of github.com/rmnavr/fptk lib.
 ; It's purpose is to have stable fptk inside other projects until fptk reaches stable version.
-; Due to how hy macros imports work, when you import macros that depend from
-; lns and fm (which are l>, f> and others) you need to also import lns and fm.
-; fptk lib itself doesn't have this issue.
-
-; This file was generated from local git version: 0.2.4dev10
+; This file was generated from local git version: 0.2.4dev9
 
 ; functions and modules ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
@@ -831,8 +827,6 @@
 ; [GROUP] IO ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
 
     (import os.path [exists :as file_existsQ]) #_ "file_existsQ(filename) | also works on folders" ;;
-    (import os.path [isfile :as fileQ])        #_ "fileQ(filename)"
-    (import os.path [isdir  :as dirQ])         #_ "dirQ(filename)"
 
     #_ "read_file(file_name, encoding='utf-8') -> str | returns whole file content"
     (defn read_file
@@ -929,7 +923,6 @@
 
 ; ________________________________________________________________________/ }}}2
 
-
 ; _____________________________________________________________________________/ }}}1
 ; macros ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
@@ -940,7 +933,6 @@
     (import  operator)
 
 ; ________________________________________________________________________/ }}}2
-
 
 ; === Helpers (precompiled functions) ===
 ; neg integer expr ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
@@ -1091,7 +1083,7 @@
 
     ; when only importing (import fptk [f>]), f> is required to have fm internally, and it can be called as:
     ; 
-    ; -> fm               -> ✗ does not work in dev file
+    ; -> hy.R._fptk_local.fm               -> ✗ does not work in dev file
     ;                                  ✓ works from outside projs (it is essentially call to installed lib)
     ;                                  ✓ this is how it is done in hyrule (I think this is due to their hy_init.hy importing everything)
     ;                                        
