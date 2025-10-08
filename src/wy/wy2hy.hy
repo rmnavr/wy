@@ -17,34 +17,52 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-; F: ErrorHandling ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    (defn normal_exit [] (sys.exit 0))
-
-    (defn exit_with_msg
-        [ #^ str text 
-          *
-          #^ int [errorN 1]
-        ]
-        (print text)
-        (sys.exit errorN))
-
-    (defn exit_with_stderr
-        [ #^ str text 
-          *
-          #^ int [errorN 1]
-        ]
-        (print text :file sys.stderr)
-        (sys.exit errorN))
-
-
-; _____________________________________________________________________________/ }}}1
-; F: Get user provided args ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; C: Classes ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defclass [dataclass] Wy2Hy_Args []
         (#^ (of List str) filenames)
         (#^ bool          silent_mode)
         (#^ bool          stdout_mode))
+
+    (defclass FTYPE [Enum]
+        (setv WY    0)
+        (setv HY    1)
+        (setv ERROR 2))
+
+
+    (defclass RUN_MODE [Enum]
+        (setv INFO        1)
+        (setv STDOUT_1    2)
+        (setv TRANSPILE_N 3))
+
+    (defclass [dataclass] APP_ERROR []
+        (setv #^ str msg "ERROR: undefined"))
+
+    (defclass [dataclass] SuccessfullTranspilation []
+        (#^ float  time)
+        (#^ HyCode code))
+
+; _____________________________________________________________________________/ }}}1
+; F: ErrorHandling helpers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn normal_exit
+        [ #^ (of Optional str) [msg None]
+        ]
+        (when (fnot noneQ msg) (print msg :file sys.stdout)) 
+        (sys.exit 0)
+        )
+
+    (defn exit_with_error
+        [ #^ int errorN ; 1 for general, >1 for others 
+          #^ (of Optional str) [msg None]
+        ]
+        (print msg :file sys.stderr)
+        (sys.exit errorN)
+        )
+
+; _____________________________________________________________________________/ }}}1
+
+; F: Get user provided args ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ Wy2Hy_Args get_args []
         ;
@@ -67,86 +85,123 @@
                             :stdout_mode _args.stdout)))
 
 ; _____________________________________________________________________________/ }}}1
-; F: Prepare filenames ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; F: decide on run mode ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defclass FTYPE [Enum]
-        (setv WY    0)
-        (setv HY    1)
-        (setv ERROR 2))
+    (defn #^ (of Union RUN_MODE APP_ERROR)
+        validate_args_and_decide_on_run_mode
+        [ #^ Wy2Hy_Args args
+        ]
+        ;
+        (setv _filenames (. args filenames))
+        (setv _m_silent  (. args silent_mode))
+        (setv _m_stdout  (. args stdout_mode))
+        ;
+        (when (oflenQ _filenames 0) (return RUN_MODE.INFO))
+        ;
+        (when _m_stdout
+            (when (fnot oflenQ _filenames 1)
+                  (return (APP_ERROR "ERROR: only one file (and which also should be of *.wy extension) should be used with -stdout mode")))
+            (when (neq (get_ft (first _filenames)) FTYPE.WY)
+                  (return (APP_ERROR "ERROR: file extension should be *.wy")))
+            (return RUN_MODE.STDOUT_1))
+        ;
+        (setv _result (try_generate_filenames_pairs _filenames))
+        (if (oftypeQ APP_ERROR _result)
+            (return _result)
+            (return RUN_MODE.TRANSPILE_N)))
 
-    (defn #^ FTYPE get_ft [#^ str filename]
+; _____________________________________________________________________________/ }}}1
+
+; F: Runner: stdout_mode ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn #^ (of Union HyCode APP_ERROR) 
+        transpile_in_stdout_mode
+        [ #^ str source_filename
+        ]
+        ;
+        (try (setv _wy_code (read_file source_filename))
+             (except [e Exception]
+                     (return (APP_ERROR f"ERROR: cannot read {source_filename} (file not available?)"))))
+        (try (setv _hy_code (convert_wy2hy _wy_code))
+             (except [e Exception]
+                     (return (APP_ERROR f"ERROR: transpilation failed for {source_filename} (incorrect syntax?)"))))
+        ; 
+        (return _hy_code))
+
+; _____________________________________________________________________________/ }}}1
+
+; F: Filename operations: utils ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn #^ FTYPE
+        get_ft
+        [ #^ str filename
+        ]
         (setv [root ext] (os.path.splitext filename))
         (cond (= ext ".wy") (return FTYPE.WY)
               (= ext ".hy") (return FTYPE.HY)
               True          (return FTYPE.ERROR)))
 
-    (defn #^ str wy_ext_to_hy_ext [#^ str filename]
-        (when (fnot file_existsQ filename) 
-              (exit_with_msg f"File {filename} does not exist!"))
-        (when (fnot fileQ filename) 
-              (exit_with_msg f"{filename} is dir, but it has to be a file!"))
-        (when (fnot fileQ filename) 
-              (Exception f"{filename} is dir, but need to be a file!"))
+    (defn #^ str
+        change_filename_ext_to_hy
+        [ #^ str filename
+        ]
+        "file1.wy -> file1.hy"
         (setv [root ext] (os.path.splitext filename))
         (return (sconcat root ".hy")))
 
-    (defn #^ (of List (of Tuple str str))
-        generate_wy_hy_filename_pairs
+; _____________________________________________________________________________/ }}}1
+; F: Filename operations: pairableQ ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn #^ (of Union (of List (of Tuple str str)) APP_ERROR)
+        try_generate_filenames_pairs
         [ #^ (of List str) filenames
         ]
-        (lmapm (when (eq (get_ft it) FTYPE.ERROR) 
-                     (exit_with_msg (sconcat "BAD ARG: " it " (need to be of *.wy or *.hy filetype)")))
-               filenames)
+        ; check if all files are *.wy or *.hy:
+        (setv _types (lmap get_ft filenames))
+        (when (in FTYPE.ERROR _types)
+              (return (APP_ERROR (sconcat "ERROR: files can only be of *.wy or *.hy extension"))))
+        ; check if 1st file is *.wy:
         (when (neq (get_ft (first filenames)) FTYPE.WY)
-              (exit_with_msg "BAD ARGS: first provided file should be of *.wy type"))
-        ;
+              (return (APP_ERROR "ERROR: first provided file should be of *.wy type")))
+        ; check if *.hy follows *.wy (not another *.hy):
         (setv splitted_by_wy (lmulticut_by (fm (= (get_ft %1) FTYPE.WY))
                                            filenames
                                            :keep_border  True
                                            :merge_border False))
         (when (any (lmapm (>= (len %1) 3) splitted_by_wy))
-              (exit_with_msg "BAD ARGS: *.hy may only follow *.wy"))
+              (return (APP_ERROR "ERROR: *.hy file may only follow *.wy file")))
+        ; 
         ; add *.hy where were not provided:
         (lmapm (if (oflenQ it 2)
                    it
-                   [(first it) (wy_ext_to_hy_ext (first it))])
+                   [(first it) (change_filename_ext_to_hy (first it))])
                splitted_by_wy))
 
 ; _____________________________________________________________________________/ }}}1
-; F: Transpile one wy-hy pair ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; F: Runner: Transpile one wy-hy pair ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn #^ HyCode
+    (defn #^ (of Union SuccessfullTranspilation APP_ERROR)
         transpile_wy_file
-        [ #^ str  source_filename
-          #^ str  target_filename
-          #^ bool silent_mode
+        [ #^ str source_filename
+          #^ str target_filename
         ]
-        (unless silent_mode (print f"Attempting transpilation: {source_filename} -> {target_filename}"))
+        ;
+        (setv _pre f"{source_filename} -> {target_filename} :")
         (try (setv _wy_code (read_file source_filename))
-             (unless silent_mode (print f"[V] successfully opened file {source_filename}"))
-             (except [e Exception] (exit_with_msg "ERROR: cannot read {source_filename} (file not available?)")))
+             (except [e Exception]
+                     (return (APP_ERROR f"{_pre} ERROR - can't read source file (file not available?)"))))
         (try (setv [_t_s prompt _hy_code] (with_execution_time (fm (convert_wy2hy _wy_code)) :tUnit "s"))
-             (unless silent_mode (print f"[V] transpilation is successful (done in {_t_s :.3f} seconds)"))
-             (except [e Exception] (exit_with_msg f"ERROR: transpilation failed for {source_filename} (incorrect syntax?)")))
+             (except [e Exception]
+                     (return (APP_ERROR f"{_pre} ERROR - transpilation failed (incorrect syntax?)"))))
         (try (write_file _hy_code target_filename)
-             (unless silent_mode (print f"[V] file {target_filename} is written\n"))
-             (except [e Exception] (exit_with_msg f"ERROR: cannot write {target_filename} (file not available?)"))))
+             (except [e Exception]
+                     (return (APP_ERROR f"{_pre} ERROR - cannot write to target file (file not available?)"))))
+        ;
+        (return (SuccessfullTranspilation _t_s _hy_code)))
 
 ; _____________________________________________________________________________/ }}}1
-; F: stdout_mode ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn #^ HyCode
-        transpile_to_stdout
-        [ #^ str  source_filename
-        ]
-        (try (setv _wy_code (read_file source_filename))
-             (except [e Exception] (exit_with_stderr "ERROR: cannot read {source_filename} (file not available?)")))
-        (try (setv _hy_code (convert_wy2hy _wy_code))
-             (except [e Exception] (exit_with_stderr f"ERROR: transpilation failed for {source_filename} (incorrect syntax?)")))
-        (print _hy_code))
-
-; _____________________________________________________________________________/ }}}1
-; Info message ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; Info message ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (setv $INFO_MSG (sconcat   "\nwy2hy usage:"
                              "\n\n  [-h] [-silent] [-stdout] file [file ...]"
@@ -156,30 +211,43 @@
 
 ; _____________________________________________________________________________/ }}}1
 
+; F: run wy2hy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
     (defn run_wy2hy_script []
         ;
         (setv wy2hy_args (get_args))
+        (setv run_mode (validate_args_and_decide_on_run_mode wy2hy_args))
+        (when (oftypeQ APP_ERROR run_mode)
+              (exit_with_error 1 run_mode.msg))
+        ;
         (setv _filenames (. wy2hy_args filenames))
         (setv _m_silent  (. wy2hy_args silent_mode))
-        (setv _m_stdout  (. wy2hy_args stdout_mode))
         ;
-        (when (oflenQ _filenames 0)
-              (exit_with_msg $INFO_MSG :errorN 0))
+        (when (eq run_mode RUN_MODE.INFO)
+              (normal_exit $INFO_MSG))
         ;
-        (when _m_stdout (when (fnot oflenQ _filenames 1)
-                              (exit_with_msg "ERROR: only one *.wy file should be used with -stdout mode"))
-                        (wy_ext_to_hy_ext (first _filenames)) ; this only checks if file is available
-                        (transpile_to_stdout (first _filenames))
-                        (normal_exit))
+        (when (eq run_mode RUN_MODE.STDOUT_1)
+              (setv _result (transpile_in_stdout_mode (first _filenames)))
+              (if (oftypeQ HyCode _result)
+                  (normal_exit _result) ; this is print of HyCode to stdout
+                  (exit_with_error 1 _result.msg)))
         ;
-        (setv _pairs (generate_wy_hy_filename_pairs _filenames))
-        (lstarmap (fm (transpile_wy_file %1 %2 :silent_mode _m_silent)) _pairs)
-        (if _m_silent
-            (normal_exit)
-            (exit_with_msg "Transpilation is done successfully" :errorN 0)))
+        (when (eq run_mode RUN_MODE.TRANSPILE_N) ; at this point pairs are always correct
+              (setv _pairs (try_generate_filenames_pairs _filenames))
+              (lstarmap (fm (do (setv _result (transpile_wy_file %1 %2))
+                                (if (oftypeQ SuccessfullTranspilation _result)
+                                    (unless _m_silent
+                                            (print %1 "->" %2 f": transpiled in {_result.time :.3f} s"))
+                                    (print _result.msg))))
+                         _pairs)
+              ;
+              (if _m_silent
+                  (normal_exit)
+                  (normal_exit "Transpilation is finished"))))
 
-    ; (run_wy2hy_script)
-    ; why wy2hy_new.hy test_dir/1.wy
-    ; why wy2hy_new.hy test_dir/1.wy -stdout
-    ; why wy2hy_new.hy test_dir/1.wy -silent
+; _____________________________________________________________________________/ }}}1
+
+    (when (eq __name__ "__main__")
+        (run_wy2hy_script)
+        )
 

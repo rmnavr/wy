@@ -2,7 +2,7 @@
 from setuptools                 import setup, find_packages
 from setuptools.command.install import install 
 
-proj_version = '0.4.0.dev3'
+proj_version = '0.4.0.dev4'
 
 libs_required = [
     'hy >= 1',
@@ -36,7 +36,7 @@ setup(
     version          = proj_version,
     setup_requires   = ['wheel'] + libs_required,
     install_requires = libs_required,
-    packages         = find_packages(exclude = ['private*', 'tests*'], where='srs'),
+    packages         = find_packages(exclude = ['private*', 'tests*'], where='src'),
     package_dir      = {'': 'src'},
     package_data     = {'': ['*.hy']},
     entry_points     = {'console_scripts': ['wy2hy = wy.wy2hy:run_wy2hy_script']},
