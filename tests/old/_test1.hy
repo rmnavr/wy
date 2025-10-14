@@ -41,8 +41,8 @@
     (defn #^ int
          add_2_numbers
          [ #^ int x
-        \  #^ int y
-        \]
+           #^ int y
+         ]
          (+ 10 x y))
     (print (add_2_numbers 10 12))
 
@@ -51,7 +51,7 @@
         7)
 
     (setv xx
-         (lmap (p> abs neg str)
+         (lmap (p: abs neg str)
                 [-1 -2 -3])
          riba 11
          pupos 12)

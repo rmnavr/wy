@@ -54,6 +54,7 @@
     (import typing      [Literal])
     (import typing      [Type])
     (import typing      [TypeVar])
+    (import typing      [Generic])
 
     ;; type checks:
 
