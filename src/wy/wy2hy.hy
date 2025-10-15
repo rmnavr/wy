@@ -7,9 +7,7 @@
 ; _____________________________________________________________________________/ }}}1
 
     ; TODO:
-    ; - try_generate_filenames_pairs is used double-time -> split to [pairableQ + pairwise]?
     ; - propagate failure exit if at least one file failed?
-    ; - info: validateF works correctly with Enums, hurray (no BaseModel needed)
 
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
@@ -49,8 +47,8 @@
         (defn __init__ [self #^ StrictStr msg] (-> (super) (.__init__ :msg msg))))
 
     (defclass Transpiled [BaseModel]
-        (#^ StrictNumber time) ; in seconds I guess
-        (#^ HyCode       code)
+        (#^ StrictNumber time) ; in seconds 
+        (#^ HyCode       code) ; not used anywhere really
         (defn __init__ [self #^ StrictNumber time #^ HyCode code] (-> (super) (.__init__ :time time :code code))))
 
 ; _____________________________________________________________________________/ }}}1
@@ -116,8 +114,7 @@
                   (return (Failure (APP_ERROR "ERROR: file extension should be *.wy"))))
             (return (Success RUN_MODE.STDOUT_1)))
         ;
-        (setv _result (try_generate_filenames_pairs _filenames))
-        (bindR (try_generate_filenames_pairs _filenames)
+        (bindR (filenames_pairable_possibility _filenames)
                (fn [it] (Success RUN_MODE.TRANSPILE_N))))
 
 ; _____________________________________________________________________________/ }}}1
@@ -162,14 +159,14 @@
 ; _____________________________________________________________________________/ }}}1
 ; F: /monadic/ Filename operations: try generate pairs ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ (of Result (of List (of Tuple StrictStr StrictStr)) APP_ERROR)
-        try_generate_filenames_pairs
+    (defn [validateF] #^ (of Result bool APP_ERROR)
+        filenames_pairable_possibility
         [ #^ (of List StrictStr) filenames
         ]
         ; check if all files are *.wy or *.hy:
         (setv _types (lmap get_ft filenames))
         (when (in FTYPE.ERROR _types)
-              (return (Failure (APP_ERROR (sconcat "ERROR: files can only be of *.wy or *.hy extension")))))
+              (return (Failure (APP_ERROR "ERROR: files can only be of *.wy or *.hy extension"))))
         ; check if 1st file is *.wy:
         (when (neq (get_ft (first filenames)) FTYPE.WY)
               (return (Failure (APP_ERROR "ERROR: first provided file should be of *.wy type"))))
@@ -181,12 +178,22 @@
         (when (any (lmapm (>= (len %1) 3) splitted_by_wy))
               (return (Failure (APP_ERROR "ERROR: *.hy file may only follow *.wy file"))))
         ; 
+        (Success True))
+
+    ; should only be used on pairable input!
+    (defn [validateF] #^ (of List (of Tuple StrictStr StrictStr))
+        generate_filenames_pairs
+        [ #^ (of List StrictStr) filenames
+        ]
+        (setv splitted_by_wy (lmulticut_by (fm (= (get_ft %1) FTYPE.WY))
+                                           filenames
+                                           :keep_border  True
+                                           :merge_border False))
         ; add *.hy where were not provided:
-        (Success
-            (lmapm (if (oflenQ it 2)
-                       it
-                       [(first it) (change_filename_ext_to_hy (first it))])
-                   splitted_by_wy)))
+        (lmapm (if (oflenQ it 2)
+                   it
+                   [(first it) (change_filename_ext_to_hy (first it))])
+               splitted_by_wy))
 
 ; _____________________________________________________________________________/ }}}1
 ; F: /monadic/ Runner: Transpile one wy-hy pair ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -216,26 +223,22 @@
 
     (setv $INFO_MSG (sconcat   "\nwy2hy usage:"
                              "\n\n  [-h] [-silent] [-stdout] file [file ...]"
-                             "\n\n  - files can be only of *.wy and *.hy extensions"
+                             "\n\n  - files can be of *.wy and *.hy extensions only"
                                "\n  - *.hy can only follow *.wy file"
-                               "\n  - only one *.wy file can be used for -stdout mode"))
+                               "\n  - only one file (which has to be *.wy) can be used for -stdout mode"))
 
 ; _____________________________________________________________________________/ }}}1
-
 ; F: run wy2hy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    ; should only be used on R.Failure[AppError] — it has .msg attribute
-    (defn unwrapMsg  [resultM] (. (unwrapR resultM) msg))
-
-    ; should only be used on R.Success[Transpiled] — it has .time attribute
+    (defn unwrapEMsg [resultM] (. (unwrapE resultM) msg))
     (defn unwrapTime [resultM] (. (unwrapR resultM) time))
 
-    (defn run_wy2hy_script []
+    (defn run_wy2hy_script [* [dummy_args None]]
         ;
-        (setv #^ Wy2Hy_Args wy2hy_args   (get_args))
+        (setv #^ Wy2Hy_Args wy2hy_args (if (noneQ dummy_args) (get_args) dummy_args))
         (setv #^ Result run_mode_result  (validate_args_and_decide_on_run_mode wy2hy_args))
         ; failure path (run_mode_result = Failure):
-        (when (failureQ run_mode_result) (exit_with_error 1 (unwrapMsg run_mode_result)))
+        (when (failureQ run_mode_result) (exit_with_error 1 (unwrapEMsg run_mode_result)))
         ; success path (run_mode_result = Success):
         (setv run_mode   (unwrapR run_mode_result)) 
         (setv _filenames (. wy2hy_args filenames))
@@ -247,18 +250,17 @@
               (setv _resultSTD (transpile_in_stdout_mode (first _filenames)))
               (if (successQ _resultSTD)
                   (normal_exit (unwrapR _resultSTD)) ; this is print of HyCode to stdout
-                  (exit_with_error 1 (unwrapMsg _resultSTD))))
+                  (exit_with_error 1 (unwrapEMsg _resultSTD))))
         ;
-        (when (eq run_mode RUN_MODE.TRANSPILE_N)
-              ; at this point pairs are always correct:
-              (setv _pairs (unwrapR (try_generate_filenames_pairs _filenames)))
+        (when (eq run_mode RUN_MODE.TRANSPILE_N) ; having this run_mode guaranties filenames to be pairable
+              (setv _pairs (generate_filenames_pairs _filenames))
               (lstarmap
                         (fm
                             (do (setv _resultT1 (transpile_wy_file %1 %2))
                                 (if (successQ _resultT1)
                                     (unless _m_silent
                                        (print "[ok]" %1 "->" %2 f": transpiled in {(unwrapTime _resultT1) :.3f} s"))
-                                    (print (unwrapMsg _resultT1)))))
+                                    (print (unwrapEMsg _resultT1)))))
                         _pairs)
               ;
               (if _m_silent
@@ -268,7 +270,15 @@
 ; _____________________________________________________________________________/ }}}1
 
     (when (eq __name__ "__main__")
-        (run_wy2hy_script)
-        )
-
+        (setv a1 (Wy2Hy_Args :filenames []              :silent_mode False :stdout_mode False))
+        (setv a2 (Wy2Hy_Args :filenames ["1.wy"]        :silent_mode False :stdout_mode True))
+        (setv a3 (Wy2Hy_Args :filenames ["1.hy"]        :silent_mode False :stdout_mode True))
+        (setv a4 (Wy2Hy_Args :filenames ["1.hy" "2.hy"] :silent_mode True  :stdout_mode True))
+        (setv a5 (Wy2Hy_Args :filenames ["1.hy" "2.hy"] :silent_mode False :stdout_mode False))
+        (setv a6 (Wy2Hy_Args :filenames ["1.wy"]        :silent_mode False :stdout_mode False))
+        (setv a7 (Wy2Hy_Args :filenames ["1.wy" "2.hy"] :silent_mode False :stdout_mode False))
+        (setv a8 (Wy2Hy_Args :filenames ["1.wy" "2.wy"] :silent_mode False :stdout_mode False))
+        ;
+        (run_wy2hy_script :dummy_args a8)
+    )
 
