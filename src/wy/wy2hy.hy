@@ -1,11 +1,4 @@
 
-; monadic todo ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    ; result.value.msg — accessor would be nice
-    ;   instead of (. (unwrap value) msg)
-
-; _____________________________________________________________________________/ }}}1
-
     ; TODO:
     ; - propagate failure exit if at least one file failed?
 
@@ -270,15 +263,17 @@
 ; _____________________________________________________________________________/ }}}1
 
     (when (eq __name__ "__main__")
-        (setv a1 (Wy2Hy_Args :filenames []              :silent_mode False :stdout_mode False))
-        (setv a2 (Wy2Hy_Args :filenames ["1.wy"]        :silent_mode False :stdout_mode True))
-        (setv a3 (Wy2Hy_Args :filenames ["1.hy"]        :silent_mode False :stdout_mode True))
-        (setv a4 (Wy2Hy_Args :filenames ["1.hy" "2.hy"] :silent_mode True  :stdout_mode True))
-        (setv a5 (Wy2Hy_Args :filenames ["1.hy" "2.hy"] :silent_mode False :stdout_mode False))
-        (setv a6 (Wy2Hy_Args :filenames ["1.wy"]        :silent_mode False :stdout_mode False))
-        (setv a7 (Wy2Hy_Args :filenames ["1.wy" "2.hy"] :silent_mode False :stdout_mode False))
-        (setv a8 (Wy2Hy_Args :filenames ["1.wy" "2.wy"] :silent_mode False :stdout_mode False))
-        ;
-        (run_wy2hy_script :dummy_args a8)
+    ;   tests:
+    ;   
+    ;   (setv a1 (Wy2Hy_Args :filenames []              :silent_mode False :stdout_mode False))
+    ;   (setv a2 (Wy2Hy_Args :filenames ["1.wy"]        :silent_mode False :stdout_mode True))
+    ;   (setv a3 (Wy2Hy_Args :filenames ["1.hy"]        :silent_mode False :stdout_mode True))
+    ;   (setv a4 (Wy2Hy_Args :filenames ["1.hy" "2.hy"] :silent_mode True  :stdout_mode True))
+    ;   (setv a5 (Wy2Hy_Args :filenames ["1.hy" "2.hy"] :silent_mode False :stdout_mode False))
+    ;   (setv a6 (Wy2Hy_Args :filenames ["1.wy"]        :silent_mode False :stdout_mode False))
+    ;   (setv a7 (Wy2Hy_Args :filenames ["1.wy" "2.hy"] :silent_mode False :stdout_mode False))
+    ;   (setv a8 (Wy2Hy_Args :filenames ["1.wy" "2.wy"] :silent_mode False :stdout_mode False))
+    ;   ;
+    ;   (run_wy2hy_script :dummy_args a8)
     )
 
