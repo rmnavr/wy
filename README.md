@@ -70,12 +70,12 @@ Dependencies (with versions tested):
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- wy2hy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
-# Using wy2hy transpiler
+# wy2hy transpiler
 
 Once wy is installed, you acquire `wy2hy` executable
 (usually placed at some place like `../conda/Scripts`).
 
-## wy2hy doc
+## Using wy2hy
 
 Transpiling single file:
 ```
@@ -110,12 +110,46 @@ examples:
 `-silent` option suppresses transpilation messages.
 It will have no effect when used with `-stdout`.
 
-## Usage workflow
+## Running wy files
 
 Obvious quick way to run *.wy files is to chain 2 commands in shell:
 ```
     wy2hy 1.wy && hy 1.hy 
 ```
+
+## REPLing wy code
+
+I am relying on [hy-ipython](https://pypi.org/project/hy-ipython/0.0.1/) (it adds `%hy` and `%%hy` magic to ipython).
+(hy-ipython works with hy 1.0.0, despite doc says it requires exactly 0.24).
+
+Wy code can be sent to ipython via:
+```hy
+%%hy
+(import wy [convert_wy2hy])
+
+(hy.eval (hy.read_many (convert_wy2hy "
+    print 3                                 <- wy code goes here
+    print 4                                 <- wy code goes here
+")))
+```
+
+Just be aware that if your code contains `"` or `\`, those need to be escaped.
+
+> For example this wy code:
+> ```wy
+>     setv x "smth"
+>    \x
+> ```
+> should be passed like this:
+> ```hy
+> %%hy
+> (hy.eval (hy.read_many (convert_wy2hy "
+>     setv x \"smth\"
+>    \\x
+> ")))
+> ```
+
+This can be organized in hotkey in Vim and similar.
 
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- Status ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->

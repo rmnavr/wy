@@ -226,7 +226,8 @@
     (defn unwrapEMsg [resultM] (. (unwrapE resultM) msg))
     (defn unwrapTime [resultM] (. (unwrapR resultM) time))
 
-    (defn run_wy2hy_script [* [dummy_args None]]
+    (defn run_wy2hy_script [* [dummy_args None]] 
+        "dummy_args are only for testing"
         ;
         (setv #^ Wy2Hy_Args wy2hy_args (if (noneQ dummy_args) (get_args) dummy_args))
         (setv #^ Result run_mode_result  (validate_args_and_decide_on_run_mode wy2hy_args))
