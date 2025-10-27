@@ -129,21 +129,30 @@ With hy-ipython you can send wy code to ipython via:
 %%hy
 (import wy [wy2REPL])
 
-(wy2REPL :spy True :frame True :colored_frame True "
-    print 3                                 <- wy code goes here
-    print 4                                 <- wy code goes here
+(wy2REPL "
+    print 3
+    print 4
 ")
+
+; or with more fancy output:
+(wy2REPL :spy True :frame True :colored_frame True "
+    print 3
+    print 4
+")
+
 ```
 
-> You can use following arguments (they are all False by default):
-> - spy           — also prints transpiled hy-code before executing it
-> - frame         — wrap printed code into frame (to make it visualy stand out)
-> - colored_frame — make frame colored (to make it stand out even more)
+> You can use following optional arguments (they are all False by default):
+> ```
+> spy           — also prints transpiled hy-code before executing it
+> frame         — wrap printed code into frame (to make it visualy stand out)
+> colored_frame — make frame colored (to make it stand out even more)
+> ```
 
 Just be aware that if your code contains `"` or `\`, those need to be escaped.
 
 > For example this wy code:
-> ```wy
+> ```hy
 >     setv x "smth"
 >    \x
 > ```
