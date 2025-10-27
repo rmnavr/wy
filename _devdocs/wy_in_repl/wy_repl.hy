@@ -5,7 +5,7 @@
     (hy.eval (hy.read_many (convert_wy2hy "print 3\nprint 4")))
     ; this way you can send it directly to REPL via %%hy with hy-ipython
 
-    ; I actually also make it print converted code:
+    ; I actually also make it print transpiled code:
     (setv __wy (convert_wy2hy "demo code"))
     (print "===WY2HY===")
     (print __wy)

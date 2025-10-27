@@ -10,7 +10,8 @@ libs_required = [
     'pyparsing >= 3', 
     'pydantic >= 2', 
     'lenses >= 1.2.0',
-    'funcy >= 2.0'
+    'funcy >= 2.0',
+    'termcolor >= 3.0'
 ]
 
 # install class ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1

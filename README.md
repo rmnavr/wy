@@ -66,6 +66,7 @@ Dependencies (with versions tested):
 * pyparsing 3.0.9
 * pydantic 2.11.7
 * lenses 1.2.0
+* termcolor 3.1.0
 
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- wy2hy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
@@ -119,19 +120,25 @@ Obvious quick way to run *.wy files is to chain 2 commands in shell:
 
 ## REPLing wy code
 
-I am relying on [hy-ipython](https://pypi.org/project/hy-ipython/0.0.1/) (it adds `%hy` and `%%hy` magic to ipython).
-(hy-ipython works with hy 1.0.0, despite doc says it requires exactly 0.24).
+For REPLing I recommend using [hy-ipython](https://pypi.org/project/hy-ipython/0.0.1/),
+which adds `%hy` and `%%hy` magic to ipython
+(it works with hy 1.0.0, despite doc asking for exactly 0.24).
 
-Wy code can be sent to ipython via:
+With hy-ipython you can send wy code to ipython via:
 ```hy
 %%hy
-(import wy [convert_wy2hy])
+(import wy [wy2REPL])
 
-(hy.eval (hy.read_many (convert_wy2hy "
+(wy2REPL :spy True :frame True :colored_frame True "
     print 3                                 <- wy code goes here
     print 4                                 <- wy code goes here
-")))
+")
 ```
+
+> You can use following arguments (they are all False by default):
+> - spy           — also prints transpiled hy-code before executing it
+> - frame         — wrap printed code into frame (to make it visualy stand out)
+> - colored_frame — make frame colored (to make it stand out even more)
 
 Just be aware that if your code contains `"` or `\`, those need to be escaped.
 
@@ -143,13 +150,13 @@ Just be aware that if your code contains `"` or `\`, those need to be escaped.
 > should be passed like this:
 > ```hy
 > %%hy
-> (hy.eval (hy.read_many (convert_wy2hy "
+> (wy2REPL "
 >     setv x \"smth\"
 >    \\x
-> ")))
+> ")
 > ```
 
-This can be organized in hotkey in Vim and similar.
+All of that can be neatly organized in hotkey (in Vim and similar).
 
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- Status ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
@@ -160,6 +167,7 @@ This can be organized in hotkey in Vim and similar.
 
 On the TODO list:
 * **Make TAB length configurable** (currenlty TAB is considered to be 4 spaces wide)
+* Test on Linux (infamous `\n` vs `\n\r` issue)
 * Allow usage of unicode chars in names
 * Make error mesages meaningfull
 * Rigorous testing for reader macros transpiling is required
@@ -170,6 +178,7 @@ On the TODO list:
 
 # Changelog
 
+* 26 oct 2025 (0.4.1) — added function and instructions for running wy in ipython
 * 07 oct 2025 (0.4.0) — updated wy2hy API
 * 04 aug 2025 (0.3.0) — first public release
 
