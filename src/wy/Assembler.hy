@@ -2,6 +2,7 @@
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (import  wy._fptk_local *)
+    (import hy)
     (require wy._fptk_local *)
 
     (import wy.Classes *)
@@ -34,34 +35,15 @@
              blines_to_hcode))
 
 ; _____________________________________________________________________________/ }}}1
-; [F] wy2REPL ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [F] frame_hycode ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (setv $FRAME_OP       "/=== TRANSPILED WY->HY CODE ===")
-    (setv $FRAME_CL    "\n\\=== TRANSPILED WY->HY CODE ===")
+    (setv $FRAME_OP       "/=== TRANSPILED_HY_CODE ===")
+    (setv $FRAME_CL    "\n\\=== TRANSPILED_HY_CODE ===")
     (setv $FRAME_COLOR "light_green") ; can be any value that is accepted by termcolor.colored
 
-    (defn [validateF]
-        wy2REPL
-        [ #^ WyCode code
-          *
-          #^ bool [spy False]
-          #^ bool [frame False]
-          #^ bool [colored_frame False]
-        ]
-        "- spy           -- also prints transpiled hy-code before executing it
-         - frame         -- wrap printed code into frame (to make it visualy stand out)
-         - colored_frame -- make frame colored (to make it stand out even more)
-        "
-        (setv _hy_code (convert_wy2hy code))
-        (when spy
-            (if frame
-                (print (frame_hycode colored_frame _hy_code))
-                (print _hy_code)))
-        (hy.eval (hy.read_many _hy_code)))
-
     (defn frame_hycode
-        [ #^ bool   colored
-          #^ HyCode code
+        [ #^ HyCode code
+          #^ bool   [colored False]
         ]
         (setv pre  (if colored (clrz $FRAME_OP) $FRAME_OP))
         (setv bar  (if colored (clrz "\n|") "\n|"))
@@ -74,7 +56,9 @@
 ; _____________________________________________________________________________/ }}}1
 
     (when (= __name__ "__main__")
-          ; (print (frame_hycode True "bubr\n  riba"))
-          ; (wy2REPL "print 3" :spy True :frame True :colored_frame True)
+          ; (setv _trnspld (convert_wy2hy "setv x 3\nprint x"))
+          ; (print (frame_hycode _trnspld :colored True))
+          ; (hy.eval (hy.read_many _trnspld))
+          ; (print x)
           )
 

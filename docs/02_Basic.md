@@ -1,11 +1,15 @@
 
 ---
-Documentation:
+wy syntax:
 1. [Syntax overview](https://github.com/rmnavr/wy/blob/main/docs/01_Overview.md)
-2. You are here -> [Basic syntax](https://github.com/rmnavr/wy/blob/main/docs/02_Basic.md) 
+2. [Basic syntax](https://github.com/rmnavr/wy/blob/main/docs/02_Basic.md) 
 3. [Condensed syntax](https://github.com/rmnavr/wy/blob/main/docs/03_Condensed.md)
 4. [One-liners](https://github.com/rmnavr/wy/blob/main/docs/04_One_liners.md) 
 5. [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
+
+running wy code:
+1. [wy2hy transpiler](https://github.com/rmnavr/wy/blob/main/docs/wy2hy.md) 
+2. [wy-ipython](https://github.com/rmnavr/wy/blob/main/docs/wy_ipython.md) 
 ---
 
 Basic syntax uses:

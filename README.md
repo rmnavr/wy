@@ -35,20 +35,37 @@ Wy is a **syntax layer** for hy, meaning that wy is not a standalone language, b
 Wy does not change anything about hy rather than removing parentheses.
 
 To run wy code, you first transpile it into hy code using **wy2hy** transpiler, and then you deal with transpiled *.hy files as usual.
+> Example shell command:
+> ```
+> wy2hy 1.wy 1.hy && hy 1.hy
+> ```
 
 **wy2hy** produces readable hy-code with 1-to-1 line correspondence to source wy-code.
-It means that running transpiled *.hy file will give meaningfull number lines in debug messages.
+It means that running transpiled *.hy file will give meaningfull number lines in error messages.
+
+ipython plugin for wy is also available, see [wy-ipython](https://tobedone) (it adds magic commands to ipython).
+> Example of calculating ipython cell:
+> ```hy
+> %%wy
+>     setv x 3
+>     print x
+> ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- Docs ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
 # Documentation
 
+wy syntax:
 1. [Syntax overview](https://github.com/rmnavr/wy/blob/main/docs/01_Overview.md)
 2. [Basic syntax](https://github.com/rmnavr/wy/blob/main/docs/02_Basic.md) 
 3. [Condensed syntax](https://github.com/rmnavr/wy/blob/main/docs/03_Condensed.md)
 4. [One-liners](https://github.com/rmnavr/wy/blob/main/docs/04_One_liners.md) 
 5. [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
+
+running wy code:
+1. [wy2hy transpiler](https://github.com/rmnavr/wy/blob/main/docs/wy2hy.md) 
+2. [wy-ipython](https://github.com/rmnavr/wy/blob/main/docs/wy_ipython.md) 
 
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- Install ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
@@ -67,105 +84,6 @@ Dependencies (with versions tested):
 * pydantic 2.11.7
 * lenses 1.2.0
 * termcolor 3.1.0
-
-<!-- __________________________________________________________________________/ }}}1 -->
-<!-- wy2hy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
-
-# wy2hy transpiler
-
-Once wy is installed, you acquire `wy2hy` executable
-(usually placed at some place like `../conda/Scripts`).
-
-## Using wy2hy
-
-Transpiling single file:
-```
-usage:
-
-  wy2hy file.wy [file.hy] [-stdout] [-silent]
-
-  file.wy    source for transpilation
-  [file.hy]  optional target name (if not given, will be inherited from source name)
-  [-stdout]  do not produce *.hy file, print directly to stdout instead
-  [-silent]  suppresses transpilation messages (has no effect on -stdout option)
-
-examples:
-
-  wy2hy user_file.wy          // transpile to user_file.hy (inherits name from *.wy file)
-  wy2hy 1.wy output/1.hy      // transpile to output/1.hy
-  wy2hy user_file.wy -stdout  // print transpilation result to stdout
-```
-
-Transpiling several files:
-```
-usage:
-  wy2hy file1.wy [file1.hy] file2.wy [file2.hy] ... [-silent]
-
-  - when *.hy files are not provided, their names will be inherited from source name
-
-examples:
-  wy2hy 1.wy 2.wy 3.wy          // will be transpiled to: 1.hy, 2.hy and 3.hy
-  wy2hy 1.wy 2.wy aa/2.hy 3.wy  // will be transpiled to: 1.hy, aa/2.hy, 3.hy
-```
-
-`-silent` option suppresses transpilation messages.
-It will have no effect when used with `-stdout`.
-
-## Running wy files
-
-Obvious quick way to run *.wy files is to chain 2 commands in shell:
-```
-    wy2hy 1.wy && hy 1.hy 
-```
-
-## REPLing wy code
-
-For REPLing I recommend using [hy-ipython](https://pypi.org/project/hy-ipython/0.0.1/),
-which adds `%hy` and `%%hy` magic to ipython
-(it works with hy 1.0.0, despite doc asking for exactly 0.24).
-
-With hy-ipython you can send wy code to ipython via:
-```hy
-%%hy
-(import wy [wy2REPL])
-
-(wy2REPL "
-    print 3
-    print 4
-")
-
-; or with more fancy output:
-(wy2REPL :spy True :frame True :colored_frame True "
-    print 3
-    print 4
-")
-
-```
-
-> You can use following optional arguments (they are all False by default):
-> ```
-> spy           — also prints transpiled hy-code before executing it
-> frame         — wrap printed code into frame (to make it visualy stand out)
-> colored_frame — make frame colored (to make it stand out even more)
-> ```
-
-Just be aware that if your code contains `"` or `\`, those need to be escaped.
-
-> For example this wy code:
-> ```hy
->     setv x "smth"
->    \x
-> ```
-> should be passed like this:
-> ```hy
-> %%hy
-> (wy2REPL "
->     setv x \"smth\"
->    \\x
-> ")
-> ```
-
-All of that can be neatly organized in hotkey (in Vim and similar).
 
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- Status ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
@@ -187,7 +105,7 @@ On the TODO list:
 
 # Changelog
 
-* 26 oct 2025 (0.4.1) — added function and instructions for running wy in ipython
+* 26 oct 2025 (0.4.1) — added instructions for running wy in ipython
 * 07 oct 2025 (0.4.0) — updated wy2hy API
 * 04 aug 2025 (0.3.0) — first public release
 
