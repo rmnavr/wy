@@ -84,6 +84,13 @@
     (setv PreparedCode StrictStr)
     (setv Atom         StrictStr)
 
+; [C] Exceptions ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defclass [dataclass] WyIndentError [Exception]
+        (#^ StrictStr msg))
+
+; _____________________________________________________________________________/ }}}1
+
 ; [F] atom checks ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; wy:
@@ -116,14 +123,18 @@
             (or (hy_opener_atomQ       atom)
                 (closing_bracket_atomQ atom)))
 
-        (defn [validateF] #^ bool hy_macromark_atomQ    [#^ Atom atom] (in atom $HY_MACROMARKS))
-        (defn [validateF] #^ bool digit_atomQ           [#^ Atom atom] (re_test r"^\.?\d" atom))
-        (defn [validateF] #^ bool keyword_atomQ         [#^ Atom atom] (re_test r":\w+" atom))
-        (defn [validateF] #^ bool unpacker_atomQ        [#^ Atom atom] (in atom ["#*" "#**"]))
-        (defn [validateF] #^ bool qstring_atomQ         [#^ Atom atom] (re_test "^[rbf]?\"" atom))
-        (defn [validateF] #^ bool annotation_atomQ      [#^ Atom atom] (= atom "#^"))
-        (defn [validateF] #^ bool icomment_atomQ        [#^ Atom atom] (= atom "#_"))
-        (defn [validateF] #^ bool ocomment_atomQ        [#^ Atom atom] (re_test "^;" atom))
+                            ; (-    ) (1_000    )  . (1_000    ) [(E  )(+    ) (1_000    ) ]
+        (setv $DIGIT_REGEX r"^(\-|\+)?(\d(\d|_)*)?\.?(\d(\d|_)*)?((e|E)(\+|\-)?(\d(\d|_)*)?)?$")
+
+        (defn [validateF] #^ bool digit_atomQ        [#^ Atom atom] (and (re_test r"\d" atom)
+                                                                         (re_test $DIGIT_REGEX atom)))
+        (defn [validateF] #^ bool hy_macromark_atomQ [#^ Atom atom] (in atom $HY_MACROMARKS))
+        (defn [validateF] #^ bool keyword_atomQ      [#^ Atom atom] (re_test r":\w+" atom))
+        (defn [validateF] #^ bool unpacker_atomQ     [#^ Atom atom] (in atom ["#*" "#**"]))
+        (defn [validateF] #^ bool qstring_atomQ      [#^ Atom atom] (re_test "^[rbf]?\"" atom))
+        (defn [validateF] #^ bool annotation_atomQ   [#^ Atom atom] (= atom "#^"))
+        (defn [validateF] #^ bool icomment_atomQ     [#^ Atom atom] (= atom "#_"))
+        (defn [validateF] #^ bool ocomment_atomQ     [#^ Atom atom] (re_test "^;" atom))
 
     ; unite:
 
@@ -220,14 +231,6 @@
         ; below None is used for kinds where field not applicable:
         (#^ (of Optional Token)  t_smarker)            ; <- used only by SKind.GroupStarter
         (#^ (of Optional Token)  t_ocomment))          ; <- used by 3 SKinds: ImpliedOpener/Continuator/OnlyOComment
-
-    (setv $BLANK_DL (NDLine :kind                 SKind.EmptyLine
-                            :indent               0
-                            :body_tokens          []
-                            :rowN                 #(0 0 0)
-                            ;
-                            :t_smarker            None
-                            :t_ocomment           None))
 
 ; _____________________________________________________________________________/ }}}1
 ; [C] BLine (bracketed line), NDLineInfo ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1

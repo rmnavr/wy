@@ -149,10 +149,12 @@ obey the same rules:
 Several syntax elements (that are usually not head of s-expression) do not require continuator `\`:
 ```hy
 func                |   (func
+    1.0             |       1.0
     -1.0            |       -1.0
     "string"        |       "string"
     f"string"       |       f"string"
     b"string"       |       b"string"
+    r"string"       |       r"string"
     :keyword        |       :keyword
     #^              |       #^
     #*              |       #*

@@ -121,9 +121,13 @@
              (setv [_closers _indent _openers_and_body _comment] (bline_to_hcodeline &bl))
              (if _currently_on_same_origRowN ; for &idx=0 will give False
                  (+= _hy_code _closers " " _openers_and_body)
-                 (+= _hy_code _closers _prev_comment "\n" _indent _openers_and_body))   ; for &idx=0 extra «\n» is added unwantedly
+                 (+= _hy_code _closers _prev_comment "\n" _indent _openers_and_body)) ; <-- see comment below for "\n"
              (setv _prev_comment _comment))
-        (return ((p: rest str_join) _hy_code)))                                         ; this "\n" is removed here
+        ; there are always 2 excessive "\n" (which are removed below):
+        ; - for &idx=0 "\n" prepends start of transpiled code
+        ; - bracketer processer always generates +1 empty BLine (which purpose is to store it's prev_closers),
+        ;   this line corresponds to &idx=last, and it appends end of transpiled code
+        (return (cut_ _hy_code 2 -2)))                                   
 
 ; _____________________________________________________________________________/ }}}1
 

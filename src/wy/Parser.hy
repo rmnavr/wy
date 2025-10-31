@@ -16,6 +16,7 @@
     (setv ALPHAS    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
     (setv WSYMBOLS  (+ "_" "$.-=+&*<>!/|" "%^?"))  ; excluded :#`'~@"\;,
     (setv NUMS      "0123456789")
+    (setv NUMS_     "0123456789_")
 
     (setv LPAR      (| #* (lmap pp.Literal $HY_OPENERS1)))
     (setv RPAR      (pp.Literal ")"))
@@ -28,14 +29,21 @@
 
     ; =========================================================
 
+    ; -1_200.1_000E+3_3
+    ; -.1E3
     (setv NUMBER (| (pp.Combine (+ (pp.Optional "-")
-                                   (pp.Word NUMS)
+                                   (pp.Word NUMS NUMS_)
                                    (pp.Optional ".")
-                                   (pp.Optional (pp.Word NUMS))
+                                   (pp.Optional (pp.Word NUMS NUMS_))
                                    (pp.Optional (+ (pp.oneOf "e E")
                                                    (pp.Optional (pp.oneOf "- +"))
-                                                   (pp.Word NUMS)))))
-                    (pp.Combine (+ (pp.Word ".") (pp.Word NUMS)))))
+                                                   (pp.Word NUMS NUMS_)))))
+                    (pp.Combine (+ (pp.Optional "-")
+                                   (pp.Word ".")
+                                   (pp.Word NUMS NUMS_)
+                                   (pp.Optional (+ (pp.oneOf "e E")
+                                                   (pp.Optional (pp.oneOf "- +"))
+                                                   (pp.Word NUMS NUMS_)))))))
 
     (setv INDENT       (pp.Word $INDENT_MARK))
     (setv NEW_LINE     (pp.Literal $NEWLINE_MARK))

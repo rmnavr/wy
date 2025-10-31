@@ -1,15 +1,13 @@
 
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
+    (import termcolor)
+    (import sys) (sys.setrecursionlimit 3000) ; needed for pyparser, I saw it crash at 1300
+
     (import  wy._fptk_local *)
-    (import hy)
     (require wy._fptk_local *)
 
     (import wy.Classes *)
-
-    (sys.setrecursionlimit 2000) ; needed for pyparser, I saw it crash at 1300
-    (import termcolor)
-
     (import wy.Preparator    [wycode_to_prepared_code])
     (import wy.Parser        [prepared_code_to_ntlines])
     (import wy.Expander      [expand_ntlines])
@@ -19,7 +17,7 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-; [F] convert_wy2hy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [F] convert_wy2hy (assembly function) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn [validateF] #^ HyCode
         convert_wy2hy
@@ -35,23 +33,63 @@
              blines_to_hcode))
 
 ; _____________________________________________________________________________/ }}}1
-; [F] frame_hycode ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [F] debug_wy2hy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (setv clrz_d (fn [text] (termcolor.colored text None "on_white")))
+    (setv clrz_u (fn [text] (termcolor.colored text "green")))
+
+    (defn [validateF] 
+        print_wy2hy_steps
+        [ #^ WyCode code
+        ]
+        ;
+        (print (clrz_d "Source (str):"))
+        (print code)
+        ;
+        (print (clrz_d "Prepared code (str):"))
+        (print (setx _prepared_code (wycode_to_prepared_code code)))
+        ;
+        (print (clrz_d "NTLines (list):"))
+        (lprint (lmapm (sconcat (clrz_u "> ") (str it))
+                       (setx _ntlines (prepared_code_to_ntlines _prepared_code))))
+        ;
+        (print (clrz_d "NTLines expanded (list):"))
+        (lprint (lmapm (sconcat (clrz_u "> ") (str it))
+                       (setx _entlines (expand_ntlines _ntlines))))
+        ;
+        (print (clrz_d "NDLines (list):"))
+        (lprint (lmapm (sconcat (clrz_u "> ") (str it))
+                       (setx _ndlines (deconstruct_ntlines _entlines))))
+        ;
+        (print (clrz_d "BLines (list):"))
+        (lprint (lmapm (sconcat (clrz_u "> ") (str it))
+                       (setx _blines (bracktify_ndlines _ndlines))))
+        ;
+        (print (clrz_d "Final hy code (str):"))
+        (print (setx _hycode (blines_to_hcode _blines)))
+        ;
+        (print (clrz_d "============")))
+
+; _____________________________________________________________________________/ }}}1
+
+; [F] frame_hycode (for repl) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (setv $FRAME_OP       "/=== TRANSPILED_HY_CODE ===")
     (setv $FRAME_CL    "\n\\=== TRANSPILED_HY_CODE ===")
     (setv $FRAME_COLOR "light_green") ; can be any value that is accepted by termcolor.colored
 
+    (setv clrz_f (fn [text] (termcolor.colored text $FRAME_COLOR)))
+
     (defn frame_hycode
         [ #^ HyCode code
           #^ bool   [colored False]
         ]
-        (setv pre  (if colored (clrz $FRAME_OP) $FRAME_OP))
-        (setv bar  (if colored (clrz "\n|") "\n|"))
-        (setv post (if colored (clrz $FRAME_CL) $FRAME_CL))
+        "this function is intended to be used in repl"
+        (setv pre  (if colored (clrz_f $FRAME_OP) $FRAME_OP))
+        (setv bar  (if colored (clrz_f "\n|") "\n|"))
+        (setv post (if colored (clrz_f $FRAME_CL) $FRAME_CL))
         (setv lines (lconcat [pre] (lmapm (sconcat bar it) (code.split "\n")) [post]))
         (str_join lines))
-
-    (defn clrz [text] (termcolor.colored text $FRAME_COLOR))
 
 ; _____________________________________________________________________________/ }}}1
 
@@ -60,5 +98,6 @@
           ; (print (frame_hycode _trnspld :colored True))
           ; (hy.eval (hy.read_many _trnspld))
           ; (print x)
-          )
+          (print_wy2hy_steps "z\n  x\n y")
+      )
 

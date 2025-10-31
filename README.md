@@ -110,7 +110,7 @@ On the TODO list:
 
 # Changelog
 
-* 26 oct 2025 (0.4.3) — added `%wy` magic commands definitions to ipython
+* 26 oct 2025 (0.4.3) — added `%hy` and `%wy` magic commands definitions to ipython
 * 07 oct 2025 (0.4.0) — updated wy2hy API
 * 04 aug 2025 (0.3.0) — first public release
 

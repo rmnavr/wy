@@ -231,29 +231,20 @@
                                  :brckt_stack  []
                                  :kind         SKind.EmptyLine)) 
 
-    (setv $BLANK_DL (NDLine :kind                 SKind.EmptyLine
-                            :indent               0
-                            :body_tokens          []
-                            :rowN                 #(0 0 0)
-                            ;
-                            :t_smarker            None
-                            :t_ocomment           None))
-
-    ; TODO: last extra BLANK_DL has to have correct rowN
+    
     (defn #^ (of List BLine)
         bracktify_ndlines
         [ #^ (of List NDLine) ndlines
         ]
         (setv _result [])
         ;
-        (setv extraN (if (zerolenQ ndlines)
-                         0
-                         (l> (last ndlines) .rowN [0] (get))))
+        (setv [n _ rne] (if (zerolenQ ndlines) ; rowN realrowstart realrowend
+                            [0 0 0] ; case for wy2hy-ing string with 0 chars lol
+                            (l> (last ndlines) .rowN (get))))
         (setv $BLANK_DL (NDLine :kind                 SKind.EmptyLine
                                 :indent               0
                                 :body_tokens          []
-                                :rowN                 #((inc extraN) 0 0)
-                                ;
+                                :rowN                 #((inc n) (inc rne) (inc rne)) ; TODO: set correct row
                                 :t_smarker            None
                                 :t_ocomment           None))
         ;
