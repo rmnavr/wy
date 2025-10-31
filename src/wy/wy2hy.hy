@@ -51,16 +51,14 @@
         [ #^ (of Optional str) [msg None]
         ]
         (when (fnot noneQ msg) (print msg :file sys.stdout)) 
-        (sys.exit 0)
-        )
+        (sys.exit 0))
 
     (defn exit_with_error
         [ #^ int errorN ; 1 for general, >1 for others 
           #^ (of Optional str) [msg None]
         ]
         (print msg :file sys.stderr)
-        (sys.exit errorN)
-        )
+        (sys.exit errorN))
 
 ; _____________________________________________________________________________/ }}}1
 
@@ -246,20 +244,23 @@
                   (normal_exit (unwrapR _resultSTD)) ; this is print of HyCode to stdout
                   (exit_with_error 1 (unwrapEMsg _resultSTD))))
         ;
-        (when (eq run_mode RUN_MODE.TRANSPILE_N) ; having this run_mode guaranties filenames to be pairable
+        (when (eq run_mode RUN_MODE.TRANSPILE_N) ; at this stage filenames are guaranteed to be pairable
               (setv _pairs (generate_filenames_pairs _filenames))
+              (setv _failedFiles [])
               (lstarmap
                         (fm
                             (do (setv _resultT1 (transpile_wy_file %1 %2))
                                 (if (successQ _resultT1)
-                                    (unless _m_silent
-                                       (print "[ok]" %1 "->" %2 f": transpiled in {(unwrapTime _resultT1) :.3f} s"))
-                                    (print (unwrapEMsg _resultT1)))))
+                                    (unless _m_silent (print "[ok]" %1 "->" %2 f": transpiled in {(unwrapTime _resultT1) :.3f} s"))
+                                    (do (print (unwrapEMsg _resultT1))
+                                        (_failedFiles.append %1)))))
                         _pairs)
               ;
-              (if _m_silent
-                  (normal_exit)
-                  (normal_exit "Transpilation is finished"))))
+              (if (oflenQ _failedFiles 0)
+                  (if _m_silent
+                      (normal_exit)
+                      (normal_exit "Transpilation is finished"))
+                  (exit_with_error 1 "ERROR: Some transpilations failed"))))
 
 ; _____________________________________________________________________________/ }}}1
 

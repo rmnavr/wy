@@ -35,7 +35,7 @@ Wy is a **syntax layer** for hy, meaning that wy is not a standalone language, b
 Wy does not change anything about hy rather than removing parentheses.
 
 To run wy code, you first transpile it into hy code using **wy2hy** transpiler, and then you deal with transpiled *.hy files as usual.
-> Example shell command:
+> Example shell command to run wy file:
 > ```
 > wy2hy 1.wy 1.hy && hy 1.hy
 > ```
@@ -43,7 +43,8 @@ To run wy code, you first transpile it into hy code using **wy2hy** transpiler, 
 **wy2hy** produces readable hy-code with 1-to-1 line correspondence to source wy-code.
 It means that running transpiled *.hy file will give meaningfull number lines in error messages.
 
-ipython plugin for wy is also available, see [wy-ipython](https://tobedone) (it adds magic commands to ipython).
+You can also run wy code in ipython, see [wy repl](https://github.com/rmnavr/wy/blob/main/docs/repl.md)
+(it adds magic commands to ipython).
 > Example of calculating ipython cell:
 > ```hy
 > %%wy
@@ -65,7 +66,7 @@ wy syntax:
 
 running wy code:
 1. [wy2hy transpiler](https://github.com/rmnavr/wy/blob/main/docs/wy2hy.md) 
-2. [wy-ipython](https://github.com/rmnavr/wy/blob/main/docs/wy_ipython.md) 
+2. [wy repl](https://github.com/rmnavr/wy/blob/main/docs/repl.md) 
 
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- Install ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
@@ -93,11 +94,15 @@ Dependencies (with versions tested):
 **Wy and wy2hy are fully documented and fully usable.**
 
 On the TODO list:
-* **Make TAB length configurable** (currenlty TAB is considered to be 4 spaces wide)
+* **Make TAB length configurable** (currenlty TAB is hardcoded to be 4 spaces wide)
+  > for now convert tabs to spaces before transpiling
+  > if you want tabs to be of another lenghs
 * Test on Linux (infamous `\n` vs `\n\r` issue)
-* Allow usage of unicode chars in names
 * Make error mesages meaningfull
-* Rigorous testing for reader macros transpiling is required
+* Testing suite is required for:
+  - basic transpilations
+  - usage of ASCII and unicode chars in names
+  - reader macros transpiling 
 * Forbid user from writing meaningless code (like for example `$ <$ <$`)
 
 <!-- __________________________________________________________________________/ }}}1 -->
@@ -105,7 +110,7 @@ On the TODO list:
 
 # Changelog
 
-* 26 oct 2025 (0.4.1) — added instructions for running wy in ipython
+* 26 oct 2025 (0.4.3) — added `%wy` magic commands definitions to ipython
 * 07 oct 2025 (0.4.0) — updated wy2hy API
 * 04 aug 2025 (0.3.0) — first public release
 

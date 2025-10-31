@@ -9,7 +9,7 @@ wy syntax:
 
 running wy code:
 1. [wy2hy transpiler](https://github.com/rmnavr/wy/blob/main/docs/wy2hy.md) 
-2. [wy-ipython](https://github.com/rmnavr/wy/blob/main/docs/wy_ipython.md) 
+2. [wy repl](https://github.com/rmnavr/wy/blob/main/docs/repl.md) 
 ---
 
 # wy2hy transpiler
@@ -61,7 +61,12 @@ It will have no effect when used with `-stdout`.
 Obvious quick way to run *.wy files is to chain 2 commands in shell:
 ```
     wy2hy 1.wy && hy 1.hy 
+
+    wy2hy main.wy sub1.wy sub2.wy && hy main.hy 
 ```
+
+When transpilation of at least one file fails, wy2hy exits with sys.exit(1),
+thus avoiding evaluating older version of transpiled *.hy file if it exists (this is indended behaviour of `&&` in shell).
 
 <!-- __________________________________________________________________________/ }}}1 -->
 

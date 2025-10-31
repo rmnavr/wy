@@ -9,7 +9,7 @@ wy syntax:
 
 running wy code:
 1. [wy2hy transpiler](https://github.com/rmnavr/wy/blob/main/docs/wy2hy.md) 
-2. [wy-ipython](https://github.com/rmnavr/wy/blob/main/docs/wy_ipython.md) 
+2. [wy repl](https://github.com/rmnavr/wy/blob/main/docs/repl.md) 
 ---
 
 Basic syntax uses:
@@ -113,6 +113,15 @@ abs (+                  | (abs (+
        (ncut ys 1 : 3)) |         (ncut ys 1 : 3))) ; notice that ":" was not recognized as wrapper
 ```
 
+To understand how multiline hy expressions behave in indented world of wy, imagine them
+being forcefully placed one one line (like joining several lines with `\n` symbol). 
+This is how transpiler treats them internally.
+```hy
+(abs (+ <<\n>>        x <<\n>>        (ncut ys 1 : 3)))
+```
+
+Point is: **indents inside multiline hy expression do not mess with wy code at all**.
+
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- Other openers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
@@ -142,6 +151,8 @@ Several syntax elements (that are usually not head of s-expression) do not requi
 func                |   (func
     -1.0            |       -1.0
     "string"        |       "string"
+    f"string"       |       f"string"
+    b"string"       |       b"string"
     :keyword        |       :keyword
     #^              |       #^
     #*              |       #*
