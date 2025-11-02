@@ -11,48 +11,45 @@
 ; _____________________________________________________________________________/ }}}1
 
 ; 1) Atomize (atom is just str):
-; pp atoms ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; pp-entities ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (setv ALPHAS    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
     (setv WSYMBOLS  (+ "_" "$.-=+&*<>!/|" "%^?"))  ; excluded :#`'~@"\;,
     (setv NUMS      "0123456789")
     (setv NUMS_     "0123456789_")
 
-    (setv LPAR      (| #* (lmap pp.Literal $HY_OPENERS1)))
-    (setv RPAR      (pp.Literal ")"))
-
-    (setv LBRCKT    (| #* (lmap pp.Literal $HY_OPENERS2)))
-    (setv RBRCKT    (pp.Literal "]"))
-
-    (setv LCRB      (| #* (lmap pp.Literal $HY_OPENERS3)))
-    (setv RCRB      (pp.Literal "}"))
-
     ; =========================================================
 
-    ; -1_200.1_000E+3_3
-    ; -.1E3
-    (setv NUMBER (| (pp.Combine (+ (pp.Optional "-")
+    (setv INDENT       (pp.Word $INDENT_MARK))
+    (setv NEW_LINE     (pp.Literal $NEWLINE_MARK))
+
+    (setv OMARKER      (| #* (lmap pp.Literal $OMARKERS)))
+    (setv DMARKER      (| #* (lmap pp.Literal $DMARKERS)))
+    (setv CMARKER      (pp.Literal $CMARKER))
+    (setv AMARKER      (pp.Literal $AMARKER))
+    (setv RMARKER      (pp.Literal $RMARKER))
+    (setv JMARKER      (pp.Literal $JMARKER))
+    (setv HYMACRO_MARK (| #* (lmap pp.Literal $HY_MACROMARKS))) ; ' ` ~ ~@
+
+    ; -1_200.1_000E+3_3 , -.1E3
+    (setv NUMBER (| (pp.Combine (+ (pp.Optional (pp.oneOf "- +"))
                                    (pp.Word NUMS NUMS_)
                                    (pp.Optional ".")
                                    (pp.Optional (pp.Word NUMS NUMS_))
                                    (pp.Optional (+ (pp.oneOf "e E")
                                                    (pp.Optional (pp.oneOf "- +"))
                                                    (pp.Word NUMS NUMS_)))))
-                    (pp.Combine (+ (pp.Optional "-")
+                    (pp.Combine (+ (pp.oneOf "- +")
                                    (pp.Word ".")
                                    (pp.Word NUMS NUMS_)
                                    (pp.Optional (+ (pp.oneOf "e E")
                                                    (pp.Optional (pp.oneOf "- +"))
                                                    (pp.Word NUMS NUMS_)))))))
 
-    (setv INDENT       (pp.Word $INDENT_MARK))
-    (setv NEW_LINE     (pp.Literal $NEWLINE_MARK))
-    (setv WY_MARKER    (| #* (lmap pp.Literal $WY_MARKERS)))
-    (setv HYMACRO_MARK (| #* (lmap pp.Literal $HY_MACROMARKS)))
-    (setv UNPACKER     (| (pp.Literal "#**") (pp.Literal "#*")))
     (setv WORD         (pp.Word (+ ALPHAS WSYMBOLS) (+ ALPHAS NUMS WSYMBOLS ":")))
     (setv RMACRO       (pp.Combine (+ "#" WORD)))
     (setv KEYWORD      (pp.Combine (+ ":" (pp.Word (+ ALPHAS "_") (+ ALPHAS "_" NUMS)))))
+    (setv SUGAR        (| #* (lmap pp.Literal ["#**" "#*" "#_" "#^"])))
     (setv QSTRING      (pp.Combine (+  (pp.Optional (pp.oneOf "r f b"))
                                        (pp.QuotedString   :quoteChar "\""
                                                           :escChar "\\"
@@ -61,46 +58,82 @@
     (setv OCOMMENT     (pp.Combine (+  (pp.Literal ";")
                                        (pp.SkipTo (pp.lineEnd)))))
 
-
     ; ==========================
     ; ATOM    = words and similar
-    ; EXPR    = bracketed
-    ; CONTENT = 0+ words or bracketed
+    ; HYEXPR  = hy-bracketed expr
+    ; CONTENT = 0+ ATOMs or HYEXPRs   <- this is on what parser runs
 
-    (setv ICOMMENT     (pp.Forward))
-    (setv ANNOTATION   (pp.Forward))
-    (setv QEXPR        (pp.Forward))           ; [ ... ]
-    (setv SEXPR        (pp.Forward))           ; ( ... ) #( ... )
-    (setv CEXPR        (pp.Forward))           ; { ... } #{ ... }
+    (setv ATOM    (|  OCOMMENT QSTRING
+                      KEYWORD NUMBER DMARKER OMARKER AMARKER RMARKER JMARKER
+                      WORD SUGAR CMARKER 
+                      HYMACRO_MARK RMACRO
+                      NEW_LINE INDENT))
 
-    (setv ATOM         (|  OCOMMENT
-                           ICOMMENT
-                           ANNOTATION
-                           QSTRING
-                           KEYWORD
-                           WORD
-                           UNPACKER
-                           WY_MARKER
-                           HYMACRO_MARK
-                           NUMBER
-                           RMACRO
-                           NEW_LINE
-                           INDENT))
+    (setv QEXPR   (pp.Forward))           ; [ ... ]
+    (setv SEXPR   (pp.Forward))           ; ( ... ) #( ... )
+    (setv CEXPR   (pp.Forward))           ; { ... } #{ ... }
 
-    (setv EXPR         (pp.originalTextFor (| QEXPR SEXPR CEXPR)))
+    (setv HYEXPR  (pp.originalTextFor (| QEXPR SEXPR CEXPR)))
+    (setv CONTENT (pp.Group (pp.ZeroOrMore (| HYEXPR ATOM))))
 
-    (setv CONTENT      (pp.Group (pp.ZeroOrMore (| EXPR ATOM))))
-    (<<   SEXPR        (pp.Group (+ LPAR   CONTENT RPAR)))
-    (<<   QEXPR        (pp.Group (+ LBRCKT CONTENT RBRCKT)))
-    (<<   CEXPR        (pp.Group (+ LCRB   CONTENT RCRB)))
+    (setv LPAR    (| #* (lmap pp.Literal $HY_OPENERS1)))
+    (setv LBRCKT  (| #* (lmap pp.Literal $HY_OPENERS2)))
+    (setv LCRB    (| #* (lmap pp.Literal $HY_OPENERS3)))
+    (setv RPAR    (pp.Literal ")"))
+    (setv RBRCKT  (pp.Literal "]"))
+    (setv RCRB    (pp.Literal "}"))
 
-    (<<   ICOMMENT     (pp.Group (+ (pp.Literal "#_") (| EXPR ATOM))))
-    (<<   ANNOTATION   (pp.Group (+ (pp.Literal "#^") (| EXPR ATOM))))
+    (<<   SEXPR   (pp.originalTextFor (pp.Group (+ LPAR   CONTENT RPAR))))
+    (<<   QEXPR   (pp.originalTextFor (pp.Group (+ LBRCKT CONTENT RBRCKT))))
+    (<<   CEXPR   (pp.originalTextFor (pp.Group (+ LCRB   CONTENT RCRB))))
 
 ; _____________________________________________________________________________/ }}}1
+; add actions to pp-entities ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn [validateF] #^ StrictStr
+        cleanse_multiline
+        [#^ StrictStr text]
+        "removes indent/newline marks"
+        (->> text (re_sub $INDENT_MARK " ")
+                  (re_sub $NEWLINE_MARK "")))
+
+    (.setParseAction HYEXPR       (fm (PAtom PKind.HYEXPR       (cleanse_multiline (get it 1))))) ; [14, '()', 16]
+    (.setParseAction QSTRING      (fm (PAtom PKind.QSTRING      (cleanse_multiline (get it 0)))))
+    (.setParseAction OCOMMENT     (fm (PAtom PKind.OCOMMENT     (get it 0))))
+    (.setParseAction KEYWORD      (fm (PAtom PKind.KEYWORD      (get it 0))))
+    (.setParseAction NUMBER       (fm (PAtom PKind.NUMBER       (get it 0))))
+    (.setParseAction WORD         (fm (PAtom PKind.WORD         (get it 0))))
+    (.setParseAction SUGAR        (fm (PAtom PKind.SUGAR        (get it 0))))
+    (.setParseAction OMARKER      (fm (PAtom PKind.OMARKER      (get it 0))))
+    (.setParseAction DMARKER      (fm (PAtom PKind.DMARKER      (get it 0))))
+    (.setParseAction CMARKER      (fm (PAtom PKind.CMARKER      (get it 0))))
+    (.setParseAction AMARKER      (fm (PAtom PKind.AMARKER      (get it 0))))
+    (.setParseAction RMARKER      (fm (PAtom PKind.RMARKER      (get it 0))))
+    (.setParseAction JMARKER      (fm (PAtom PKind.JMARKER      (get it 0))))
+    (.setParseAction HYMACRO_MARK (fm (PAtom PKind.HYMACRO_MARK (get it 0))))
+    (.setParseAction RMACRO       (fm (PAtom PKind.RMACRO       (get it 0))))
+    (.setParseAction NEW_LINE     (fm (PAtom PKind.NEW_LINE     (get it 0))))
+    (.setParseAction INDENT       (fm (PAtom PKind.INDENT       (get it 0))))
+
+; _____________________________________________________________________________/ }}}1
+
+    (defn [validateF] #^ (of List PAtom)
+        prepared_code_to_patoms
+        [ #^ PreparedCode prepared_code
+        ]
+        (setv _list
+            (-> prepared_code
+                        CONTENT.scanString
+                        list))
+        (if (zerolenQ _list)
+            (return [])
+            (return (list (get _list 0 0 0)))))
+
+    ; continue from: PAtoms (classify by parsed) to Tokens (classify by actions)?
+
 ; [step] run py parse               :: Prepared Code -> [Atom ...] ‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ (of List Any) ; "Any" is because pydantic can't process pp.ParseResults for some reason
+    (defn [validateF] #^ (of List str)
         prepared_code_to_atoms
         [ #^ PreparedCode prepared_code
         ]
@@ -111,17 +144,14 @@
              flatten
              ))
 
-             ; list                                ; generator to list
-             ; (map (fm (cut_ %1 1 -3)) #_ here) ; remove column info
-             ; flatten))
-
 ; _____________________________________________________________________________/ }}}1
 ; [step] remove garbage from atoms  :: Atom -> Atom ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn [validateF] #^ Atom
         remove_garbage_from_atom
         [#^ Atom atom]
-        "de facto removes indent/newline marks from qstring and bracketed HyExprs, for other atoms returns themselves"
+        "de facto removes indent/newline marks from qstring and bracketed HyExprs,
+         for other atoms returns themselves"
         (if (or (qstring_atomQ atom)
                 (hyexpr_atomQ  atom))
             (->> atom
@@ -148,7 +178,7 @@
         (lmapm (NTLine :tokens         %1
                        :rowN           %2
                        :realRowN_start %3
-                       :realRowN_end   %4) 
+                       :realRowN_end   %4)
                _tlines
                rowNs
                rowsStarts
@@ -182,7 +212,8 @@
              prepared_code_to_atoms
              (lmap remove_garbage_from_atom)
              (lmap atom_to_token)
-             tokens_to_NTLines))    
+             tokens_to_NTLines))
 
 ; _____________________________________________________________________________/ }}}1
+
 

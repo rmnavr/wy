@@ -368,7 +368,7 @@
         (setv _final_indent (plus _indent _dedent))
         (setv _line2_updated 
               (cond (= _final_indent  0) _line2
-                    (= _final_indent -1) (lconcat [(Token TKind.NegIndent "←")]   _line2)
+                    (= _final_indent -1) (lconcat [(Token TKind.NegIndent "←")] _line2)   ; This is the only place in the codebase where NegIndent can be created
                     True                 (lconcat [(indent_token _final_indent)] _line2)))
         ; work on NTLines:
         (setv ntlines (lmapm (NTLine :rowN           ntline.rowN

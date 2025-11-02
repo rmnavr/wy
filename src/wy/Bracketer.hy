@@ -28,7 +28,7 @@
              (when (= cur_indent (get indents &idx))
                    (setv outp &idx)))
         (try (return outp)
-             (except [e Exception] (raise (Exception "can't calculate indent at some line")))))
+             (except [e Exception] (raise (WyIndentError "can't calculate indent")))))
 
     (defn #^ (of Tuple (of List Atom) (of List Atom)) #_ "[taken_brackets new_stack]"
         take_brackets_from_stack
@@ -121,7 +121,8 @@
                     _new_indents     prev_indents)
               (< cur_indent prev_indent)
               (setv _deltaIndents    (- (dec (len prev_indents))
-                                        (get_indent_level prev_indents cur_indent))
+                                        (try (get_indent_level prev_indents cur_indent)
+                                             (except [e WyIndentError] (raise (WyBracketerError ndline "indent error")))))
                     _levels_to_close (+ _deltaIndents
                                         (if (= prev_kind SKind.Continuator) 0 1))
                     _new_indents     (drop (neg _deltaIndents) prev_indents)))
@@ -166,7 +167,8 @@
                     _new_indents     prev_indents)
               (< cur_indent prev_indent)
               (setv _deltaIndents    (- (dec (len prev_indents))
-                                        (get_indent_level prev_indents cur_indent))
+                                        (try (get_indent_level prev_indents cur_indent)
+                                             (except [e WyIndentError] (raise (WyBracketerError ndline "indent error")))))
                     _levels_to_close (+ _deltaIndents
                                         (if (= prev_kind SKind.Continuator) 0 1))
                     _new_indents     (drop (neg _deltaIndents) prev_indents)))
@@ -207,7 +209,8 @@
                     _new_indents prev_indents)
               (< cur_indent prev_indent)
               (setv _deltaIndents    (- (dec (len prev_indents))
-                                        (get_indent_level prev_indents cur_indent))
+                                        (try (get_indent_level prev_indents cur_indent)
+                                             (except [e WyIndentError] (raise (WyBracketerError ndline "indent error")))))
                     _levels_to_close (+ _deltaIndents
                                         (if (= prev_kind SKind.Continuator) 0 1))
                     _new_indents     (drop (neg _deltaIndents) prev_indents)))

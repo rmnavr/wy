@@ -9,35 +9,26 @@
 
 ; _____________________________________________________________________________/ }}}1
 
+    (setv WyCode       StrictStr)
+    (setv WyCodeLine   StrictStr)
+    (setv PreparedCode StrictStr)
+    (setv Atom         StrictStr)
+    (setv HyCodeLine   str)
+    (setv HyCode       str)
+
+    ; Preparator/Parser (mostly):
 ; [=] wy marks and markers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (setv $INDENT_MARK    "■")   ; must be 1 symbol
     (setv $NEWLINE_MARK   "☇¦")  ; must not contain spaces and regex operators like | and such
 
-    ; =========================
-
     ; «omarkers» (opener markers) can act as «smarkers» (start markers) and «mmarkers» (mid markers):
-    (setv $OMARKERS [   ":"   "L"    "C"   "#:"   "#C"
-                       "':"  "'L"   "'C"  "'#:"  "'#C"
-                       "`:"  "`L"   "`C"  "`#:"  "`#C"
-                       "~:"  "~L"   "~C"  "~#:"  "~#C"
-                      "~@:" "~@L"  "~@C" "~@#:" "~@#C" ])
-
-    (setv $DMARKERS [ "::" "LL" "CC" ":#:" "C#C"])  ; double markers
-
-    (setv $CMARKER  "\\")           ; continuation marker
-    (setv $CMARKER_REGEX  r"\\")           
-
-    (setv $AMARKER  "$")            ; application marker
-    (setv $RMARKER  "<$")           ; reverse application marker
-    (setv $JMARKER  ",")            ; joiner marker
-
-    ; used in pyparsing, so order is important:
-    (setv $WY_MARKERS (sorted (lconcat $OMARKERS $DMARKERS [$CMARKER $RMARKER $AMARKER $JMARKER])
-                              :key len
-                              :reverse True))
-
-    ; =========================
+    (setv $OMARKERS (sorted [   ":"   "L"    "C"   "#:"   "#C"
+                               "':"  "'L"   "'C"  "'#:"  "'#C"
+                               "`:"  "`L"   "`C"  "`#:"  "`#C"
+                               "~:"  "~L"   "~C"  "~#:"  "~#C"
+                              "~@:" "~@L"  "~@C" "~@#:" "~@#C" ]
+                            :key len :reverse True))
 
     ; 1) for usage in regex «`» should be escaped (but in normal string it shouldn't be escaped) ;
     ; 2) since regex is trying to take max possible chars match, no special ordering inside $OMARKERS_REGEX is required
@@ -47,6 +38,16 @@
                                   (re.sub r"\`" "\\`"))
                              ")"))
 
+    (setv $DMARKERS ["::" "LL" "CC" ":#:" "C#C"])  ; double markers
+
+    (setv $CMARKER  "\\")           ; continuation marker
+    (setv $CMARKER_REGEX  r"\\")           
+
+    (setv $AMARKER  "$")            ; application marker
+    (setv $RMARKER  "<$")           ; reverse application marker
+    (setv $JMARKER  ",")            ; joiner marker
+
+
 ; _____________________________________________________________________________/ }}}1
 ; [=] hy syntax elements ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
@@ -55,7 +56,7 @@
 
     ; used in pyparser, so order is important:
     (setv $HY_OPENERS1 [ "~@#(" "~#(" "~@(" "'#(" "`#(" "#(" "`(" "'(" "~(" "("])
-    (setv $HY_OPENERS2 [              "~@["             "#[" "`[" "'[" "~[" "["])
+    (setv $HY_OPENERS2 [ "~@#[" "~#[" "~@[" "'#[" "`#[" "#[" "`[" "'[" "~[" "["])
     (setv $HY_OPENERS3 [ "~@#{" "~#{" "~@{" "'#{" "`#{" "#{" "`{" "'{" "~{" "{"])
 
     ; used in tokenQ:
@@ -78,19 +79,35 @@
     (setv $CLOSER_BR_REGEX r"(\)|\]|\})")
 
 ; _____________________________________________________________________________/ }}}1
+; [C] PAtom (Parser Atom) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (setv WyCode       StrictStr)
-    (setv WyCodeLine   StrictStr)
-    (setv PreparedCode StrictStr)
-    (setv Atom         StrictStr)
+    (defclass [] PKind [Enum]
+        (setv HYEXPR       01)
+        (setv QSTRING      02)
+        (setv OCOMMENT     03)
+        (setv KEYWORD      04)
+        (setv NUMBER       05)
+        (setv WORD         06)
+        (setv SUGAR        07)
+        (setv OMARKER      08)
+        (setv DMARKER      09)
+        (setv CMARKER      10)
+        (setv AMARKER      11)
+        (setv RMARKER      12)
+        (setv JMARKER      13)
+        (setv HYMACRO_MARK 14)
+        (setv RMACRO       15)
+        (setv NEW_LINE     16)
+        (setv INDENT       17)
+        (defn __repr__ [self] (return self.name))
+        (defn __str__  [self] (return self.name)))
 
-; [C] Exceptions ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    (defclass [dataclass] WyIndentError [Exception]
-        (#^ StrictStr msg))
+    (defclass [] PAtom [BaseModel]
+        (#^ PKind pkind)
+        (#^ Atom  atom)
+        (defn __init__ [self k a] (-> (super) (.__init__ :pkind k :atom a))))
 
 ; _____________________________________________________________________________/ }}}1
-
 ; [F] atom checks ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; wy:
@@ -209,6 +226,7 @@
         (print f"Line = {ntline.rowN} ({ntline.realRowN_start}-{ntline.realRowN_end}) | {token_line}"))
 
 ; _____________________________________________________________________________/ }}}1
+
 ; [C] NDLine (numbered deconstructed line) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defclass [] SKind [Enum]
@@ -251,6 +269,16 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    (setv #_ DC HyCodeLine str)
-    (setv #_ DC HyCode     str)
+; [C] Exceptions ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defclass [dataclass] WyIndentError [Exception]
+        "can happen only inside bracketer"
+        (#^ StrictStr msg))
+
+    (defclass [dataclass] WyBracketerError [Exception]
+        "can happen only inside bracketer"
+        (#^ StrictInt ndline)
+        (#^ StrictStr msg))
+
+; _____________________________________________________________________________/ }}}1
 
