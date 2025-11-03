@@ -105,7 +105,7 @@
         [ #^ WyCode    code
           #^ StrictInt lineN ] ; in 1-based index due to wy line-count logic
         (setv lineN0 (dec lineN))
-        (setv lines (code.split "\n"))
+        (setv lines  (code.split "\n"))
         ;
         (setv sep  (clrz_g "---------------"))
         (setv pre  (cut lines 0 lineN0))
@@ -205,10 +205,11 @@
 ; _____________________________________________________________________________/ }}}1
 
     (when (= __name__ "__main__")
-          (setv wycode "() (")
-          (setv wycode "$ \"\n\n\n\"x\"\n\n\"y")
-          (setv wycode (* ": L C LL\n"))
-          (setv wycode (read_file "_tmp_del_me.wy"))
+          ;(setv wycode "() (")
+          ;(setv wycode "+-1E+3+3J")
+          ;(setv wycode "$ \"\n\n\n\"x\"\n\n\"y")
+          ;(setv wycode (* ": L C LL\n"))
+          (setv wycode (read_file "_t.wy"))
           (print_wy2hy_steps wycode)
           ;(print_wy2hy_steps "zus\n  xenum\n ynot\npups\nbubr")
           ;(wycode2tokens "C#C ()")

@@ -1,0 +1,374 @@
+
+; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    import fptk * , require fptk *
+    import utils *
+
+    import re
+    import sys
+    import dataclasses [replace :as dc_replace]
+
+    import polars :as pl , pl.Config.set_tbl_formatting "ASCII_FULL_CONDENSED"
+    import plotnine :as p9
+    import plotnine.ggplot [ggplot :as P9Plot]
+
+; _____________________________________________________________________________/ }}}1
+
+; [INFO] PCH file format ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    ; whole header:
+    ;
+    ;   $TITLE   = RANDOM X (1 SIGMA)                                               2570        $ retrieved from user-given "TITLE = Random X (1 sigma)"
+    ;   $SUBTITLE=                                                                  2571
+    ;   $LABEL   =                                                                  2572
+    ;   $ACCELERATION - CRMS; RMSSF SCALE FACTOR =   1.00E+00                       2573        $ auto-generated
+    ;   $REAL OUTPUT                                                                2574
+    ;   $RANDOM ID =         321                                                    2575
+    ;   $POINT ID =     1000001                                                     2576
+    ;       1.000000E-02 G      0.000000E+00      0.000000E+00      0.000000E+00    2577        $ f, Translational x y z
+    ;   -CONT-                  0.000000E+00      0.000000E+00      0.000000E+00    2578        $    Rotational    x y z
+
+    ; Only string that differs between CRMS and PSDF:
+    ;
+    ;   $ACCELERATION - PSDF                                                           4
+    ;   $ACCELERATION - CRMS; RMSSF SCALE FACTOR =   1.00E+00                       2573
+
+; _____________________________________________________________________________/ }}}1
+
+; [C] Classes (dev) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    ; 1) Parser builds list of ExtractedEntries, which contain DFH_Raw
+    ; 2) Having PCH_Cards, DFH_PData is built by extracting data from ExtractedEntries
+
+    defclass [] OUTP_TYPE [Enum]
+        setv A_CRMS "Acceleration, CRMS"
+        setv A_PSDF "Acceleration, PSD"
+
+    setv RawDF pl.DataFrame
+
+    defclass [dataclass] DFH_Raw [] ; DF_Headers
+        "headers of Raw extracted table for one entry"
+        setv F  "Freq"
+        ;
+        setv XT "tr: X"
+        setv YT "tr: Y"
+        setv ZT "tr: Z"
+        ;
+        setv XR "rot: X"
+        setv YR "rot: Y"
+        setv ZR "rot: Z"
+
+    defclass [dataclass] ExtractedEntry []
+        : #^ str          title      #_ "RANDOM X (1 SIGMA)"
+        : #^ OUTP_TYPE    outp_type
+        : #^ int          point_ID   #_ "6660666"
+        : #^ RawDF        rawDF
+
+    setv PDataDF pl.DataFrame
+
+
+    defclass [dataclass] DFH_PData []
+        "headers of table for plotting (Plot Data)"
+        setv f         "freq"
+        setv val       "value"
+        ;
+        setv name     "series name"
+        setv color    "series color"   ; p9
+        setv linetype "linetype"       ; p9
+        setv alpha    "alpha"          ; 0..1
+
+    defclass [] OUTP_AXIS [Enum]
+        setv XT "tr: X"
+        setv YT "tr: Y"
+        setv ZT "tr: Z"
+        setv XR "rot: X"
+        setv YR "rot: Y"
+        setv ZR "rot: Z"
+
+    defclass [dataclass] PCH_Card []
+        : #^ str                      title       #_ "SUBCASE str used for search"
+        : #^ str                      series_name
+        : #^ OUTP_TYPE                outp_type
+        : #^ OUTP_AXIS                outp_axis
+        : #^ int                      point_ID
+        ;
+        : #^ str                      color     ; p9
+        : #^ str                      linetype  ; p9
+        : #^ float                    alpha     ; 0..1
+
+
+; _____________________________________________________________________________/ }}}1
+; [C] Errors ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    defclass [dataclass] PCHFindingError [Exception]
+        setv #^ (of List PCH_Card) non_found_pch_cards #()
+
+; _____________________________________________________________________________/ }}}1
+; [C] Classes (user) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    defclass [dataclass] AppParams [] 
+        ;
+        setv psdf_factor   : squared 9800
+        setv psdf_postfix  " (psdf)"
+        setv psdf_linetype "solid"  ; p9
+        setv psdf_alpha    1.0      ; 0 .. 1
+        ;
+        setv crms_factor   9800
+        setv crms_postfix  " (crms)"
+        setv crms_linetype "dotted" ; p9
+        setv crms_alpha    0.5      ; 0 .. 1
+
+    defclass [dataclass] UCard [] 
+        : #^ str       title   ; search string
+        : #^ OUTP_AXIS outp_axis
+        : #^ int       point_ID
+        : #^ str       caption
+        : #^ str       color   ; p9
+
+; _____________________________________________________________________________/ }}}1
+
+; [F] UCards to PCH_Cards ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    def:: OUTP_TYPE -> UCard -> int => PCH_Card
+       \build_pch_card_from_user_card
+        L\ outp_type  ucard  [n 0]
+        "title 'pups' will be converted to '03) pups (crms)' or smth like it"
+        PCH_Card :title       ucard.title
+                 :series_name
+                 sconcat f"{n :02}) " ucard.caption
+                         if : eq outp_type OUTP_TYPE.A_PSDF
+                             \AppParams.psdf_postfix
+                             \AppParams.crms_postfix
+                 :outp_type   outp_type
+                 :outp_axis   ucard.outp_axis
+                 :point_ID    ucard.point_ID
+                 :color       ucard.color
+                 :linetype    : if (eq outp_type OUTP_TYPE.A_PSDF) AppParams.psdf_linetype AppParams.crms_linetype
+                 :alpha       : if (eq outp_type OUTP_TYPE.A_PSDF) AppParams.psdf_alpha    AppParams.crms_alpha
+
+    def:: (of List UCard) => (of List PCH_Card)
+       \build_both_crms_and_psdf_cards
+        L\ ucards
+        setv n : len ucards
+        setv psdf_cards
+            lmapm : build_pch_card_from_user_card OUTP_TYPE.A_PSDF %1 %2
+                   \ucards (inf_range 1)
+        setv crms_cards
+            lmapm : build_pch_card_from_user_card OUTP_TYPE.A_CRMS %1 %2
+                   \ucards (inf_range (inc (len ucards)))
+        return L #* psdf_cards #* crms_cards
+
+; _____________________________________________________________________________/ }}}1
+; [F] Parser: build ExctractedEntries ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    setv $PSDF_STR "ACCELERATION - PSDF"
+    setv $CRMS_STR "ACCELERATION - CRMS"
+
+    setv $FLOAT r"\d\.\d+E[+-]\d\d"
+
+    setv $VALUES_ENTRY
+        sconcat r"\s+" $FLOAT r"\s*G\s+" $FLOAT r"\s+" $FLOAT r"\s+" $FLOAT r"\s+\d+\n"
+                r"-CONT-\s+"             $FLOAT r"\s+" $FLOAT r"\s+" $FLOAT r"\s+\d+\n"
+
+    setv $VALUES_ENTRY_PARTS
+        sconcat r"\s+(" $FLOAT r")\s*G\s+(" $FLOAT r")\s+(" $FLOAT r")\s+(" $FLOAT r")\s+\d+\n"
+                r"-CONT-\s+("               $FLOAT r")\s+(" $FLOAT r")\s+(" $FLOAT r")\s+\d+\n"
+
+    defn #^ (of List ExtractedEntry)
+       \find_all_entries
+        L #^ str pch_content
+        setv found
+            re_all
+                   sconcat r"\$TITLE\s+=\s+(.*?)\s+\d+\n"              ; 0
+                           r"\$SUBTITLE.+\d+\n"
+                           r"\$LABEL.+\d+\n"
+                           r"\$(" $PSDF_STR r"|" $CRMS_STR r").+\d+\n" ; 1
+                           r"\$REAL OUTPUT.+\d+\n"
+                           r"\$RANDOM ID\s+=\s+(\d+)\s+\d+\n"          ; 2
+                           r"\$POINT ID\s+=\s+(\d+)\s+\d+\n"           ; 3
+                           r"((" $VALUES_ENTRY r")+)"                  ; 4 = full (()+), 5 = last ()
+                  \pch_content
+        lmapm
+            ExtractedEntry :title      : nth_ 1 it
+                           :outp_type  : if (eq (nth_ 2 it) $PSDF_STR) OUTP_TYPE.A_PSDF OUTP_TYPE.A_CRMS
+                           :point_ID   : int (nth_ 4 it)
+                           :rawDF      : values_table_to_rawDF (nth_ 5 it)
+           \found
+
+    defn #^ RawDF
+       \values_table_to_rawDF
+        L #^ str vtable
+        setv found : re_all $VALUES_ENTRY_PARTS vtable
+        setv _schema L DFH_Raw.F DFH_Raw.XT DFH_Raw.YT DFH_Raw.ZT DFH_Raw.XR DFH_Raw.YR DFH_Raw.ZR
+        ;
+        . : pl.DataFrame found :schema _schema :orient "row"
+            with_columns : . (pl.col _schema) (cast pl.Float64)
+
+; _____________________________________________________________________________/ }}}1
+; [F] PCH_Cards to PDataDF ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+
+    defn #^ PDataDF
+       \pdataDF_from_pch_cards
+        L #^ (of List PCH_Card)       pcards
+          #^ (of List ExtractedEntry) entries
+        "builds PDataDF concantenated for all pch_cards
+         (but if at least one pch_card not found, throws list of non-found pch_cards)"
+        setv pairs
+            lmapm
+                L \it                                                    ; PCH_Card
+                   fltr1st (partial pch_card_matches_eentryQ it) entries ; EEntry
+               \pcards
+        ;
+        setv non_matched : lfilterm (noneQ (second it)) pairs
+        when : fnot zerolenQ non_matched
+               raise : PCHFindingError (lpluck 0 non_matched)
+        ; 
+        setv dfs : lmapm (pch_card_to_df (first it) (second it)) pairs
+        return : pl.concat dfs
+
+
+    defn #^ bool
+       \pch_card_matches_eentryQ
+        L #^ PCH_Card       pcard
+          #^ ExtractedEntry entry
+        and : eq pcard.outp_type entry.outp_type
+              eq pcard.title     entry.title
+              eq pcard.point_ID  entry.point_ID
+
+    defn #^ PDataDF ; for one entry
+       \pch_card_to_df
+        L #^ PCH_Card       pcard
+          #^ ExtractedEntry entry
+        "builds PDataDF for one pch_card"
+        entry.rawDF.select
+            L . : pl.col DFH_Raw.F         :: alias DFH_PData.f
+              . : pl.lit pcard.series_name :: alias DFH_PData.name
+              . : pl.col : axis_to_column_name pcard.outp_axis
+                  truediv (if (eq pcard.outp_type OUTP_TYPE.A_CRMS) AppParams.crms_factor AppParams.psdf_factor)
+                  alias  DFH_PData.val
+              . : pl.lit pcard.color    :: alias DFH_PData.color
+              . : pl.lit pcard.linetype :: alias DFH_PData.linetype
+              . : pl.lit pcard.alpha    :: alias DFH_PData.alpha
+
+
+    defn axis_to_column_name
+        L #^ OUTP_AXIS outp_axis
+        case outp_axis
+            \OUTP_AXIS.XT DFH_Raw.XT
+            \OUTP_AXIS.YT DFH_Raw.YT
+            \OUTP_AXIS.ZT DFH_Raw.ZT
+            \OUTP_AXIS.XR DFH_Raw.XR
+            \OUTP_AXIS.YR DFH_Raw.YR
+            \OUTP_AXIS.ZR DFH_Raw.ZR
+
+; _____________________________________________________________________________/ }}}1
+; [F] build plot ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    defn #^ P9Plot
+       \build_plot
+        L #^ PDataDF df
+        p9.theme_set : p9.theme_linedraw
+        + : p9.ggplot df
+            p9.aes :x         DFH_PData.f
+                   :y         DFH_PData.val
+                   :color     DFH_PData.name
+                   :alpha     DFH_PData.name
+                   :linetype  DFH_PData.name
+            p9.scale_color_manual    : map_columns df DFH_PData.name DFH_PData.color
+            p9.scale_alpha_manual    : map_columns df DFH_PData.name DFH_PData.alpha
+            p9.scale_linetype_manual : map_columns df DFH_PData.name DFH_PData.linetype
+            p9.geom_line 
+            p9.scale_x_log10 :limits L 100 2000
+                             :expand L 0 0
+                             :breaks : lrange_ 100 2000 100
+                             :labels L #* (lrange_ 100 900 100) #* ["1k" "" "" "" "" "1.5k" "" "" "" "" "2k"]
+            p9.scale_y_log10 :limits L 0.0001 1000
+                             :expand L 0 0
+                             :breaks L 0.0001 0.001 0.01 0.1 1 10 100 1000
+                             :labels L 0.0001 0.001 0.01 0.1 1 10 100 1000
+            p9.labs   :title    "PSDF and CRMS"
+                      :x        "Freq, Hz"
+                      :y        "PSDF, g2/Hz | CRMS, g"
+
+; _____________________________________________________________________________/ }}}1
+
+; helpers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    setv $OK : clrz ["green"] "-> [ok]"
+    setv $XX : clrz ["red"]   "-> [xx]"
+
+    def:: PCH_Card => str
+       \pch_card_to_oneliner [pcard]
+        sconcat (str pcard.point_ID) " | "
+                \pcard.title " | "
+                 str pcard.outp_type
+
+    def:: str => None
+       \print_success [msg]
+        print $OK msg
+
+    def:: Exception -> str -> => None
+       \print_failure [e [msg ""]]
+        print $XX (clrz ["red"] msg)
+        print (clrz ["grey"] "Catched error:") (str e)
+
+    def:: int -> Exception -> str -> => None
+       \exit_app [n e [msg ""]]
+        print_failure e msg
+        sys.exit n
+
+; _____________________________________________________________________________/ }}}1
+; [F] assembly ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    def:: str -> (of List UCard) => P9Plot
+       \pch_to_plot [filename ucards]
+        ; read file:
+        print : clrz ["light_yellow"] "=== Random Resp Plotter ==="
+        try : setv _content : read_file filename
+              except [e Exception] : exit_app 1 e "read file failed"
+              else : print_success : sconcat (clrz ["yellow"] filename) " content was read successfully" 
+        ; parse all entries in pch file:
+        try : setv _entries : find_all_entries _content
+              except [e Exception] : exit_app 1 e "*.pch parsing failed"
+              else : print_success : sconcat "found " (str (len _entries)) " entries"
+        ; build pch_cards from user_cards:
+        try : setv _pch_cards : build_both_crms_and_psdf_cards $USER_CARDS
+              except [e ] : exit_app 1 e "error converting user cards to pch cards"
+              except [e Exception] : exit_app 1 e "error converting user cards to pch cards"
+              else : print_success : sconcat "constructed " (str (len _pch_cards)) " pch_cards from " (str (len $USER_CARDS)) " user cards"
+        ; prepare df for plot:
+        try : setv _df : pdataDF_from_pch_cards _pch_cards _entries
+              except [e PCHFindingError]
+                     print $XX "following pch_cards were not found:"
+                     lprint : lmap pch_card_to_oneliner e.non_found_pch_cards
+                     sys.exit 1
+              except [e Exception] : exit_app 1 e "error finding pch_cards in found entries"
+              else : print_success "all pch_cards successfully found in parsed entries"
+        ; build_plot
+        try : setv _plot : build_plot _df
+              except [e Exception] : exit_app 1 e "error constructing plot"
+              else : print_success "plot constructed"
+        return _plot
+
+; _____________________________________________________________________________/ }}}1
+
+    ;setv $FILENAME "V:/Electric Propulsion/Averyanov_CalcNode/z_result.pch"
+    setv $FILENAME "test_data/rand_resp_02.pch"
+
+    setv [$X  $Y  $Z ] ["RANDOM X (1 SIGMA)" "RANDOM Y (1 SIGMA)" "RANDOM Z (1 SIGMA)"]
+    setv [$XT $YT $ZT] [OUTP_AXIS.XT OUTP_AXIS.YT OUTP_AXIS.ZT]
+
+    setv $USER_CARDS
+        L 
+          UCard $Y $ZT 3000001 "Engine" "red"
+          UCard $Y $ZT 3000002 "Engine" "green"
+          UCard $Y $ZT 3000003 "Engine" "blue"
+          ;
+          UCard $X $XT 6660666 "Ground" "grey"
+
+
+    setv plot : pch_to_plot $FILENAME $USER_CARDS
+    plot.save "_plot.png" :width 10 :height 6 :dpi 300
+
+
