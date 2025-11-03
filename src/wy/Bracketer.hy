@@ -8,14 +8,13 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-; Info ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+    ; UPD THIS INFO:
+    ; 
+    ; at this stage:
+    ; - GroupStarters are having OMarkers acting as SMarkers
+    ; - only ImpliedOpener and Continuator can have OMarkers, and there they can be only MMarkers
+    ;   - only possible TKind here : RACont, RAOpener, DMarker, OMarker
 
-; at this stage:
-; - GroupStarters are having OMarkers acting as SMarkers
-; - only ImpliedOpener and Continuator can have OMarkers, and there they can be only MMarkers
-;   - only possible TKind here : RACont, RAOpener, DMarker, OMarker
-
-; _____________________________________________________________________________/ }}}1
 ; [util] indent level processing ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; «indent» is symbols count, «indent_level» is index in list
@@ -24,11 +23,12 @@
         [ #^ (of List StrictInt) indents      #_ "[0 4 8 20]"
           #^ StrictInt           cur_indent
         ]
+        "when can't calculate indent, will throw error
+         (I don't care of what kind, i catch all of them)"
         (for [&idx (range 0 (len indents))]
              (when (= cur_indent (get indents &idx))
                    (setv outp &idx)))
-        (try (return outp)
-             (except [e Exception] (raise (WyIndentError "can't calculate indent")))))
+        (return outp))
 
     (defn #^ (of Tuple (of List Atom) (of List Atom)) #_ "[taken_brackets new_stack]"
         take_brackets_from_stack
@@ -46,15 +46,14 @@
         omarker_to_hy_brackets
         [ #^ Atom atom
         ]
-        (cond (re_test ":" atom) #((re_sub ":" "("        atom) ")")
-              (re_test "L" atom) #((re_sub "L" "["        atom) "]")
-              (re_test "C" atom) #((re_sub "C" (py "'{'") atom) "}")
+        (cond (re_test ":" atom) #((re_sub ":" "(" atom) ")")
+              (re_test "L" atom) #((re_sub "L" "[" atom) "]")
+              (re_test "C" atom) #((re_sub "C" "{" atom) "}")
               True               (print "used not on omarker atom! how?")))
 
 ; _____________________________________________________________________________/ }}}1
 ; [F] ndlines2blines ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
   
-
     (defn [validateF] #^ (of Tuple NDLineInfo BLine)
         process_one_ndline
         [ #^ NDLineInfo pcard  ; info on previous ndline
@@ -122,7 +121,7 @@
               (< cur_indent prev_indent)
               (setv _deltaIndents    (- (dec (len prev_indents))
                                         (try (get_indent_level prev_indents cur_indent)
-                                             (except [e WyIndentError] (raise (WyBracketerError ndline "indent error")))))
+                                             (except [e Exception] (raise (WyBracketerError ndline "indent error")))))
                     _levels_to_close (+ _deltaIndents
                                         (if (= prev_kind SKind.Continuator) 0 1))
                     _new_indents     (drop (neg _deltaIndents) prev_indents)))
@@ -168,7 +167,7 @@
               (< cur_indent prev_indent)
               (setv _deltaIndents    (- (dec (len prev_indents))
                                         (try (get_indent_level prev_indents cur_indent)
-                                             (except [e WyIndentError] (raise (WyBracketerError ndline "indent error")))))
+                                             (except [e Exception] (raise (WyBracketerError ndline "indent error")))))
                     _levels_to_close (+ _deltaIndents
                                         (if (= prev_kind SKind.Continuator) 0 1))
                     _new_indents     (drop (neg _deltaIndents) prev_indents)))
@@ -210,7 +209,7 @@
               (< cur_indent prev_indent)
               (setv _deltaIndents    (- (dec (len prev_indents))
                                         (try (get_indent_level prev_indents cur_indent)
-                                             (except [e WyIndentError] (raise (WyBracketerError ndline "indent error")))))
+                                             (except [e Exception] (raise (WyBracketerError ndline "indent error")))))
                     _levels_to_close (+ _deltaIndents
                                         (if (= prev_kind SKind.Continuator) 0 1))
                     _new_indents     (drop (neg _deltaIndents) prev_indents)))
@@ -233,7 +232,6 @@
     (setv $LINE0INFO (NDLineInfo :indents      [0]
                                  :brckt_stack  []
                                  :kind         SKind.EmptyLine)) 
-
     
     (defn #^ (of List BLine)
         bracktify_ndlines
@@ -247,7 +245,7 @@
         (setv $BLANK_DL (NDLine :kind                 SKind.EmptyLine
                                 :indent               0
                                 :body_tokens          []
-                                :rowN                 #((inc n) (inc rne) (inc rne)) ; TODO: set correct row
+                                :rowN                 #((inc n) (inc rne) (inc rne)) 
                                 :t_smarker            None
                                 :t_ocomment           None))
         ;
@@ -259,4 +257,5 @@
         (return _result))
 
 ; _____________________________________________________________________________/ }}}1
+
 

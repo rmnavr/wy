@@ -1,4 +1,12 @@
 
+    ; hy t01_preparator.hy &&
+    ; hy t02_parser.hy &&
+    ; hy t03_expander.hy &&
+    ; hy t04_deconstructor.hy &&
+    ; hy t05_bracketer.hy &&
+    ; hy t06_writer.hy &&
+    ; hy t07_whole.hy
+
     (import  _fptk_local *)
     (require _fptk_local *)
 
@@ -220,3 +228,4 @@
 
 
 ; _____________________________________________________________________________/ }}}1
+

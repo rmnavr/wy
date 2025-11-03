@@ -26,16 +26,16 @@
         (setv _tokens (cut_ ntline.tokens 1 2))
         (setv _decider_token
               (first
-                     (lreject (fm (eq_any it.kind [TKind.Indent TKind.NegIndent]))
+                     (lreject (fm (eq_any it.tkind [TKind.Indent TKind.NegIndent]))
                               _tokens)))
         ;
-        (cond (eq     _decider_token.kind TKind.OComment)
+        (cond (eq     _decider_token.tkind TKind.OComment)
               SKind.OnlyOComment
               ;
-              (eq_any _decider_token.kind [TKind.RACont TKind.CMarker])
+              (eq_any _decider_token.tkind [TKind.RACont TKind.CMarker])
               SKind.Continuator
               ;
-              (eq     _decider_token.kind TKind.OMarker )
+              (eq     _decider_token.tkind TKind.SMarker)
               SKind.GroupStarter
               ;
               True
@@ -44,9 +44,9 @@
 ; _____________________________________________________________________________/ }}}1
 ; [F] ntl2ndl :: NTLine -> NDLine ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ (of list NDLine)
+    (defn [validateF] #^ (of List NDLine)
         deconstruct_ntlines
-        [ #^ (of list NTLine) ntlines
+        [ #^ (of List NTLine) ntlines
         ]
         (lmap ntl2ndl ntlines))
 
@@ -70,7 +70,7 @@
         (NDLine :kind        SKind.EmptyLine
                 :indent      0
                 :body_tokens []
-                :rowN        #(ntline.rowN ntline.realRowN_start ntline.realRowN_end)
+                :rowN        ntline.lineNs
                 :t_smarker   None
                 :t_ocomment  None))
 
@@ -83,11 +83,13 @@
         [ #^ NTLine ntline
         ]
         "can only have: indent/negindent + smarker (even ocomment is expanded on another line, so GS can't have it)"
-        (setv _smarker (fltr1st (fm (eq it.kind TKind.OMarker)) ntline.tokens))  ; must be found
+        (setv _smarker
+              (fltr1st (fm (eq it.tkind TKind.SMarker))
+                       ntline.tokens))  ; must be found
         (NDLine :kind        SKind.GroupStarter
                 :indent      (sum (first_indent_profile ntline.tokens))
                 :body_tokens []
-                :rowN        #(ntline.rowN ntline.realRowN_start ntline.realRowN_end)
+                :rowN        ntline.lineNs
                 :t_smarker   _smarker
                 :t_ocomment  None))
 
@@ -99,11 +101,13 @@
         [ #^ NTLine ntline
         ]
         "can only have: indent/negindent + ocomment"
-        (setv _ocomment (fltr1st (fm (eq it.kind TKind.OComment)) ntline.tokens))  ; must be found
+        (setv _ocomment
+              (fltr1st (fm (eq it.tkind TKind.OComment))
+                       ntline.tokens))  ; must be found
         (NDLine :kind        SKind.OnlyOComment
                 :indent      (sum (first_indent_profile ntline.tokens))
                 :body_tokens []
-                :rowN        #(ntline.rowN ntline.realRowN_start ntline.realRowN_end)
+                :rowN        ntline.lineNs
                 :t_smarker   None
                 :t_ocomment  _ocomment))
 
@@ -115,13 +119,13 @@
         [ #^ NTLine ntline
         ]
         (->> ntline.tokens
-             (dropwhile  (fm (eq_any it.kind [TKind.Indent TKind.NegIndent])))
-             (lbisect_by (fm (neq    it.kind TKind.OComment)))
-             (setv [_body_list _ocomment_list]))
+             (dropwhile  (fm (eq_any it.tkind [TKind.Indent TKind.NegIndent])))
+             (lbisect_by (fm (neq    it.tkind TKind.OComment)))
+             (setv [_body_list _ocomment_list])) ; this list is expected to be of 0 or 1 elem
         (NDLine :kind        SKind.ImpliedOpener
                 :indent      (sum (first_indent_profile ntline.tokens))
                 :body_tokens _body_list
-                :rowN        #(ntline.rowN ntline.realRowN_start ntline.realRowN_end)
+                :rowN        ntline.lineNs
                 :t_smarker   None
                 :t_ocomment  (first _ocomment_list))) ; can be None
 
@@ -133,13 +137,13 @@
         [ #^ NTLine ntline
         ]
         (->> ntline.tokens
-             (dropwhile  (fm (eq_any it.kind [TKind.Indent TKind.NegIndent TKind.CMarker])))
-             (lbisect_by (fm (neq    it.kind TKind.OComment)))
+             (dropwhile  (fm (eq_any it.tkind [TKind.Indent TKind.NegIndent TKind.CMarker])))
+             (lbisect_by (fm (neq    it.tkind TKind.OComment)))
              (setv [_body_list _ocomment_list]))
         (NDLine :kind        SKind.Continuator
                 :indent      (sum (first_indent_profile ntline.tokens))
                 :body_tokens _body_list
-                :rowN        #(ntline.rowN ntline.realRowN_start ntline.realRowN_end)
+                :rowN        ntline.lineNs
                 :t_smarker   None
                 :t_ocomment  (first _ocomment_list))) ; can be None
 

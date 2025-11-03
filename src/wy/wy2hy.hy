@@ -96,10 +96,10 @@
         (setv _m_silent  (. args silent_mode))
         (setv _m_stdout  (. args stdout_mode))
         ;
-        (when (oflenQ _filenames 0) (return (Success RUN_MODE.INFO)))
+        (when (oflenQ 0 _filenames) (return (Success RUN_MODE.INFO)))
         ;
         (when _m_stdout
-            (when (fnot oflenQ _filenames 1)
+            (when (fnot oflenQ 1 _filenames)
                   (return (Failure (APP_ERROR "ERROR: only one file (and which also should be of *.wy extension) should be used with -stdout mode"))))
             (when (neq (get_ft (first _filenames)) FTYPE.WY)
                   (return (Failure (APP_ERROR "ERROR: file extension should be *.wy"))))
@@ -181,7 +181,7 @@
                                            :keep_border  True
                                            :merge_border False))
         ; add *.hy where were not provided:
-        (lmapm (if (oflenQ it 2)
+        (lmapm (if (oflenQ 2 it)
                    it
                    [(first it) (change_filename_ext_to_hy (first it))])
                splitted_by_wy))
@@ -256,7 +256,7 @@
                                         (_failedFiles.append %1)))))
                         _pairs)
               ;
-              (if (oflenQ _failedFiles 0)
+              (if (oflenQ 0 _failedFiles)
                   (if _m_silent
                       (normal_exit)
                       (normal_exit "Transpilation is finished"))

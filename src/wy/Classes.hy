@@ -16,7 +16,7 @@
     (setv HyCodeLine   str)
     (setv HyCode       str)
 
-    ; Preparator/Parser (mostly):
+    ; Preparator
 ; [=] wy marks and markers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (setv $INDENT_MARK    "■")   ; must be 1 symbol
@@ -79,9 +79,12 @@
     (setv $CLOSER_BR_REGEX r"(\)|\]|\})")
 
 ; _____________________________________________________________________________/ }}}1
-; [C] PAtom (Parser Atom) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+    
+    ; Parser
+; [C] Token: kinds ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defclass [] PKind [Enum]
+        "clasifies token by as what entity it was parsed"
         (setv HYEXPR       01)
         (setv QSTRING      02)
         (setv OCOMMENT     03)
@@ -99,125 +102,69 @@
         (setv RMACRO       15)
         (setv NEW_LINE     16)
         (setv INDENT       17)
+        (setv ORPHANB      18) ; PAtoms of this pkind are not really created, because WyParserError is thrown instead
+        (setv NOT_FROM_PP  19) ; This is what TKind.NegIndent uses
         (defn __repr__ [self] (return self.name))
         (defn __str__  [self] (return self.name)))
 
-    (defclass [] PAtom [BaseModel]
-        (#^ PKind pkind)
-        (#^ Atom  atom)
-        (defn __init__ [self k a] (-> (super) (.__init__ :pkind k :atom a))))
-
-; _____________________________________________________________________________/ }}}1
-; [F] atom checks ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    ; wy:
-
-        (defn [validateF] #^ bool indent_atomQ  [#^ Atom atom] (re_test (sconcat r"^(" $INDENT_MARK r")+$") atom))
-        (defn [validateF] #^ bool newline_atomQ [#^ Atom atom] (=  atom $NEWLINE_MARK))
-
-        (defn [validateF] #^ bool omarker_atomQ [#^ Atom atom] (in atom $OMARKERS))
-        (defn [validateF] #^ bool dmarker_atomQ [#^ Atom atom] (in atom $DMARKERS))
-        (defn [validateF] #^ bool cmarker_atomQ [#^ Atom atom] (=  atom $CMARKER))
-        (defn [validateF] #^ bool amarker_atomQ [#^ Atom atom] (=  atom $AMARKER))
-        (defn [validateF] #^ bool rmarker_atomQ [#^ Atom atom] (=  atom $RMARKER))
-        (defn [validateF] #^ bool jmarker_atomQ [#^ Atom atom] (=  atom $JMARKER))
-
-    ; hy: 
-
-        (defn [validateF] #^ bool hyexpr_atomQ
-            [#^ Atom atom]
-            (re_test (sconcat r"^" $HY_OPENERS_REGEX ".*" $CLOSER_BR_REGEX "$")
-                      atom
-                      re.DOTALL))
-
-        (defn [validateF] #^ bool hy_opener_atomQ       [#^ Atom atom] (in atom $HY_OPENERS))
-        (defn [validateF] #^ bool closing_bracket_atomQ [#^ Atom atom] (in atom $CLOSER_BRACKETS))
-
-        (defn [validateF] #^ bool
-            hy_bracket_atomQ
-            [ #^ Atom atom
-            ]
-            (or (hy_opener_atomQ       atom)
-                (closing_bracket_atomQ atom)))
-
-                            ; (-    ) (1_000    )  . (1_000    ) [(E  )(+    ) (1_000    ) ]
-        (setv $DIGIT_REGEX r"^(\-|\+)?(\d(\d|_)*)?\.?(\d(\d|_)*)?((e|E)(\+|\-)?(\d(\d|_)*)?)?$")
-
-        (defn [validateF] #^ bool digit_atomQ        [#^ Atom atom] (and (re_test r"\d" atom)
-                                                                         (re_test $DIGIT_REGEX atom)))
-        (defn [validateF] #^ bool hy_macromark_atomQ [#^ Atom atom] (in atom $HY_MACROMARKS))
-        (defn [validateF] #^ bool keyword_atomQ      [#^ Atom atom] (re_test r":\w+" atom))
-        (defn [validateF] #^ bool unpacker_atomQ     [#^ Atom atom] (in atom ["#*" "#**"]))
-        (defn [validateF] #^ bool qstring_atomQ      [#^ Atom atom] (re_test "^[rbf]?\"" atom))
-        (defn [validateF] #^ bool annotation_atomQ   [#^ Atom atom] (= atom "#^"))
-        (defn [validateF] #^ bool icomment_atomQ     [#^ Atom atom] (= atom "#_"))
-        (defn [validateF] #^ bool ocomment_atomQ     [#^ Atom atom] (re_test "^;" atom))
-
-    ; unite:
-
-        (defn [validateF] #^ bool
-            atom_regarded_as_continuatorQ
-            [ #^ Atom atom
-            ]
-            (or (hyexpr_atomQ       atom)
-                (digit_atomQ        atom)
-                (qstring_atomQ      atom)
-                (keyword_atomQ      atom)
-                (annotation_atomQ   atom)
-                (icomment_atomQ     atom)
-                (unpacker_atomQ     atom)
-                (hy_macromark_atomQ atom)
-                (hy_bracket_atomQ   atom)))
-
-; _____________________________________________________________________________/ }}}1
-; [C] Token ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
     (defclass [] TKind [Enum]
-        (setv NewLine       00  #_ "¦☇"                 )
-        (setv Indent        01  #_ "■■■■"               )
-        (setv NegIndent     99  #_ "atom is '←', only one use case: 'x , \\ y'") ; tlen returns -1 for it; created only at jmarker expansion, and then used in Deconstructor
-        (setv OMarker       02  #_ "#: smarker/mmarker" )
-        (setv DMarker       03  #_ "LL ::"              )
-        (setv CMarker       04  #_ "\\"                 )
-        (setv AMarker       05  #_ "$"                  )
-        (setv RMarker       06  #_ "<$"                 )
-        (setv JMarker       07  #_ ","                  )
-        (setv OComment      08  #_ ";comment"           )
-        (setv RACont        09  #_ "( ) 1 #* #_ ..."    )  ; regarded as continuator
-        (setv RAOpener      10  #_ "everything else"    )  ; regarded as opener
+        "classifies token by functionality"
+        (setv NewLine       01  #_ "¦☇"                 )
+        (setv Indent        02  #_ "■■■■"               )
+        (setv NegIndent     03  #_ "atom is '←', only one use case: 'x , \\ y'") ; tlen returns -1 for it; created only at jmarker expansion, and then used in Deconstructor
+        ;
+        (setv OMarker       04  #_ "#: smarker/mmarker" )
+        (setv SMarker       05                          ) ; OMarker is updated to those types at Expander stage (just before expansion starts)
+        (setv MMarker       06                          ) ; OMarker is updated to those types at Expander stage (just before expansion starts)
+        (setv DMarker       07  #_ "LL ::"              )
+        (setv CMarker       08  #_ "\\"                 )
+        (setv AMarker       09  #_ "$"                  )
+        (setv RMarker       10  #_ "<$"                 )
+        (setv JMarker       11  #_ ","                  )
+        ;
+        (setv OComment      12  #_ ";comment"           )
+        (setv RACont        13  #_ "( ) 1 #* #_ ..."    )  ; regarded as continuator
+        (setv RAOpener      14  #_ "everything else"    )  ; regarded as opener
         ;
         (defn __repr__ [self] (return self.name))
         (defn __str__  [self] (return self.name))) 
 
+; _____________________________________________________________________________/ }}}1
+; [C] Token: main ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
     (defclass [] Token [BaseModel]
-        (#^ TKind     kind)
-        (#^ StrictStr atom)
+        (#^ Atom  atom)
+        (#^ PKind pkind)
+        (#^ TKind tkind)
         ;
-        (defn __init__ [self k a] (-> (super) (.__init__ :kind k :atom a)))
-        (defn __repr__ [self] (return (sconcat "<" self.kind.name ": '" self.atom "'>")))
+        (defn __init__ [self a p t] (-> (super) (.__init__ :atom a :pkind p :tkind t)))
+        (defn __repr__ [self] (return (sconcat "<" self.tkind.name "(" self.pkind.name "): '" self.atom "'>")))
         (defn __str__  [self] (return (self.__repr__))))
 
-    (defn [validateF] #^ Token atom_to_token [#^ Atom atom]
-        (cond (newline_atomQ                 atom) (Token TKind.NewLine  atom)
-              (indent_atomQ                  atom) (Token TKind.Indent   atom)
-              (omarker_atomQ                 atom) (Token TKind.OMarker  atom)
-              (dmarker_atomQ                 atom) (Token TKind.DMarker  atom)
-              (cmarker_atomQ                 atom) (Token TKind.CMarker  atom)
-              (amarker_atomQ                 atom) (Token TKind.AMarker  atom)
-              (rmarker_atomQ                 atom) (Token TKind.RMarker  atom)
-              (jmarker_atomQ                 atom) (Token TKind.JMarker  atom)
-              (ocomment_atomQ                atom) (Token TKind.OComment atom)
-              (atom_regarded_as_continuatorQ atom) (Token TKind.RACont   atom)
-              True                                 (Token TKind.RAOpener atom)))
+    ; tokens with always the same atom:
+    (setv t_negindent (Token "←"      PKind.NOT_FROM_PP TKind.NegIndent))
+    (setv t_newline   (Token $JMARKER PKind.NEW_LINE    TKind.NewLine))
+    (setv t_cmarker   (Token $CMARKER PKind.CMARKER     TKind.CMarker))
+    (setv t_amarker   (Token $AMARKER PKind.AMARKER     TKind.AMarker))
+    (setv t_rmarker   (Token $RMARKER PKind.RMARKER     TKind.RMarker))
+    (setv t_jmarker   (Token $JMARKER PKind.JMARKER     TKind.JMarker))
+    ; also NDLine has .t_smarker attribute, but please do not connect it logically to the list above
 
 ; _____________________________________________________________________________/ }}}1
+
+    ; Parser, Expander
 ; [C] NTLine (numbered line of tokens) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
+    (setv _tripleInt (of Tuple StrictInt StrictInt StrictInt))
+    ; 1 - ordered NTLine number; multiline qstrings do not increase this number
+    ; 2 - raw wy-code line number (start); multiline qstrings are taken into account here
+    ; 3 - raw wy-code line number (end)
+
     (defclass [] NTLine [BaseModel]
-        "Numbered Line of Tokens; Count starts from 1 (not 0) to be consistent with python errors messages (where 1st line of file is line 1, not line 0)"
-        (#^ StrictInt       rowN             #_ "ordered NTLine number; multiline qstrings do not increase this number")
-        (#^ StrictInt       realRowN_start   #_ "corresponds to raw wy-code line number; multiline qstrings are taken into account here")
-        (#^ StrictInt       realRowN_end)
+        "Numbered Line of Tokens;
+         Count starts from 1 (not 0) to be consistent with python errors messages
+         (where 1st line of file is line 1, not line 0)"
+        (#^ _tripleInt      lineNs)
         (#^ (of List Token) tokens))
 
     (defn ntl_print
@@ -227,9 +174,11 @@
 
 ; _____________________________________________________________________________/ }}}1
 
+    ; Deconstructor
 ; [C] NDLine (numbered deconstructed line) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defclass [] SKind [Enum]
+        "structural kind"
         (setv GroupStarter   1)
         (setv Continuator    2)
         (setv ImpliedOpener  3)
@@ -239,18 +188,18 @@
         (defn __repr__ [self] (return self.name))
         (defn __str__  [self] (return self.name))) 
 
-    (setv _tripleInt (of Tuple StrictInt StrictInt StrictInt))
-
     (defclass [] NDLine [BaseModel]
         (#^ SKind                kind)      
-        (#^ _tripleInt           rowN)                 ; #(rowN realRowN_start realRowN_end) from source NTLine
+        (#^ _tripleInt           rowN)                 ; lineNs from source NTLine
         (#^ StrictInt            indent)               ; <- " \ x" is 3, " #:" is 1, "" (empty line) is 0, "x" is 0
-        (#^ (of List Token)      body_tokens)          ; <- other tokens, info on which not dubbed (in some way) in other fields 
+        (#^ (of List Token)      body_tokens)          ; <- other tokens, info on which is NOT dubbed (in some way) in other fields 
         ; below None is used for kinds where field not applicable:
         (#^ (of Optional Token)  t_smarker)            ; <- used only by SKind.GroupStarter
         (#^ (of Optional Token)  t_ocomment))          ; <- used by 3 SKinds: ImpliedOpener/Continuator/OnlyOComment
 
 ; _____________________________________________________________________________/ }}}1
+
+    ; Bracketer:
 ; [C] BLine (bracketed line), NDLineInfo ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; structural bracket processor
@@ -269,16 +218,47 @@
 
 ; _____________________________________________________________________________/ }}}1
 
+    ; Writer:
+; [F] atoms checks ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn [validateF] #^ bool omarker_atomQ         [#^ Atom atom] (in atom $OMARKERS))
+    (defn [validateF] #^ bool hy_opener_atomQ       [#^ Atom atom] (in atom $HY_OPENERS))
+    (defn [validateF] #^ bool closing_bracket_atomQ [#^ Atom atom] (in atom $CLOSER_BRACKETS))
+
+    (defn [validateF] #^ bool
+        hy_bracket_atomQ
+        [ #^ Atom atom
+        ]
+        (or (hy_opener_atomQ       atom)
+            (closing_bracket_atomQ atom)))
+
+; _____________________________________________________________________________/ }}}1
+
+    ; for all submodules:
 ; [C] Exceptions ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defclass [dataclass] WyIndentError [Exception]
-        "can happen only inside bracketer"
-        (#^ StrictStr msg))
+    ; .msg does NOT include "ERROR: " prefix or similar.
+    ; This prettification is done at Assembler level instead.
 
-    (defclass [dataclass] WyBracketerError [Exception]
-        "can happen only inside bracketer"
-        (#^ StrictInt ndline)
-        (#^ StrictStr msg))
+    ; Parser:
+
+        (defclass [dataclass] WyParserError [Exception]
+            (#^ StrictInt startpos) ; char pos in overall wy-code
+            (#^ StrictInt endpos)   ; char pos in overall wy-code
+            (#^ StrictStr char)     ; like '~@('
+            (#^ StrictStr msg))
+
+    ; Expander
+
+        (defclass [dataclass] WyExpanderError [Exception]
+            (#^ NTLine    ntline)
+            (#^ StrictStr msg))
+
+    ; Bracketer:
+
+        (defclass [dataclass] WyBracketerError [Exception]
+            (#^ NDLine    ndline)
+            (#^ StrictStr msg))
 
 ; _____________________________________________________________________________/ }}}1
 

@@ -10,7 +10,7 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-; 1) Atomize (atom is just str):
+; Pyparsing grammar setup:
 ; pp-entities ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (setv ALPHAS    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
@@ -39,14 +39,16 @@
                                    (pp.Optional (+ (pp.oneOf "e E")
                                                    (pp.Optional (pp.oneOf "- +"))
                                                    (pp.Word NUMS NUMS_)))))
-                    (pp.Combine (+ (pp.oneOf "- +")
+                    (pp.Combine (+ (pp.Optional (pp.oneOf "- +"))
                                    (pp.Word ".")
                                    (pp.Word NUMS NUMS_)
                                    (pp.Optional (+ (pp.oneOf "e E")
                                                    (pp.Optional (pp.oneOf "- +"))
                                                    (pp.Word NUMS NUMS_)))))))
 
-    (setv WORD         (pp.Word (+ ALPHAS WSYMBOLS) (+ ALPHAS NUMS WSYMBOLS ":")))
+    (setv WORD         (| (pp.Word (+ ALPHAS WSYMBOLS) (+ ALPHAS NUMS WSYMBOLS ":"))))
+    (setv CHEAT_WORD   (pp.Combine (+ "$" WORD))) ; [QUICK_SOLUTION] solves case where «$PUPS» is seen as AMARKER+WORD instead of just WORD 
+
     (setv RMACRO       (pp.Combine (+ "#" WORD)))
     (setv KEYWORD      (pp.Combine (+ ":" (pp.Word (+ ALPHAS "_") (+ ALPHAS "_" NUMS)))))
     (setv SUGAR        (| #* (lmap pp.Literal ["#**" "#*" "#_" "#^"])))
@@ -64,8 +66,8 @@
     ; CONTENT = 0+ ATOMs or HYEXPRs   <- this is on what parser runs
 
     (setv ATOM    (|  OCOMMENT QSTRING
-                      KEYWORD NUMBER DMARKER OMARKER AMARKER RMARKER JMARKER
-                      WORD SUGAR CMARKER 
+                      KEYWORD NUMBER DMARKER OMARKER CHEAT_WORD AMARKER RMARKER
+                      JMARKER WORD SUGAR CMARKER 
                       HYMACRO_MARK RMACRO
                       NEW_LINE INDENT))
 
@@ -73,8 +75,7 @@
     (setv SEXPR   (pp.Forward))           ; ( ... ) #( ... )
     (setv CEXPR   (pp.Forward))           ; { ... } #{ ... }
 
-    (setv HYEXPR  (pp.originalTextFor (| QEXPR SEXPR CEXPR)))
-    (setv CONTENT (pp.Group (pp.ZeroOrMore (| HYEXPR ATOM))))
+    (setv HYEXPR  (pp.originalTextFor (| QEXPR SEXPR CEXPR))) ; origText will force it to be parsed as [14, '()', 16]
 
     (setv LPAR    (| #* (lmap pp.Literal $HY_OPENERS1)))
     (setv LBRCKT  (| #* (lmap pp.Literal $HY_OPENERS2)))
@@ -82,6 +83,9 @@
     (setv RPAR    (pp.Literal ")"))
     (setv RBRCKT  (pp.Literal "]"))
     (setv RCRB    (pp.Literal "}"))
+    (setv ORPHANB (pp.originalTextFor (| LPAR LBRCKT LCRB))) ; origText will force it to be parsed as [3, '#(', 4]
+
+    (setv CONTENT (pp.Group (pp.ZeroOrMore (| HYEXPR ORPHANB ATOM))))
 
     (<<   SEXPR   (pp.originalTextFor (pp.Group (+ LPAR   CONTENT RPAR))))
     (<<   QEXPR   (pp.originalTextFor (pp.Group (+ LBRCKT CONTENT RBRCKT))))
@@ -95,75 +99,48 @@
         [#^ StrictStr text]
         "removes indent/newline marks"
         (->> text (re_sub $INDENT_MARK " ")
-                  (re_sub $NEWLINE_MARK "")))
+                  (re_sub $NEWLINE_MARK ""))) ; "\n☇¦smth" -> "\nsmth"
 
-    (.setParseAction HYEXPR       (fm (PAtom PKind.HYEXPR       (cleanse_multiline (get it 1))))) ; [14, '()', 16]
-    (.setParseAction QSTRING      (fm (PAtom PKind.QSTRING      (cleanse_multiline (get it 0)))))
-    (.setParseAction OCOMMENT     (fm (PAtom PKind.OCOMMENT     (get it 0))))
-    (.setParseAction KEYWORD      (fm (PAtom PKind.KEYWORD      (get it 0))))
-    (.setParseAction NUMBER       (fm (PAtom PKind.NUMBER       (get it 0))))
-    (.setParseAction WORD         (fm (PAtom PKind.WORD         (get it 0))))
-    (.setParseAction SUGAR        (fm (PAtom PKind.SUGAR        (get it 0))))
-    (.setParseAction OMARKER      (fm (PAtom PKind.OMARKER      (get it 0))))
-    (.setParseAction DMARKER      (fm (PAtom PKind.DMARKER      (get it 0))))
-    (.setParseAction CMARKER      (fm (PAtom PKind.CMARKER      (get it 0))))
-    (.setParseAction AMARKER      (fm (PAtom PKind.AMARKER      (get it 0))))
-    (.setParseAction RMARKER      (fm (PAtom PKind.RMARKER      (get it 0))))
-    (.setParseAction JMARKER      (fm (PAtom PKind.JMARKER      (get it 0))))
-    (.setParseAction HYMACRO_MARK (fm (PAtom PKind.HYMACRO_MARK (get it 0))))
-    (.setParseAction RMACRO       (fm (PAtom PKind.RMACRO       (get it 0))))
-    (.setParseAction NEW_LINE     (fm (PAtom PKind.NEW_LINE     (get it 0))))
-    (.setParseAction INDENT       (fm (PAtom PKind.INDENT       (get it 0))))
+    (.setParseAction HYEXPR       (fm (Token (cleanse_multiline (get it 1)) PKind.HYEXPR       TKind.RACont   ))) 
+    (.setParseAction QSTRING      (fm (Token (cleanse_multiline (get it 0)) PKind.QSTRING      TKind.RACont   )))
+    (.setParseAction HYMACRO_MARK (fm (Token (get it 0)                     PKind.HYMACRO_MARK TKind.RACont   )))
+    (.setParseAction RMACRO       (fm (Token (get it 0)                     PKind.RMACRO       TKind.RACont   )))
+    (.setParseAction OCOMMENT     (fm (Token (get it 0)                     PKind.OCOMMENT     TKind.OComment )))
+    (.setParseAction KEYWORD      (fm (Token (get it 0)                     PKind.KEYWORD      TKind.RACont   )))
+    (.setParseAction NUMBER       (fm (Token (get it 0)                     PKind.NUMBER       TKind.RACont   )))
+    (.setParseAction WORD         (fm (Token (get it 0)                     PKind.WORD         TKind.RAOpener )))
+    (.setParseAction CHEAT_WORD   (fm (Token (get it 0)                     PKind.WORD         TKind.RAOpener ))) ; [QUICK_SOLUTION] see above
+    (.setParseAction SUGAR        (fm (Token (get it 0)                     PKind.SUGAR        TKind.RACont   )))
+    (.setParseAction DMARKER      (fm (Token (get it 0)                     PKind.DMARKER      TKind.DMarker  )))
+    (.setParseAction OMARKER      (fm (Token (get it 0)                     PKind.OMARKER      TKind.OMarker  )))
+    (.setParseAction INDENT       (fm (Token (get it 0)                     PKind.INDENT       TKind.Indent   )))
+    ; those tokens always have the same atom:
+    (.setParseAction CMARKER      (fn [it] t_cmarker))
+    (.setParseAction AMARKER      (fn [it] t_amarker))
+    (.setParseAction RMARKER      (fn [it] t_rmarker))
+    (.setParseAction JMARKER      (fn [it] t_jmarker))
+    (.setParseAction NEW_LINE     (fn [it] t_newline))
+
+    (.setParseAction ORPHANB (fm (raise (WyParserError #* (pick [0 2 1] it) "Orphan opener hy-bracket found"))))
 
 ; _____________________________________________________________________________/ }}}1
 
-    (defn [validateF] #^ (of List PAtom)
-        prepared_code_to_patoms
+; [F] Parsing whole  :: PreparedCode -> [Token ...] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn [validateF] #^ (of List Token)
+        prepared_code_to_tokens
         [ #^ PreparedCode prepared_code
         ]
         (setv _list
             (-> prepared_code
-                        CONTENT.scanString
-                        list))
-        (if (zerolenQ _list)
-            (return [])
+                CONTENT.scanString
+                list))
+        (if (zerolenQ _list) 
+            (return []) ; case for when no pp-entities are found (meaning empty string or similar was parsed)
             (return (list (get _list 0 0 0)))))
 
-    ; continue from: PAtoms (classify by parsed) to Tokens (classify by actions)?
-
-; [step] run py parse               :: Prepared Code -> [Atom ...] ‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    (defn [validateF] #^ (of List str)
-        prepared_code_to_atoms
-        [ #^ PreparedCode prepared_code
-        ]
-        (->> prepared_code
-             CONTENT.scanString
-             list
-             (lmapm (get it 0)) ; remove column info
-             flatten
-             ))
-
 ; _____________________________________________________________________________/ }}}1
-; [step] remove garbage from atoms  :: Atom -> Atom ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    (defn [validateF] #^ Atom
-        remove_garbage_from_atom
-        [#^ Atom atom]
-        "de facto removes indent/newline marks from qstring and bracketed HyExprs,
-         for other atoms returns themselves"
-        (if (or (qstring_atomQ atom)
-                (hyexpr_atomQ  atom))
-            (->> atom
-                 (re_sub $INDENT_MARK " ")
-                 (re_sub $NEWLINE_MARK ""))
-            atom))
-
-; _____________________________________________________________________________/ }}}1
-
-; 2) Tokenize (see in Classes.hy) and split into Numbered Lines Of Tokens:
-; // atom2token is done by function from Classes.hy
-; [step] all tokens to NTLines      :: [Token ...] -> [NTLine ...] ‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [F] Split to lines :: [Token ...] -> [NTLine ...] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn [validateF] #^ (of List NTLine)
         tokens_to_NTLines
@@ -175,10 +152,7 @@
         (setv rowsEnds   (funcy.lsums rowsHs))
         (setv rowsStarts (lmapm (- %1 %2 -1) rowsEnds rowsHs))
         ;
-        (lmapm (NTLine :tokens         %1
-                       :rowN           %2
-                       :realRowN_start %3
-                       :realRowN_end   %4)
+        (lmapm (NTLine :lineNs #(%2 %3 %4) :tokens %1)
                _tlines
                rowNs
                rowsStarts
@@ -189,31 +163,31 @@
         [ #^ (of List Token) tokens
         ]
         "newline tokens themselves are removed"
-        (lmulticut_by :keep_border False :merge_border False (fm (eq it.kind TKind.NewLine)) tokens))
+        (lmulticut_by (fm (eq it.tkind TKind.NewLine))
+                      tokens
+                      :keep_border False
+                      :merge_border False))
 
     (defn [validateF] #^ StrictInt
         count_n_of_rows_that_tline_takes
         [#^ (of List Token) tokens]
         (->> tokens
-             (lmapm (len (re.findall "\n" %1.atom)))
+             (filterm (eq it.pkind PKind.QSTRING))
+             (mapm (len (re.findall "\n" %1.atom)))
              sum
              (plus 1)))
 
 ; _____________________________________________________________________________/ }}}1
 
-; 3) Assembly
-; [assm] PreparedCode to NTLines ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [I] PreparedCode to NTLines ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn [validateF] #^ (of List NTLine)
         prepared_code_to_ntlines
         [ #^ PreparedCode prepared_code
         ]
         (->> prepared_code
-             prepared_code_to_atoms
-             (lmap remove_garbage_from_atom)
-             (lmap atom_to_token)
+             prepared_code_to_tokens
              tokens_to_NTLines))
 
 ; _____________________________________________________________________________/ }}}1
-
 

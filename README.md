@@ -93,17 +93,21 @@ Dependencies (with versions tested):
 
 **Wy and wy2hy are fully documented and fully usable.**
 
+Done:
+- [x] full documentation 
+- [x] testing suite 
+- [x] meaningfull error messages
+- [x] parser edge case (like exponential/complex/hexa numbers and bracket strings)
+
 On the TODO list:
 * **Make TAB length configurable** (currenlty TAB is hardcoded to be 4 spaces wide)
   > for now convert tabs to spaces before transpiling
   > if you want tabs to be of another lenghs
+* Allow unicode chars in names
+* Shebang line recognition
 * Test on Linux (infamous `\n` vs `\n\r` issue)
-* Make error mesages meaningfull
-* Testing suite is required for:
-  - basic transpilations
-  - usage of ASCII and unicode chars in names
-  - reader macros transpiling 
-* Forbid user from writing meaningless code (like for example `$ <$ <$`)
+* Additional testing is required for:
+  - usage of ASCII chars in names and especially reader macros
 
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- Changelog ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->

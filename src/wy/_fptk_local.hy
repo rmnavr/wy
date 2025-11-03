@@ -729,7 +729,7 @@
     (defn falseQ [x] "checks literally if x == False" (= x False))
 
     #_ "(oflenQ xs n) -> (= (len xs) n) |"
-    (defn oflenQ [xs n] "checks literally if len(xs) == n" (= (len xs) n))
+    (defn oflenQ [n xs] "checks literally if len(xs) == n" (= (len xs) n))
 
     #_ "| checks literally if (= (len xs) 0)"
     (defn zerolenQ [xs] "checks literally if len(xs) == 0" (= (len xs) 0))

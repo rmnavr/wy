@@ -44,8 +44,6 @@
 				C\x 7
 		  L 2 3
 
-
-
 ; _____________________________________________________________________________/ }}}1
 
     ;   + (...) is recognized as normal hy code (and any other brackets), even multiline

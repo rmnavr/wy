@@ -28,6 +28,7 @@
 
 
 // ____________________________________________________________________________/ }}}1
+// old2 ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
 	Docs
 		Dev mmap
@@ -56,3 +57,54 @@
 		Wy REPL
 		Wy WEXP (minimal)
 	wy   // review todos (error msg, tab=2)
+
+// ____________________________________________________________________________/ }}}1
+
+	list of crutches:
+	- CHEAT_WORD
+	- idea: make WORD match more, but decide on type in parseAction
+	- marked as QUICK_SOLUTION
+
+	! Print errors in %wy
+
+	code:
+	- prettify ( ( (x) ( y))) and such + comments
+	- at what indents is expansion done?
+	- blank tokens creation helpers? (t_indent 3, t_amarker, ...)
+	- pkind2tkind
+	- omarker_clasify (to parser) + check_syntax (to new module) + expand
+	- better names for tests
+	- NDLine.rowN -> lineNs
+	- NDLine.kind -> skind
+	- NDCard.kind -> ikind
+	- remove atom_checks
+	- combine all tests
+	- in tests _fptk_local can be imported from wy (but maybe doesn't need to?)
+
+	; it is good to have step-by-step piped tests (for possible future refactorings)
+
+	performance:
+	- lmap/map
+	- validateF
+	- lens, NTLine.upd_1_field
+
+	! upd fptk version
+    - unicode output -> is it on my system only? not use unicode symbols in error msgs and such?
+    - forbid indent after line with [$ <$ ,] 
+    - can qstrings contain empty lines? -> to doc
+    - print : print : print \n big_expr (issue: forced to be multilined)
+	- doc: {()} only hy syntax will be recognized
+	- : : : L   
+	    x      <- is this allowed? (yes, because <$ uses such syntax)
+	- forbid incorrect placement of DMARKERs
+	- numbers and tests
+	+ currently ORPHANB catches only opener brackets
+
+    ±0.1E±7±3.7E±3J
+	±0xFF
+	±0o77
+	±0b11
+	0,000
+
+	+ reader macro is continuator?
+	+ replace ■ with rarerer symbol? show in doc?
