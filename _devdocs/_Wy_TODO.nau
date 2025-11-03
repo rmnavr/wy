@@ -67,6 +67,8 @@
 
 	! Print errors in %wy
 
+	+ doc: multiline strings are working!
+
 	code:
 	- prettify ( ( (x) ( y))) and such + comments
 	- at what indents is expansion done?
@@ -80,6 +82,8 @@
 	- remove atom_checks
 	- combine all tests
 	- in tests _fptk_local can be imported from wy (but maybe doesn't need to?)
+
+	- parser-error for orphan opener-brackets returns pos on preparedCode btw
 
 	; it is good to have step-by-step piped tests (for possible future refactorings)
 
@@ -108,3 +112,5 @@
 
 	+ reader macro is continuator?
 	+ replace ■ with rarerer symbol? show in doc?
+
+

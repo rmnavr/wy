@@ -26,11 +26,20 @@
         ]
         ;
         (->> code
+             ; Preparator:
              wycode_to_prepared_code
-             prepared_code_to_ntlines  ; parser
-             expand_ntlines            ; expander
+             ; Parser:
+             (f> (try (prepared_code_to_ntlines it)
+                      (except [e WyParserError] (process_ParserError code e) (sys.exit 1))))
+             ; Expander (including: omarker2sm, syntax_check):
+             (f> (try (expand_ntlines it)
+                      (except [e WyExpanderError] (process_ExpanderError code e) (sys.exit 1))))
+             ; Deconstructor:
              deconstruct_ntlines        
-             bracktify_ndlines         ; bracketer
+             ; Bracketer:
+             (f> (try (bracktify_ndlines it)
+                      (except [e WyBracketerError] (process_BracketerError code e) (sys.exit 1))))
+             ; Writer:
              blines_to_hcode))
 
 ; _____________________________________________________________________________/ }}}1
@@ -89,7 +98,7 @@
 
 
 ; _____________________________________________________________________________/ }}}1
-; pretty-prenters helpers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; pretty-printers helpers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn [validateF]
         get_codeline_with_neighbours
@@ -118,10 +127,9 @@
         [ #^ WyCode        code
           #^ WyParserError e
         ]
-        ;
-        (setv msg (sconcat f"Parser error at position {e.startpos}-{e.endpos}:"
-                           f"\n{e.msg}"))
-        (print (clrz_r msg)))
+        ; todo: convert positions to actual line JFK
+        (print (clrz_r f"Parser error at position {e.startpos}-{e.endpos}:"))
+        (print f"{e.msg}"))
 
     (defn 
         process_ExpanderError
@@ -129,9 +137,13 @@
           #^ WyParserError e
         ]
         ;
-        (setv lineN (first e.ntline.lineNs))
-        (print (clrz_r f"Syntax error at line {lineN}:") f"\n{e.msg}")
-        (print (get_codeline_with_neighbours code lineN)))
+        (setv lineN1 (second e.ntline.lineNs))
+        (setv lineN2 (third  e.ntline.lineNs))
+        (if (eq lineN1 lineN2)
+            (setv lineNstr f"line {lineN1}")
+            (setv lineNstr f"lines {lineN1}-{lineN2}"))
+        (print (clrz_r f"Syntax error at line {lineNstr}:") f"\n{e.msg}")
+        (print (get_codeline_with_neighbours code lineN1)))
                   
     (defn 
         process_BracketerError
@@ -139,7 +151,7 @@
           #^ WyBracketerError e
         ]
         ;
-        (setv lineN (first e.ndline.rowN))
+        (setv lineN (second e.ndline.rowN))
         (print (clrz_r f"Indent error at line {lineN}:"))
         (print (get_codeline_with_neighbours code lineN)))
 
@@ -193,6 +205,9 @@
 ; _____________________________________________________________________________/ }}}1
 
     (when (= __name__ "__main__")
+          (setv wycode "() (")
+          (setv wycode "$ \"\n\n\n\"x\"\n\n\"y")
+          (setv wycode (* ": L C LL\n"))
           (setv wycode (read_file "_tmp_del_me.wy"))
           (print_wy2hy_steps wycode)
           ;(print_wy2hy_steps "zus\n  xenum\n ynot\npups\nbubr")

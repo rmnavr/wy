@@ -51,8 +51,6 @@
 						 | + NDLine.skind is about function of line (GroupStarter, Continuator, ... — overall 5 kinds)
 						 | + [³NDLine⁺] = skind + lineN (x3) + ident (as int) + t_smarker* + body_tokens + t_ocomment*
 
-		······························
-
 		Bracketer.hy	 | [³NDLine(s)⁺] -> [³BLine(s)⁺]  
 						 | → heavy cross-line indent-recognition lifting is done here (like: base on indents, should new level be opened/closed/keeped?)
 						 |   ## throws error when indent mismatches
@@ -63,11 +61,13 @@
 						 | → OMARKERs are dealt with here (method: ":" → 2 atoms: "(" inplace and ")" to the end of the line)
 						 | → DMARKERs are dealt with here (method: 1 atom "::" → 2 atoms: ")" and "(")
 
-		## Submodules errors are catched at this stage:
-		Assembler.hy	 | [³WyCode (=str)⁺] -> [³HyCode⁺]  
-						 | + also includes some REPL-related functions
-
 		······························
+
+		## Submodules errors are catched and sent to stdout (?) at this stage:
+		Assembler.hy	 | [³WyCode (=str)⁺] -> [³HyCode⁺]  
+						 | → pretty-prenting of error msgs to user is done at this stage
+						 | + also includes some REPL-related functions
+						 | + also includes high-level (interfaces of submodules) debug-related functions
 
 
 // ____________________________________________________________________________/ }}}1
