@@ -4,19 +4,27 @@
 
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (import  wy._fptk_local *)
-    (require wy._fptk_local *)
-    (import  wy._resultM *)  ; Result Monad
+    (import  wy.utils.fptk_local *)
+    (require wy.utils.fptk_local *)
+    (import  wy.utils.coloring *)
 
+    (import os)
     (import sys)
     (. sys.stdout (reconfigure :encoding "utf-8"))
 
     (import argparse)
 
-    (import wy.Classes   [HyCode])
-    (import wy.Assembler [convert_wy2hy])
+    (import wy.Backend.Classes   [HyCode])
+    (import wy.Backend.Assembler [convert_wy2hy])
 
 ; _____________________________________________________________________________/ }}}1
+
+    (defn #^ str clrz_source2target
+        [ #^ str source
+          #^ str target]
+        (sconcat (clrz_u f"{source}")
+                 " -> "
+                 (clrz_u f"{target}")))
 
 ; C: Classes ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
@@ -51,6 +59,7 @@
         [ #^ (of Optional str) [msg None]
         ]
         (when (fnot noneQ msg) (print msg :file sys.stdout)) 
+        (print (clrz_b "========================"))
         (sys.exit 0))
 
     (defn exit_with_error
@@ -58,6 +67,7 @@
           #^ (of Optional str) [msg None]
         ]
         (print msg :file sys.stderr)
+        (print (clrz_b "========================"))
         (sys.exit errorN))
 
 ; _____________________________________________________________________________/ }}}1
@@ -195,14 +205,14 @@
           #^ StrictStr target_filename
         ]
         ;
-        (setv _pre f"[xx] {source_filename} -> {target_filename} :")
+        (setv _pre (sconcat (clrz_r "[xx] ") (clrz_source2target source_filename target_filename) ":"))
         (try (setv _wy_code (read_file source_filename))
              (except [e Exception]
                      (return (Failure (APP_ERROR f"{_pre} ERROR - can't read source file (file not available?)")))))
-        (try (setv [_t_s prompt _hy_code] (with_execution_time (fm (convert_wy2hy _wy_code)) :tUnit "s"))
+        (try (setv [_t_s _hy_code] (timing (fm (convert_wy2hy _wy_code))))
              (except [e Exception]
                      (return (Failure (APP_ERROR f"{_pre} ERROR - transpilation failed (incorrect syntax?)")))))
-        (try (write_file _hy_code target_filename)
+        (try (write_to_file _hy_code target_filename)
              (except [e Exception]
                      (return (Failure (APP_ERROR f"{_pre} ERROR - cannot write to target file (file not available?)")))))
         ;
@@ -227,6 +237,7 @@
     (defn run_wy2hy_script [* [dummy_args None]] 
         "dummy_args are only for testing"
         ;
+        (print (clrz_b "=== wy2hy transpiler ==="))
         (setv #^ Wy2Hy_Args wy2hy_args (if (noneQ dummy_args) (get_args) dummy_args))
         (setv #^ Result run_mode_result  (validate_args_and_decide_on_run_mode wy2hy_args))
         ; failure path (run_mode_result = Failure):
@@ -251,7 +262,7 @@
                         (fm
                             (do (setv _resultT1 (transpile_wy_file %1 %2))
                                 (if (successQ _resultT1)
-                                    (unless _m_silent (print "[ok]" %1 "->" %2 f": transpiled in {(unwrapTime _resultT1) :.3f} s"))
+                                    (unless _m_silent (print (clrz_g "[ok]") (clrz_source2target %1 %2) f": transpiled in {(unwrapTime _resultT1) :.3f} s"))
                                     (do (print (unwrapEMsg _resultT1))
                                         (_failedFiles.append %1)))))
                         _pairs)
@@ -282,3 +293,5 @@
     )
 
 ; _____________________________________________________________________________/ }}}1
+
+

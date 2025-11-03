@@ -1,11 +1,11 @@
 
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (import wy.Classes *)
-    (import wy.Expander [first_indent_profile])
+    (import wy.Backend.Classes *)
+    (import wy.Backend.Expander [first_indent_profile])
 
-    (import  wy._fptk_local *)
-    (require wy._fptk_local *)
+    (import  wy.utils.fptk_local *)
+    (require wy.utils.fptk_local *)
 
 ; _____________________________________________________________________________/ }}}1
 

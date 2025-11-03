@@ -1,10 +1,10 @@
 
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (import wy.Classes *)
+    (import  wy.Backend.Classes *)
 
-    (import  wy._fptk_local *)
-    (require wy._fptk_local *)
+    (import  wy.utils.fptk_local *)
+    (require wy.utils.fptk_local *)
 
 ; _____________________________________________________________________________/ }}}1
 

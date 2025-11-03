@@ -1,8 +1,8 @@
 
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (import  wy._fptk_local *)
-    (require wy._fptk_local *)
+    (import  wy.utils.fptk_local *)
+    (require wy.utils.fptk_local *)
 
     (import  sys)
     (. sys.stdout (reconfigure :encoding "utf-8"))
@@ -13,8 +13,8 @@
     (setv WyCodeLine   StrictStr)
     (setv PreparedCode StrictStr)
     (setv Atom         StrictStr)
-    (setv HyCodeLine   str)
-    (setv HyCode       str)
+    (setv HyCodeLine   StrictStr)
+    (setv HyCode       StrictStr)
 
     ; Preparator
 ; [=] wy marks and markers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1

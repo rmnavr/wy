@@ -4,20 +4,37 @@
     (import termcolor)
     (import sys) (sys.setrecursionlimit 3000) ; needed for pyparser, I saw it crash at 1300
 
-    (import  wy._fptk_local *)
-    (require wy._fptk_local *)
+    (import  wy.utils.fptk_local *)
+    (require wy.utils.fptk_local *)
+    (import  wy.utils.coloring *)
 
-    (import wy.Classes *)
-    (import wy.Preparator    [wycode_to_prepared_code])
-    (import wy.Parser        [prepared_code_to_ntlines])
-    (import wy.Expander      [expand_ntlines])
-    (import wy.Deconstructor [deconstruct_ntlines])
-    (import wy.Bracketer     [bracktify_ndlines])
-    (import wy.Writer        [blines_to_hcode])
+    (import  wy.Backend.Classes *)
+    (import  wy.Backend.Preparator    [wycode_to_prepared_code])
+    (import  wy.Backend.Parser        [prepared_code_to_ntlines])
+    (import  wy.Backend.Expander      [expand_ntlines])
+    (import  wy.Backend.Deconstructor [deconstruct_ntlines])
+    (import  wy.Backend.Bracketer     [bracktify_ndlines])
+    (import  wy.Backend.Writer        [blines_to_hcode])
 
 ; _____________________________________________________________________________/ }}}1
 
-; direct usage:
+; assembling transpilation pipeline:
+; [F] transpile_wy2hy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn [validateF] #^ HyCode
+        transpile_wy2hy
+        [ #^ WyCode code
+        ]
+        "can be used for dev/debug, since always raises exceptions"
+        (->> code
+             wycode_to_prepared_code
+             repared_code_to_ntlines
+             expand_ntlines
+             deconstruct_ntlines        
+             bracktify_ndlines
+             blines_to_hcode))
+
+; _____________________________________________________________________________/ }}}1
 ; [F] convert_wy2hy (assembly function) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn [validateF] #^ HyCode
@@ -30,28 +47,35 @@
              wycode_to_prepared_code
              ; Parser:
              (f> (try (prepared_code_to_ntlines it)
-                      (except [e WyParserError] (process_ParserError code e) (sys.exit 1))))
+                      ))
              ; Expander (including: omarker2sm, syntax_check):
              (f> (try (expand_ntlines it)
-                      (except [e WyExpanderError] (process_ExpanderError code e) (sys.exit 1))))
+                      ))
              ; Deconstructor:
              deconstruct_ntlines        
              ; Bracketer:
              (f> (try (bracktify_ndlines it)
-                      (except [e WyBracketerError] (process_BracketerError code e) (sys.exit 1))))
+                      ))
              ; Writer:
              blines_to_hcode))
 
+    ; NOT USED CURRENTLY
+    (defn [validateF] #^ HyCode
+        run_wy2hy_transpilation
+        [ #^ WyCode code
+          #^ bool   exit_on_error
+        ]
+        "supposed to be called from other python scripts,
+         this is why it doesn't sys.exit on finish"
+        (try (transpile_wy2hy code)
+             (except [e WyParserError]    (print_ParserError    code e))
+             (except [e WyExpanderError]  (print_ExpanderError  code e))
+             (except [e WyBracketerError] (print_BracketerError code e))
+             (except [e Exception]        (print e))
+             ))
+
 ; _____________________________________________________________________________/ }}}1
 
-; utils: coloring ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    (setv clrz_lg (fn [text] (termcolor.colored text "light_green")))
-    (setv clrz_ow (fn [text] (termcolor.colored text None "on_white")))
-    (setv clrz_g  (fn [text] (termcolor.colored text "green")))
-    (setv clrz_r  (fn [text] (termcolor.colored text "red")))
-
-; _____________________________________________________________________________/ }}}1
 ; for repl:
 ; [F] frame_hycode  ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
@@ -107,23 +131,25 @@
         (setv lineN0 (dec lineN))
         (setv lines  (code.split "\n"))
         ;
-        (setv sep  (clrz_g "---------------"))
+        (setv digitsN (len (str (len lines))))
+        (setv lines   (lmap (fn [n l] (sconcat f"{n :0{digitsN}d}| " l))
+                            (inf_range 1)
+                            lines))
+        ;
         (setv pre  (cut lines 0 lineN0))
         (setv post (cut lines (inc lineN0) None))
         (setv main (clrz_r (get lines lineN0)))
         ;
-        (str_join [ sep
-                    #* (take -5 pre)
+        (str_join [ #* (take -5 pre)
                     main
-                    #* (take 3 post)
-                    sep]
+                    #* (take 3 post) ]
                   :sep "\n"))
 
 ; _____________________________________________________________________________/ }}}1
 ; [F] pretty-process errors ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn 
-        process_ParserError
+        print_ParserError
         [ #^ WyCode        code
           #^ WyParserError e
         ]
@@ -132,7 +158,7 @@
         (print f"{e.msg}"))
 
     (defn 
-        process_ExpanderError
+        print_ExpanderError
         [ #^ WyCode        code
           #^ WyParserError e
         ]
@@ -142,11 +168,11 @@
         (if (eq lineN1 lineN2)
             (setv lineNstr f"line {lineN1}")
             (setv lineNstr f"lines {lineN1}-{lineN2}"))
-        (print (clrz_r f"Syntax error at line {lineNstr}:") f"\n{e.msg}")
+        (print (clrz_r f"Syntax error at {lineNstr}:") f"\n{e.msg}")
         (print (get_codeline_with_neighbours code lineN1)))
                   
     (defn 
-        process_BracketerError
+        print_BracketerError
         [ #^ WyCode           code
           #^ WyBracketerError e
         ]
@@ -174,13 +200,13 @@
         (print (clrz_ow "NTLines (list):"))
         (try (lprint (lmapm (sconcat (clrz_g "> ") (str it))
                             (setx _ntlines (prepared_code_to_ntlines _prepared_code))))
-             (except [e WyParserError] (process_ParserError code e) (sys.exit 1)))
+             (except [e WyParserError] (print_ParserError code e) (sys.exit 1)))
         (dts.append (dt_calc "<- Parser"))
         ; Expander (including: omarker2sm, syntax_check):
         (print (clrz_ow "NTLines expanded (list):"))
         (try (lprint (lmapm (sconcat (clrz_g "> ") (str it))
                             (setx _entlines (expand_ntlines _ntlines))))
-             (except [e WyExpanderError] (process_ExpanderError code e) (sys.exit 1)))
+             (except [e WyExpanderError] (print_ExpanderError code e) (sys.exit 1)))
         (dts.append (dt_calc "<- Expander"))
         ; Deconstructor:
         (print (clrz_ow "NDLines (list):"))
@@ -191,7 +217,7 @@
         (print (clrz_ow "BLines (list):"))
         (try (lprint (lmapm (sconcat (clrz_g "> ") (str it))
                             (setx _blines (bracktify_ndlines _ndlines))))
-             (except [e WyBracketerError] (process_BracketerError code e) (sys.exit 1)))
+             (except [e WyBracketerError] (print_BracketerError code e) (sys.exit 1)))
         (dts.append (dt_calc "<- Bracketer"))
         ; Writer:
         (print (clrz_ow "Final hy code (str):"))
@@ -205,14 +231,13 @@
 ; _____________________________________________________________________________/ }}}1
 
     (when (= __name__ "__main__")
-          ;(setv wycode "() (")
-          ;(setv wycode "+-1E+3+3J")
-          ;(setv wycode "$ \"\n\n\n\"x\"\n\n\"y")
-          ;(setv wycode (* ": L C LL\n"))
-          (setv wycode (read_file "_t.wy"))
+          (setv wycode (read_file "..\\test.wy"))
           (print_wy2hy_steps wycode)
-          ;(print_wy2hy_steps "zus\n  xenum\n ynot\npups\nbubr")
-          ;(wycode2tokens "C#C ()")
-      )
+          (print (convert_wy2hy wycode)))
 
+    (setv $DUMMY_HYCODE "\"wy2hy convertion failed\"")
+
+    ; raise (traise) + catch later
+    ; print
+    ; sys.exit
 

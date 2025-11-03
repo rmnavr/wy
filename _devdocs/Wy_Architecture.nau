@@ -1,14 +1,34 @@
 
-// Modules: Frontend + Other ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+// Modules overview ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-	__init__.py		// lib header
-  	__init_hy__.hy	// lib header
-  	_fptk_local.hy	// Collection of FP-utility functions
+	__init__.py			// lib header
+  	__init_hy__.hy		// lib header
 
-	wy2hy.hy		// CLI App (Frontend)
+	utils/
+
+		fptk_local.hy	// Collection of FP-utility functions
+  	  	coloring.hy		// helpers for printing colored messages in terminal
+
+	Backend/
+
+		Classes.hy		// DDD style types definitions for whole Backend
+
+	  	Preparator		// • WyCode → PreparedCode   : Inserts NEWLINE and INDENT markers
+	  	Parser			// | ... → Tokens -> NTLines : Parses into Tokens, then splits to NTLines
+	  	Expander		// | ... → NTLines			 : Expands one-liners ($ <$ ,) to more NTLines
+	  	Deconstructor	// | ... → NDLines		     : Classifies lines by actions: Continuator, GroupStarter, etc.
+	  	Bracketer		// | ... → BLines            : Heavy cross-line indent recognition, builds stack of op/cl brackets for each line
+	  	Writer			// ↓ ... → HyCode            : Writes all the tokens as final hy code snippets
+
+	  	Assembler		// Assembles transpilation pipeline: WyCode → HyCode
+
+	Frontend/
+
+		  wy2hy
 
 // ____________________________________________________________________________/ }}}1
-// Modules: Backend ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+// Backend ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
 	Terminology:
 	// OMARKER = ":" "L" "C" "`:" ...					| [O]peners
@@ -22,7 +42,7 @@
 
 	===========================================================================
 
-	DDD style types definition for whole backend:
+	DDD style types definitions for whole backend:
 
 		Classes.hy			
 
@@ -69,7 +89,12 @@
 						 | + also includes some REPL-related functions
 						 | + also includes high-level (interfaces of submodules) debug-related functions
 
+// ____________________________________________________________________________/ }}}1
+// Frontend ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+	wy2hy.hy		// CLI App (Frontend)
 
 // ____________________________________________________________________________/ }}}1
+
 
 
