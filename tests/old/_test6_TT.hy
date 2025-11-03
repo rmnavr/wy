@@ -107,9 +107,9 @@
         ( #^ float omega #_ "rad/ms       | >0 is V_o_A")
         (setv #^ float m 2.7 #_ gramm)
         (setv #^ float R 19. #_ mm)
-        (setv #^ float Cf 0.47 #_ "drag kof")
-        (setv #^ float Cm 0.92 #_ "magnus kof")
-        (setv #^ float Cr (/ Cf 2 #_ "wind moment kof"))
+        (setv #^ float {f 0.47 #_ "drag kof"})
+        (setv #^ float {m 0.92 #_ "magnus kof"})
+        (setv #^ float {r (/ {f 2 #_ "wind moment kof" })})
         (setv #^ float J (py "2/5*m*(R**2)"))
         (setv #^ float S (py "math.pi*(R**2)")))
 
@@ -291,4 +291,3 @@
 
 
 ; _____________________________________________________________________________/ }}}1
-

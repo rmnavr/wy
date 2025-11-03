@@ -1,116 +1,108 @@
 
-// old ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+// Packaging ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-	Add functionality:
-		• :: LL CC :#: C#C
-		• reader macro
-		• full nested interaction of ":", "," and "$"
-			currently:
-			1) $ is split (first at line)
-			2) first : is split on every line
-			// so, «:» in «func1 $ : func2» will be seen as line-starter
-		• splitters $ :: : should not be seen in qstrings/icomment/ocomment
-		• special chars in :keywords
-
-	Refactoring:
-		+ Type[Shape]
-        + not the best name: hy_bracket_tokenQ (really it is hyopener + closer_bracket)
-		+ ADT: Literal "12" "23"
-
-	Robust:
-		+ forbid , and $ at line start (and things like that)
-		+ performance: recursion limit in pyparser -> quick solution: split code by empty lines (and parse)
-
-	Prettify:
-		• L LL C CC namings issue
-        + pass closing bracket through comments to actual line where it belongs
-		+ nesting interaction: () : :: $ $$
-
+	+ test libs required (+ for fptk), +ipython
+	+ iwy to separate package?
+	+ %hy_ magic
+	* squash readme_creation branch
 
 // ____________________________________________________________________________/ }}}1
-// old2 ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+// Docs ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-	Docs
-		Dev mmap
-		Cheetshets
-
-	Functionality
-		unicode + etc
-		shebang
-		reader macro tests (rmacro doesn't require continuator?)
-
-	Prettify
-		Error handling
-	  	edge cases (excessive \ , empty $ , etc. )
-	  	cli upd (Linux? in folder?)
-		tests
-
-	Optional
-		Refactor
-	  	Performance
-			lenses (remove)
-			pydantic
-			fptk unused macro
-
-	Vim
-		Wy VPLL
-		Wy REPL
-		Wy WEXP (minimal)
-	wy   // review todos (error msg, tab=2)
+	+ DMARKER and RMACRO — do they require continuator?
+	+ multiline qstrings (with empty lines!) are working!
+	+ all forms of numbers
+	+ running wy2hy: .exe, convert_wy2hy, debug
+	+ x <$ <$
+	+ doc: f"{()}" only hy syntax will be recognized
 
 // ____________________________________________________________________________/ }}}1
+// Backend ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-	list of crutches:
-	- CHEAT_WORD
-	- idea: make WORD match more, but decide on type in parseAction
-	- marked as QUICK_SOLUTION
+	Devdocs
+		+ at what indent expanders are placed?
 
+	Parser:
+		+ parser+regex for performance
+		+ CHEAT_WORD
+		+ pkind2tkind (for consistency)
+		+ replace ■ with rarerer symbol? show in doc?
+		+ currently ORPHANB catches only opener brackets
+		+ orphan solo double-quote is not catched
+		+ bracketed strings #[==[, #[[ ]], macros with them?
+
+	Numbers:
+		±0.1E±7±3.7E±3J
+		±0xFF
+		±0o77
+		±0b11
+		0,000
+		NaN Inf -Inf
+
+	Architecture:
+		+ Crutches list (QUICK_SOLUTION): CHEAT_WORD, "x <$ <$" in expander
+		+ omarker_clasify (to parser) + check_syntax (to new module) + expand
+
+	Prettify code:
+		+ NDLine.rowN -> lineNs
+		  NDLine.kind -> skind
+		  NDCard.kind -> ikind
+
+	Etc:
+		+ upd fptk version
+		+ replace ■ and newline symbols with more rare? make a note about it in docs?
+		* Performance: fptk import, map/lmap, lens, validateF, NTLine.upd_1_field
+
+// ____________________________________________________________________________/ }}}1
+// Syntax checks, Error messages ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+	Syntax:
+	+ forbid indent after $ <$ ,
+	+ forbid incorrect placement of DMARKERs
+
+	Todo:
+	! pretty-pring with line numbers (parser error by char in prepared code, other errors by lines)
 	! Print errors in %wy
+	+ wy2hy.exe — how it behaves when there are errors in multiple files?
 
-	+ doc: multiline strings are working!
+// ____________________________________________________________________________/ }}}1
+// Tests ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-	code:
-	- prettify ( ( (x) ( y))) and such + comments
-	- at what indents is expansion done?
-	- blank tokens creation helpers? (t_indent 3, t_amarker, ...)
-	- pkind2tkind
-	- omarker_clasify (to parser) + check_syntax (to new module) + expand
-	- better names for tests
-	- NDLine.rowN -> lineNs
-	- NDLine.kind -> skind
-	- NDCard.kind -> ikind
-	- remove atom_checks
-	- combine all tests
-	- in tests _fptk_local can be imported from wy (but maybe doesn't need to?)
+	+ _1 is WORD?
+	+ $40 is WORD?
+	+ '@ is macromark + work?
 
-	- parser-error for orphan opener-brackets returns pos on preparedCode btw
+	+ overview all, renamings, organize tests in one go
+	+ add whole wy scripts for testing
 
-	; it is good to have step-by-step piped tests (for possible future refactorings)
+// ____________________________________________________________________________/ }}}1
+// User POV, Bugs ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-	performance:
-	- lmap/map
-	- validateF
-	- lens, NTLine.upd_1_field
+	Config
+	+ TAB length
+	+ colored/non-colored output
 
-	! upd fptk version
-    - unicode output -> is it on my system only? not use unicode symbols in error msgs and such?
-    - forbid indent after line with [$ <$ ,] 
-    - can qstrings contain empty lines? -> to doc
-    - print : print : print \n big_expr (issue: forced to be multilined)
-	- doc: {()} only hy syntax will be recognized
-	- : : : L   
-	    x      <- is this allowed? (yes, because <$ uses such syntax)
-	- forbid incorrect placement of DMARKERs
-	- numbers and tests
-	+ currently ORPHANB catches only opener brackets
+	Robust functionality/presentation:
+	+ parser robustness: reader/keyword/words, unicode, shebang
+	+ unicode output to stdout: prefer only ANSI; will it output correctly on other systems?
+	+ prettify output: pass ) to line where they belong, ( ( (x))) remove spaces
+	* \r\n on Linux
 
-    ±0.1E±7±3.7E±3J
-	±0xFF
-	±0o77
-	±0b11
-	0,000
+	BUGS:
+	+ '@ does not work correctly
+	+ f :x y
+		:z 
+		   f x
+		:m
+	+ setv #^ int x
+		  lmapm
+				L\ it // moving \ to right = solves
+				   fltr1st oddQ entries
+			   \pcards
 
-	+ reader macro is continuator?
-	+ replace ■ with rarerer symbol? show in doc?
+// ____________________________________________________________________________/ }}}1
+
+
+// ____________________________________________________________________________/ }}}1
 
 

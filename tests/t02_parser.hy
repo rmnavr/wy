@@ -71,6 +71,7 @@
                               "~@:" "~@L"  "~@C" "~@#:" "~@#C" ]
                              :sep " ")
                   (newline_and 25 [PKind.INDENT PKind.OMARKER]))
+    (check_pkinds "Love Cucumbers" (newline_and 2 PKind.WORD))
 
     ; DMARKER
     (check_pkinds ":: LL CC :#: C#C" (newline_and 5 PKind.DMARKER))

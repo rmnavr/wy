@@ -248,6 +248,10 @@ All of that can be understood in one (although very contrived and mostly unreada
   ;         ↑              ↑
   ;         those are seen as normal (non-condensing) openers
 
+  ; spoiler: it will be transpiled to:
+   (((((f x  (y)  (z)  ((k  (m))  t))  ((x   7))) 5)))
+
+
   ; first, leftmost condensed openers are expanded:
     :
       :
