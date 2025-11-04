@@ -24,20 +24,18 @@
 
 	Frontend/
 
-		DebugHelpers		// Contains function for step-by-step printing of transpilation steps
+		DebugHelpers		// Contains functions for step-by-step printing of transpilation steps
 		ErrorHelpers		// Contains pretty-printers for WyErrors
-		ReplHelpers			// Contains some cosmetic functions for %wy and such (for usage in ipython)
+		ReplHelpers			// Contains pretty-printers for %wy and such (for usage in ipython)
 		wy2hy				// entry point for wy2hy.exe
 
 	-------------------------
 
 	Top level transpilation functions:
-
-	(BEnd) Assembler.hy		[⁵transpile_wy2hy⁺]         doesn't do anything with errors; FE-functions that catches errors — they wrap this function as a base
-
-	(FEnd) wy2hy.hy			[⁵run_wy2hy_script⁺]        prints errors (user usage)													// entry point for wy2hy.exe
-	(FEnd) ErrorHelpers.hy	[⁵run_wy2hy_transpilation⁺] prints errors (user usage), returns empty str on error, has silent option	// used by wy-ipython and tests
-	(FEnd) DebugHelpers.hy	[⁵print_wy2hy_steps⁺]       prints steps (dev usage), has option to raise or print WyErrors				// not used in code, but helpfull
+	(BEnd) DebugHelpers.hy	[⁵print_wy2hy_steps⁺]       prints errors
+	(BEnd) Assembler.hy		[⁵transpile_wy2hy⁺]         raises errors (dev usage)
+	(FEnd) ErrorHelpers.hy	[⁵run_wy2hy_transpilation⁺] prints errors (user usage), returns empty str on error, has silent option
+	(FEnd) wy2hy.hy			[⁵run_wy2hy_script⁺]        entry point for wy2hy.exe ; prints errors (user usage)
 
 // ____________________________________________________________________________/ }}}1
 // Backend (detailed dev description) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -56,7 +54,7 @@
 
 	DDD style types definitions for whole backend:
 
-		Classes.hy
+		Classes.hy			
 
 	Transpilation pipe:
 
@@ -73,29 +71,29 @@
 						 | + [³NTLine⁺] = lineNs (x3) + tokens list
 
 		Expander.hy		 | [³NTLine(s)⁺] -> [³NTLine(s)⁺]                                           // 2 NTLines -> 2+ NTLines (when "$" "<$" "," are present)
-						 | → 1) OMARKERs are classified to SMARKER or MMARKER
+						 | → 1) OMARKERs are classified to SMARKER or MMARKER 
 						 | → 2) Then syntax correctness checks (for [\ $ <$ ,]) are performed
 						 |      ## throws error when wrong syntax for [\ $ <$ ,] is used
 						 | → 3) Then expansion happens in the following order: SMARKERs, RMARKERs, AMARKERs, JMARKERs
 						 | + for SMARKERs lines ending with ":" are not expanded (there is no need), but they are steel called SMARKERs
 
-		Deconstructor.hy | [³NTLine(s)⁺] -> [³NDLine(s)⁺]
+		Deconstructor.hy | [³NTLine(s)⁺] -> [³NDLine(s)⁺]											
 						 | + NDLine.skind is about function of line (GroupStarter, Continuator, ... — overall 5 kinds)
 						 | + [³NDLine⁺] = skind + lineN (x3) + ident (as int) + t_smarker* + body_tokens + t_ocomment*
 
-		Bracketer.hy	 | [³NDLine(s)⁺] -> [³BLine(s)⁺]
+		Bracketer.hy	 | [³NDLine(s)⁺] -> [³BLine(s)⁺]  
 						 | → heavy cross-line indent-recognition lifting is done here (like: base on indents, should new level be opened/closed/keeped?)
 						 |   ## throws error when indent mismatches
 						 | → closers/openers are stored as literal "`(", "]" and such
 						 | + [³BLine⁺] = ndline + prev_closers + this_openers
 
-		Writer.hy		 | [³BLine(s)⁺] -> [³HyCode⁺]
+		Writer.hy		 | [³BLine(s)⁺] -> [³HyCode⁺]  
 						 | → OMARKERs are dealt with here (method: ":" → 2 atoms: "(" inplace and ")" to the end of the line)
 						 | → DMARKERs are dealt with here (method: 1 atom "::" → 2 atoms: ")" and "(")
 
 		······························
 
-		Assembler.hy	 | [³WyCode (=str)⁺] -> [³HyCode⁺]
+		Assembler.hy	 | [³WyCode (=str)⁺] -> [³HyCode⁺]  
 						 | lightweight wrapper of all submodules interfaces
 
 		## Submodules errors are catched at Frontend

@@ -15,7 +15,7 @@
     (import argparse)
 
     (import wy.Backend.Classes   [HyCode])
-    (import wy.Backend.Assembler [convert_wy2hy])
+    (import wy.Backend.Assembler [transpile_wy2hy])
 
 ; _____________________________________________________________________________/ }}}1
 
@@ -130,7 +130,7 @@
         (try (setv _wy_code (read_file source_filename))
              (except [e Exception]
                      (return (Failure (APP_ERROR f"ERROR: cannot read {source_filename} (file not available?)")))))
-        (try (setv _hy_code (convert_wy2hy _wy_code))
+        (try (setv _hy_code (transpile_wy2hy _wy_code))
              (except [e Exception]
                      (return (Failure (APP_ERROR f"ERROR: transpilation failed for {source_filename} (incorrect syntax?)")))))
         ; 
@@ -209,7 +209,7 @@
         (try (setv _wy_code (read_file source_filename))
              (except [e Exception]
                      (return (Failure (APP_ERROR f"{_pre} ERROR - can't read source file (file not available?)")))))
-        (try (setv [_t_s _hy_code] (timing (fm (convert_wy2hy _wy_code))))
+        (try (setv [_t_s _hy_code] (timing (fm (transpile_wy2hy _wy_code))))
              (except [e Exception]
                      (return (Failure (APP_ERROR f"{_pre} ERROR - transpilation failed (incorrect syntax?)")))))
         (try (write_to_file _hy_code target_filename)
@@ -275,21 +275,9 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-; /tests/ ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; /tests/ ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (when (eq __name__ "__main__")
-    ;   tests:
-    ;   
-    ;   (setv a1 (Wy2Hy_Args :filenames []              :silent_mode False :stdout_mode False))
-    ;   (setv a2 (Wy2Hy_Args :filenames ["1.wy"]        :silent_mode False :stdout_mode True))
-    ;   (setv a3 (Wy2Hy_Args :filenames ["1.hy"]        :silent_mode False :stdout_mode True))
-    ;   (setv a4 (Wy2Hy_Args :filenames ["1.hy" "2.hy"] :silent_mode True  :stdout_mode True))
-    ;   (setv a5 (Wy2Hy_Args :filenames ["1.hy" "2.hy"] :silent_mode False :stdout_mode False))
-    ;   (setv a6 (Wy2Hy_Args :filenames ["1.wy"]        :silent_mode False :stdout_mode False))
-    ;   (setv a7 (Wy2Hy_Args :filenames ["1.wy" "2.hy"] :silent_mode False :stdout_mode False))
-    ;   (setv a8 (Wy2Hy_Args :filenames ["1.wy" "2.wy"] :silent_mode False :stdout_mode False))
-    ;   ;
-    ;   (run_wy2hy_script :dummy_args a8)
     )
 
 ; _____________________________________________________________________________/ }}}1

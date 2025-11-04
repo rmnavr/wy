@@ -1,12 +1,18 @@
+
+# Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
 from __future__ import annotations
 
 import sys
 from typing import Mapping
 
-import hy
-from wy import convert_wy2hy, frame_hycode
 from IPython.core.getipython import get_ipython
 from IPython.core.magic import Magics, magics_class, line_cell_magic, needs_local_scope
+
+import hy
+from wy import run_wy2hy_transpilation, frame_hycode
+
+# _____________________________________________________________________________/ }}}1
 
 @magics_class
 class WyMagics(Magics):
@@ -33,7 +39,7 @@ class WyMagics(Magics):
         local_module = sys.modules[local_ns['__name__']]
 
         return hy.eval(
-            hy.read_many(convert_wy2hy(code), filename=cell_filename),
+            hy.read_many(run_wy2hy_transpilation(code), filename=cell_filename),
             locals=local_ns,
             module=local_module,
         )
@@ -60,11 +66,12 @@ class WyMagics(Magics):
         local_module = sys.modules[local_ns['__name__']]
 
         try:
-            __transpiled = convert_wy2hy(code).strip('\n')
+            __transpiled = run_wy2hy_transpilation(code).strip('\n')
         except Exception as e:
-            print("Transpilation Error:", e)
+            print("Unexpected transpilation error:", e)
             return None
-        print(frame_hycode(__transpiled, colored=True))
+        if __transpiled != "":
+           print(frame_hycode(__transpiled, colored=True))
         return hy.eval(
             hy.read_many(__transpiled, filename=cell_filename),
             locals=local_ns,

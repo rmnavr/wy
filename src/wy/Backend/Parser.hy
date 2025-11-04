@@ -15,7 +15,7 @@
 ; pp-entities ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (setv ALPHAS    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
-    (setv WSYMBOLS  (+ "_" "$.-=+&*<>!/|" "%^?" ":#" "`'~@;,"))  ; excluded: "\ and all brackets
+    (setv WSYMBOLS  (+ "_" "$.-=+&*<>!/|" "%^?" ":#" "`'~@,"))  ; excluded: "\;()[]{}
     (setv NUMS      "0123456789")
 
     ; =========================================================

@@ -266,23 +266,40 @@
 
     ; Parser:
 
-        (defclass [dataclass] WyParserError [Exception]
-            (#^ StrictInt startpos) ; char pos in overall wy-code
-            (#^ StrictInt endpos)   ; char pos in overall wy-code
-            (#^ StrictStr char)     ; like '~@('
-            (#^ StrictStr msg))
+        (defclass [] WyParserError [Exception]
+            (defn __init__
+                [ self
+                  #^ StrictInt startpos  ; char pos in overall wy-code
+                  #^ StrictInt endpos    ; char pos in overall wy-code
+                  #^ StrictInt char      ; like '~@('
+                  #^ StrictStr msg]
+                (. (super) (__init__ f"{msg}\npos={startpos}-{endpos} char='{char}'"))
+                (setv self.startpos startpos)
+                (setv self.endpos   endpos)
+                (setv self.char     char)
+                (setv self.msg      msg)))
 
     ; Expander
 
-        (defclass [dataclass] WyExpanderError [Exception]
-            (#^ NTLine    ntline)
-            (#^ StrictStr msg))
+        (defclass [] WyExpanderError [Exception]
+            (defn __init__
+                [ self
+                  #^ NTLine    ntline 
+                  #^ StrictStr msg]
+                (. (super) (__init__ f"{msg}\nntline:\n{ntline}"))
+                (setv self.ntline ntline)
+                (setv self.msg    msg)))
 
     ; Bracketer:
 
-        (defclass [dataclass] WyBracketerError [Exception]
-            (#^ NDLine    ndline)
-            (#^ StrictStr msg))
+        (defclass [] WyBracketerError [Exception]
+            (defn __init__
+                [ self
+                  #^ NDLine    ndline 
+                  #^ StrictStr msg]
+                (. (super) (__init__ f"{msg}\nndline:\n{ndline}"))
+                (setv self.ndline ndline)
+                (setv self.msg    msg)))
 
 ; _____________________________________________________________________________/ }}}1
 

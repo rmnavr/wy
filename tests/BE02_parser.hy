@@ -2,10 +2,10 @@
     (import  _fptk_local *)
     (require _fptk_local *)
 
-    (import wy.Classes *)
-    (import wy.Preparator [wycode_to_prepared_code  :as w2pc])
-    (import wy.Parser     [prepared_code_to_tokens  :as pc2t])
-    (import wy.Parser     [prepared_code_to_ntlines :as pc2ntls])
+    (import wy.Backend.Classes *)
+    (import wy.Backend.Preparator [wycode_to_prepared_code  :as w2pc])
+    (import wy.Backend.Parser     [prepared_code_to_tokens  :as pc2t])
+    (import wy.Backend.Parser     [prepared_code_to_ntlines :as pc2ntls])
 
     ; be aware that
     ; - wy_code snippets are "prepared" first (so ■ and ☇¦ are added)

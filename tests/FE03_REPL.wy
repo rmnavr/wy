@@ -1,0 +1,19 @@
+
+    ; test it directly by sending code below to repl:
+
+    ; Should transpile:
+    setv x 3
+    print x
+
+    ; Should print Syntax error
+    $ $
+
+    ; Should print Indent error
+    x
+       y
+     z
+
+    ; Should print Parser error
+    3 (
+
+

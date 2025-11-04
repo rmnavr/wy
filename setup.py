@@ -40,7 +40,7 @@ setup(
     packages         = find_packages(exclude = ['private*', 'tests*'], where='src'),
     package_dir      = {'': 'src'},
     package_data     = {'': ['*.hy']},
-    entry_points     = {'console_scripts': ['wy2hy = wy.wy2hy:run_wy2hy_script']},
+    entry_points     = {'console_scripts': ['wy2hy = wy:run_wy2hy_script']},
     author           = 'Roman Averyanov',
     author_email     = 'averrmn@gmail.com',
     description      = 'wy2hy transpiler',

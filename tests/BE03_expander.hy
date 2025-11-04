@@ -4,25 +4,25 @@
 
 ; [F] testing machinery setup ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (import wy.Classes *)
+    (import wy.Backend.Classes *)
 
-    (import wy.Preparator [wycode_to_prepared_code  :as w2pc])
-    (import wy.Parser     [prepared_code_to_ntlines :as pc2ntls])
+    (import wy.Backend.Preparator [wycode_to_prepared_code  :as w2pc])
+    (import wy.Backend.Parser     [prepared_code_to_ntlines :as pc2ntls])
 
     ; for omarkers2sm_markers + syntax checks:
 
-    (import wy.Expander   [classify_omarkers :as com])   ; NTLine -> NTLine
-    (import wy.Expander   [check_syntax      :as chstx]) ; NTLine -> None
+    (import wy.Backend.Expander   [classify_omarkers :as com])   ; NTLine -> NTLine
+    (import wy.Backend.Expander   [check_syntax      :as chstx]) ; NTLine -> None
 
     (defn #^ (of List NTLine) wy2coms [wycode] (->> wycode w2pc pc2ntls (lmap com)))
     (defn #^ (of List NTLine) chcm_wy [wycode] (->> wycode wy2coms (lmap chstx)))
 
     ; for expansion:
 
-    (import wy.Expander [expand_smarkers :as esm])   ; NTLine -> [NTLine ...]
-    (import wy.Expander [expand_rmarkers :as erm])   ; NTLine -> [NTLine ...]
-    (import wy.Expander [expand_amarkers :as eam])   ; NTLine -> [NTLine ...]
-    (import wy.Expander [expand_jmarkers :as ejm])   ; NTLine -> [NTLine ...]
+    (import wy.Backend.Expander [expand_smarkers :as esm])   ; NTLine -> [NTLine ...]
+    (import wy.Backend.Expander [expand_rmarkers :as erm])   ; NTLine -> [NTLine ...]
+    (import wy.Backend.Expander [expand_amarkers :as eam])   ; NTLine -> [NTLine ...]
+    (import wy.Backend.Expander [expand_jmarkers :as ejm])   ; NTLine -> [NTLine ...]
 
     (defn #^ (of List NTLine) wy2expS
         [wycode]
@@ -36,7 +36,7 @@
 
     ; for assembly:
 
-    (import wy.Expander [expand_ntlines  :as ent])   ; [NTLine ...] -> [NTLine ...]
+    (import wy.Backend.Expander [expand_ntlines  :as ent])   ; [NTLine ...] -> [NTLine ...]
 
     (defn #^ (of List NTLine) wy2entls [wycode] (->> wycode w2pc pc2ntls ent))
 

@@ -2,12 +2,12 @@
     (import  _fptk_local *)
     (require _fptk_local *)
 
-    (import wy.Classes *)
-    (import wy.Preparator    [wycode_to_prepared_code])
-    (import wy.Parser        [prepared_code_to_ntlines])
-    (import wy.Expander      [expand_ntlines])      ; [NTLine ...] -> [NTLine ...]
-    (import wy.Deconstructor [deconstruct_ntlines]) ; [NTLine ...] -> [NDLine ...]
-    (import wy.Bracketer     [bracktify_ndlines])   ; [NDLine ...] -> [BLine ...]
+    (import wy.Backend.Classes *)
+    (import wy.Backend.Preparator    [wycode_to_prepared_code])
+    (import wy.Backend.Parser        [prepared_code_to_ntlines])
+    (import wy.Backend.Expander      [expand_ntlines])      ; [NTLine ...] -> [NTLine ...]
+    (import wy.Backend.Deconstructor [deconstruct_ntlines]) ; [NTLine ...] -> [NDLine ...]
+    (import wy.Backend.Bracketer     [bracktify_ndlines])   ; [NDLine ...] -> [BLine ...]
 
     (defn #^ (of List NDLine)
          wy2blines

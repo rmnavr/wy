@@ -12,7 +12,7 @@ class HyMagics(Magics):
 
     @line_cell_magic
     @needs_local_scope
-    def hy(
+    def hy_(
         self,
         line: str | None,
         cell: str | None = None,

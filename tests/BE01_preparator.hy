@@ -2,8 +2,8 @@
     (import  _fptk_local *)
     (require _fptk_local *)
 
-    (import wy.Classes *)
-    (import wy.Preparator [wycode_to_prepared_code :as w2p])
+    (import wy.Backend.Classes *)
+    (import wy.Backend.Preparator [wycode_to_prepared_code :as w2p])
 
     (assertm eq (w2p "") "")
     (assertm eq (w2p "\n") "☇¦")
