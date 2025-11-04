@@ -63,9 +63,24 @@ Also:
 
 What not to like?
 
-*Since Wy is backward-compatible with hy — you are risking nothign when trying it.*
+*Since Wy is backward-compatible with hy — you are risking nothing when trying it.*
 *Even if you won't fall in love with wy syntax,*
 *just take your transpiled hy files and continue from there.*
+
+<!-- __________________________________________________________________________/ }}}1 -->
+<!-- Features ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+
+# For the brave souls that dare to try Wy
+
+Although as of today I consider wy to be fully ready for usage,
+I probably wasn't able to catch all the edge-cases bugs on my own
+(related both to transpilation and to running wy2hy CLI-app in
+various environments).
+
+Wy was tested only on Windows 10 and in conda environment.
+
+If you encounter any problem in your setup — please don't get discouraged.
+Simply open a github issue or DM me. I'll try to respond in a short time.
 
 <!-- __________________________________________________________________________/ }}}1 -->
 
@@ -107,14 +122,12 @@ Dependencies (with versions tested):
 
 # On the TODO list
 
-**Wy and wy2hy are fully documented and fully usable.**
-
-On the TODO list:
-* Make TAB length configurable (currenlty TAB is hardcoded to be 4 spaces wide)
+* Make TAB length configurable (currently TAB is hardcoded to be 4 spaces wide)
   > for now convert tabs to spaces before transpiling
   > if you want tabs to be of another lenghs
-* Allow unicode chars in names
-* Shebang line recognition
+* Allow unicode chars in names (currently parser ignores them)
+* Forbid orphan brackets (currently parser ignores them)
+* Add shebang line recognition
 * Test on Linux (infamous `\n` vs `\n\r` issue)
 
 <!-- __________________________________________________________________________/ }}}1 -->
