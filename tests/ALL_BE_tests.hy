@@ -32,12 +32,12 @@
 ; USER CONFIG ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (setv $HY_TESTS [
-                    ;"BE01_preparator.hy"
-                    ;"BE02_parser.hy"
-                    ;"BE03_expander.hy"
-                    ;"BE04_deconstructor.hy"
-                    ;"BE05_bracketer.hy"
-                    ;"BE06_writer.hy"
+                    "BE01_preparator.hy"
+                    "BE02_parser.hy"
+                    "BE03_expander.hy"
+                    "BE04_deconstructor.hy"
+                    "BE05_bracketer.hy"
+                    "BE06_writer.hy"
                     "BE07_assembler.hy"
                     ])
 

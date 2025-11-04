@@ -29,30 +29,46 @@ Example code from real project:
 
 > More examples: [/examples](https://github.com/rmnavr/wy/blob/main/examples)
 
----
+<!-- __________________________________________________________________________/ }}}1 -->
+<!-- Features ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
-Wy is a **syntax layer** for hy, meaning that wy is not a standalone language, but just a syntax modification to hy.
+# Wy features
+
+Wy is a **syntax layer** for hy, meaning that wy is not a standalone language,
+but just a syntax modification to hy.
 Wy does not change anything about hy rather than removing parentheses.
 
-To run wy code, you first transpile it into hy code using **wy2hy** transpiler, and then you deal with transpiled *.hy files as usual.
-> Example shell command to run wy file:
-> ```
-> wy2hy 1.wy 1.hy && hy 1.hy
-> ```
+Features:
+* Wy uses **wy2hy** transpiler to produce *.hy files from *.wy files.
+  You then treat generated *.hy files just like normal *.hy files.
+  > Example shell command to run wy file:
+  > ```
+  > wy2hy 1.wy 1.hy && hy 1.hy
+  > ```
+  * wy2hy produces hy-code with 1-to-1 line correspondence to source wy-code
+    (you'll get meaningfull number lines in trace messages when raising exceptions in transpiled *.hy files)
+  * wy2hy produces meaningfull error messages when transpilation fails
+* Wy supports REPL — you can use `%wy` magic in ipython/Jupyter to execute wy-code
+  > Example of calculating ipython cell:
+  > ```hy
+  > %%wy
+  >     setv x 3
+  >     print x
+  > ```
+* Wy-code can be called directly from Python (by importing `transpile_wy2hy` function)
 
-**wy2hy** produces readable hy-code with 1-to-1 line correspondence to source wy-code.
-It means that running transpiled *.hy file will give meaningfull number lines in error messages.
+Also:
+* Wy and wy2hy are fully documented
+* Testing suite is in place, so most edge cases are covered
 
-You can also run wy code in ipython, see [wy repl](https://github.com/rmnavr/wy/blob/main/docs/repl.md)
-(it adds magic commands to ipython).
-> Example of calculating ipython cell:
-> ```hy
-> %%wy
->     setv x 3
->     print x
-> ```
+What not to like?
+
+*Since Wy is backward-compatible with hy — you are risking nothign when trying it.*
+*Even if you won't fall in love with wy syntax,*
+*just take your transpiled hy files and continue from there.*
 
 <!-- __________________________________________________________________________/ }}}1 -->
+
 <!-- Docs ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
 # Documentation
@@ -89,34 +105,35 @@ Dependencies (with versions tested):
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- Status ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
-# Project status
+# On the TODO list
 
 **Wy and wy2hy are fully documented and fully usable.**
 
-Done:
-- [x] full documentation 
-- [x] testing suite 
-- [x] meaningfull error messages
-- [x] parser edge case (like exponential/complex/hexa numbers and bracket strings)
-
 On the TODO list:
-* **Make TAB length configurable** (currenlty TAB is hardcoded to be 4 spaces wide)
+* Make TAB length configurable (currenlty TAB is hardcoded to be 4 spaces wide)
   > for now convert tabs to spaces before transpiling
   > if you want tabs to be of another lenghs
 * Allow unicode chars in names
 * Shebang line recognition
 * Test on Linux (infamous `\n` vs `\n\r` issue)
-* Additional testing is required for:
-  - usage of ASCII chars in names and especially reader macros
 
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- Changelog ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
 # Changelog
 
-* 26 oct 2025 (0.4.3) — added `%hy` and `%wy` magic commands definitions to ipython
-* 07 oct 2025 (0.4.0) — updated wy2hy API
-* 04 aug 2025 (0.3.0) — first public release
+* Version 0.5.0 (05 nov 2025)
+  * for user:
+    * added meaningfull error messages for wy2hy
+    * added `%hy_`, `%wy` and `%wy_spy` magics to ipython
+    * updated wy2hy API
+  * internally:
+    * updated parser
+    * added testing suite for backend and frontend
+    * written DevDoc on app Architecture
+* Version 0.3.0 (04 aug 2025)
+  * first public release
 
 <!-- __________________________________________________________________________/ }}}1 -->
+
 
