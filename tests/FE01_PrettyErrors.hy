@@ -17,6 +17,6 @@
 ; _____________________________________________________________________________/ }}}1
 
     (run_err_test "should be Parser error:" "(")
-    (run_err_test "should be Indent error:" "x\n   y\n  z")
-    (run_err_test "should be Syntax error:" "x \\")
+    (run_err_test "should be Indent error:" "   y\n :\\z")
+    (run_err_test "should be Syntax error:" "x \\ : z")
 

@@ -29,6 +29,7 @@ Example code from real project:
 
 > More examples: [/examples](https://github.com/rmnavr/wy/blob/main/examples)
 
+
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- Features ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
@@ -56,6 +57,11 @@ Features:
   >     print x
   > ```
 * Wy-code can be called directly from Python (by importing `transpile_wy2hy` function)
+* You can mix wy and hy code: wy2hy parses correct hy expressions as-is (without poking inside them).
+  So if for some reason you need crazy indent that Wy syntax forbids — you can always write it as a hy code.
+* *But hey* — you may ask — *doesn't hy have like 3 different kinds of parenthesis*?
+  Yes it does, and wy takes care of all 25 kinds of them (yes, twenty five).
+
 
 Also:
 * Wy and wy2hy are fully documented
@@ -68,7 +74,7 @@ What not to like?
 *just take your transpiled hy files and continue from there.*
 
 <!-- __________________________________________________________________________/ }}}1 -->
-<!-- Features ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+<!-- For the brave ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
 # For the brave souls that dare to try Wy
 
@@ -124,7 +130,7 @@ Dependencies (with versions tested):
 
 * Make TAB length configurable (currently TAB is hardcoded to be 4 spaces wide)
   > for now convert tabs to spaces before transpiling
-  > if you want tabs to be of another lenghs
+  > if you want tabs to be of another lengths
 * Allow unicode chars in names (currently parser ignores them)
 * Forbid orphan brackets (currently parser ignores them)
 * Add shebang line recognition

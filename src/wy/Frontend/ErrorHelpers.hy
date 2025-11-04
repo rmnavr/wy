@@ -56,7 +56,7 @@
         ]
         ; todo: convert positions to actual line JFK
         (setv l1 (clrz_r f"Parser error at position {e.startpos}-{e.endpos}:"))
-        (setv l2 f"{e.msg}")
+        (setv l2 f"{e.msg}: {e.char}")
         ;
         (sconcat l1 " " l2))
 

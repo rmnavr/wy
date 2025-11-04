@@ -121,7 +121,8 @@
               (< cur_indent prev_indent)
               (setv _deltaIndents    (- (dec (len prev_indents))
                                         (try (get_indent_level prev_indents cur_indent)
-                                             (except [e Exception] (raise (WyBracketerError ndline "indent error")))))
+                                             (except [e Exception]
+                                                     (raise (WyBracketerError ndline $BAD_INDENT_MSG)))))
                     _levels_to_close (+ _deltaIndents
                                         (if (= prev_kind SKind.Continuator) 0 1))
                     _new_indents     (drop (neg _deltaIndents) prev_indents)))
@@ -167,7 +168,8 @@
               (< cur_indent prev_indent)
               (setv _deltaIndents    (- (dec (len prev_indents))
                                         (try (get_indent_level prev_indents cur_indent)
-                                             (except [e Exception] (raise (WyBracketerError ndline "indent error")))))
+                                             (except [e Exception]
+                                                     (raise (WyBracketerError ndline $BAD_INDENT_MSG)))))
                     _levels_to_close (+ _deltaIndents
                                         (if (= prev_kind SKind.Continuator) 0 1))
                     _new_indents     (drop (neg _deltaIndents) prev_indents)))
@@ -209,7 +211,8 @@
               (< cur_indent prev_indent)
               (setv _deltaIndents    (- (dec (len prev_indents))
                                         (try (get_indent_level prev_indents cur_indent)
-                                             (except [e Exception] (raise (WyBracketerError ndline "indent error")))))
+                                             (except [e Exception]
+                                                     (raise (WyBracketerError ndline $BAD_INDENT_MSG)))))
                     _levels_to_close (+ _deltaIndents
                                         (if (= prev_kind SKind.Continuator) 0 1))
                     _new_indents     (drop (neg _deltaIndents) prev_indents)))

@@ -291,6 +291,10 @@
                 (setv self.msg    msg)))
 
     ; Bracketer:
+    
+        (setv $BAD_INDENT_MSG
+              (sconcat "indent level of de-dented line"
+                       "\nshould be of the same exact indent level as one of previous indents"))
 
         (defclass [] WyBracketerError [Exception]
             (defn __init__
