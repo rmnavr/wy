@@ -6,7 +6,7 @@
 Wy offers parentheses-less syntax for [hy lang](https://github.com/hylang/hy)
 by usage of indents and set of special symbols.
 
-Example code in wy:
+Example code in wy (left column):
 
 ```hy
 defn #^ int                         | (defn #^ int
@@ -33,60 +33,29 @@ Example code from real project:
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- Features ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
-# Wy features
+# Features overview
 
 Wy is a **syntax layer** for hy, meaning that wy is not a standalone language,
 but just a syntax modification to hy.
 Wy does not change anything about hy rather than removing parentheses.
 
-Features:
-* Wy uses **wy2hy** transpiler to produce *.hy files from *.wy files.
-  You then treat generated *.hy files just like normal *.hy files.
-  > Example shell command to run wy file:
-  > ```
-  > wy2hy 1.wy 1.hy && hy 1.hy
-  > ```
-  * wy2hy produces hy-code with 1-to-1 line correspondence to source wy-code
-    (you'll get meaningfull number lines in trace messages when raising exceptions in transpiled *.hy files)
-  * wy2hy produces meaningfull error messages when transpilation fails
-* Wy supports REPL — you can use `%wy` magic in ipython/Jupyter to execute wy-code
-  > Example of calculating ipython cell:
-  > ```hy
-  > %%wy
-  >     setv x 3
-  >     print x
-  > ```
-* Wy-code can be called directly from Python (by importing `transpile_wy2hy` function)
-* You can mix wy and hy code: wy2hy parses correct hy expressions as-is (without poking inside them).
-  So if for some reason you need crazy indent that Wy syntax forbids — you can always write it as a hy code.
-* *But hey* — you may ask — *doesn't hy have like 3 different kinds of parenthesis*?
-  Yes it does, and wy takes care of all 25 kinds of them (yes, twenty five).
+Wy uses **wy2hy** transpiler to produce *.hy files from *.wy files.
+You then treat generated *.hy files just like normal *.hy files.
 
+Notable features:
+* wy2hy produces hy-code with 1-to-1 line correspondence to source wy-code
+  (you'll get meaningfull number lines in trace messages when raising exceptions in transpiled *.hy files)
+* wy2hy also produces meaningfull error messages when transpilation fails
+* Wy comes with REPL capability via `%wy` magic for ipython/Jupyter 
+* Wy-code can be called directly from Python (by importing `transpile_wy2hy` function)
+* You can mix wy and hy code: wy2hy parses correct hy expressions as-is (without poking inside them)
+* Wy covers all the syntax quirks of hy, including 25 kinds of parenthesis (yes, there are so many) and bracket-strings
 
 Also:
 * Wy and wy2hy are fully documented
 * Testing suite is in place, so most edge cases are covered
 
 What not to like?
-
-*Since Wy is backward-compatible with hy — you are risking nothing when trying it.*
-*Even if you won't fall in love with wy syntax,*
-*just take your transpiled hy files and continue from there.*
-
-<!-- __________________________________________________________________________/ }}}1 -->
-<!-- For the brave ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
-
-# For the brave souls that dare to try Wy
-
-Although as of today I consider wy to be fully ready for usage,
-I probably wasn't able to catch all the edge-cases bugs on my own
-(related both to transpilation and to running wy2hy CLI-app in
-various environments).
-
-Wy was tested only on Windows 10 and in conda environment.
-
-If you encounter any problem in your setup — please don't get discouraged.
-Simply open a github issue or DM me. I'll try to respond in a short time.
 
 <!-- __________________________________________________________________________/ }}}1 -->
 
@@ -131,10 +100,12 @@ Dependencies (with versions tested):
 * Make TAB length configurable (currently TAB is hardcoded to be 4 spaces wide)
   > for now convert tabs to spaces before transpiling
   > if you want tabs to be of another lengths
-* Allow unicode chars in names (currently parser ignores them)
-* Forbid orphan brackets (currently parser ignores them)
-* Add shebang line recognition
-* Test on Linux (infamous `\n` vs `\n\r` issue)
+* Add features to parser:
+  * Allow unicode chars in names (currently parser ignores them)
+  * Forbid orphan brackets (currently parser ignores them)
+  * Add shebang line recognition
+* Testing in other enveronments is required
+  (currently tested only on Windows 10 in conda and ipython)
 
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- Changelog ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
