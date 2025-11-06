@@ -5,23 +5,29 @@
     print 3
     print 3
 
-    ; Should print Syntax error
+    ; Parser error (unmatched opener)
+    "
+
+    "
+    3 (
+    3 (
+
+    ; Parser error (unmatched closer)
+    )
+    )
+
+    ; Deconstructor error
+     riba
+      gus
+
+    ; Expander error
     $ $
     $ $
 
-    ; Should print Indent error
+    ; Bracketer error
        y
      z
 
-    ; Should print Parser error
-    "
 
-    "
-    3 (
-    3 (
-
-    ; hmmm
-    )
-    )
 
 

@@ -108,6 +108,7 @@
              (except [e [ WyParserError
                           WyParserError2
                           WyExpanderError
+                          WyDeconstructorError
                           WyBracketerError ]]
                      (setv PTEMsg (prettify_WyError code e))
                      (print PTEMsg.msg))
@@ -131,11 +132,15 @@
 ; _____________________________________________________________________________/ }}}1
 
     (setv $TEST "
-    f :x y
+
       1
-        2
-          3
-      1
+      ;
+      \"
+
+
+      \"
+      ;
+      bubr
     ")
 
     (when  (= __name__ "__main__")

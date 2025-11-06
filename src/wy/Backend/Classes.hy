@@ -278,6 +278,9 @@
         (setv f_bad_2     (fn [atom1 atom2] f"{atom1} cannot be followed by {atom2}"))
         (setv f_bad_cont  (fn [atom] f"\\ after {atom} is forbidden here"))
 
+        ; deconstructor msgs:
+        (setv bad_cont_indent f"increasing indent after continuation line is not allowed")
+
         ; bracketer msgs:
         (setv bad_indent (sconcat "indent level of de-dented line"
                                 "\nshould be of the same exact indent level as one of previous indents")))
@@ -319,6 +322,17 @@
                   #^ StrictStr msg]
                 (. (super) (__init__ f"{msg}\nntline:\n{ntline}"))
                 (setv self.ntline ntline)
+                (setv self.msg    msg)))
+
+    ; Deconstructor
+
+        (defclass [] WyDeconstructorError [Exception]
+            (defn __init__
+                [ self
+                  #^ NDLine    ndline
+                  #^ StrictStr msg]
+                (. (super) (__init__ f"{msg}\nndline:\n{ndline}"))
+                (setv self.ndline ndline)
                 (setv self.msg    msg)))
 
     ; Bracketer:

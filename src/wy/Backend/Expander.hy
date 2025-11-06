@@ -515,7 +515,7 @@
         ]
         (->> ntlines
              (map classify_omarkers)
-             (mapm (do (check_syntax it) it))
+             (mapm (do (check_syntax it) it)) ; raises error when problems found
              (mapcat  expand_smarkers)
              (mapcat  expand_rmarkers)
              (mapcat  expand_amarkers)

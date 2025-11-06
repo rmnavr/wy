@@ -84,10 +84,11 @@
         [ #^ WyCode        code
           #^ WyParserError e
         ]
-        (cond (oftypeQ WyParserError    e) (PrettyTEMsg (str_prepare_ParserError    code e))
-              (oftypeQ WyParserError2   e) (PrettyTEMsg (str_prepare_ParserError2   code e))
-              (oftypeQ WyExpanderError  e) (PrettyTEMsg (str_prepare_ExpanderError  code e))
-              (oftypeQ WyBracketerError e) (PrettyTEMsg (str_prepare_BracketerError code e))
+        (cond (oftypeQ WyParserError         e) (PrettyTEMsg (str_prepare_ParserError        code e))
+              (oftypeQ WyParserError2        e) (PrettyTEMsg (str_prepare_ParserError2       code e))
+              (oftypeQ WyExpanderError       e) (PrettyTEMsg (str_prepare_ExpanderError      code e))
+              (oftypeQ WyDeconstructorError  e) (PrettyTEMsg (str_prepare_DeconstructorError code e))
+              (oftypeQ WyBracketerError      e) (PrettyTEMsg (str_prepare_BracketerError     code e))
               ; if non Wy-error types were provided:
               True                         f"Unexpected error:\n{e}"))
 
@@ -120,18 +121,18 @@
         (sconcat l1 "\n" l2))
 
     (defn #^ str
-        str_prepare_ExpanderError
+        str_prepare_DeconstructorError
         [ #^ WyCode        code
           #^ WyParserError e
         ]
         ;
-        (setv lineN1 (second e.ntline.lineNs))
-        (setv lineN2 (third  e.ntline.lineNs))
+        (setv lineN1 (second e.ndline.rowN))
+        (setv lineN2 (third  e.ndline.rowN))
         (if (eq lineN1 lineN2)
             (setv lineNstr f"line {lineN1}")
             (setv lineNstr f"lines {lineN1}-{lineN2}"))
         ;
-        (setv l1 (sconcat (clrz_r f"Syntax error at {lineNstr}: ") f"{e.msg}"))
+        (setv l1 (sconcat (clrz_r f"Indent error at {lineNstr}: ") f"{e.msg}"))
         (setv l2 (extract_codeline_with_neighbours code lineN1))
         (sconcat l1 "\n" l2))
                   
@@ -162,6 +163,7 @@
              (except [e [ WyParserError
                           WyParserError2
                           WyExpanderError
+                          WyDeconstructorError
                           WyBracketerError]]
                      (setv _trnsplR (Failure (prettify_WyError code e))))
              (except [e Exception]

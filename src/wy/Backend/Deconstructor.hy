@@ -42,13 +42,15 @@
               SKind.ImpliedOpener))
 
 ; _____________________________________________________________________________/ }}}1
-; [F] ntl2ndl :: NTLine -> NDLine ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [F] ntl2ndl (+check) :: NTLine -> NDLine ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn [validateF] #^ (of List NDLine)
         deconstruct_ntlines
         [ #^ (of List NTLine) ntlines
         ]
-        (lmap ntl2ndl ntlines))
+        (setv ndlines (lmap ntl2ndl ntlines))
+        (check_ndlines ndlines) ; throws error when problem found
+        ndlines)
 
     (defn [validateF] #^ NDLine
         ntl2ndl
@@ -60,6 +62,22 @@
               SKind.OnlyOComment  (build_ndl_OC ntline)
               SKind.ImpliedOpener (build_ndl_IO ntline)
               SKind.Continuator   (build_ndl_C  ntline)))
+
+    (defn [validateF] #^ None
+        check_ndlines
+        [ #^ (of List NDLine) ndlines
+        ]
+        "this functions currently only checks if there is no indent increase after 
+         continuator
+         ;
+         throws errors when bad indent found;
+         returns None when no errors found;
+         "
+        (for [[&l1 &l2] (pairwise (reject (fm (eq it.kind SKind.OnlyOComment)) ndlines))]
+             (when (and (eq &l1.kind SKind.Continuator)
+                        (eq_any &l2.kind [SKind.Continuator SKind.GroupStarter SKind.ImpliedOpener])
+                        (> &l2.indent &l1.indent))
+                   (raise (WyDeconstructorError :ndline &l2 :msg PBMsg.bad_cont_indent)))))
 
 ; ■ build_ndl_EL ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
 
