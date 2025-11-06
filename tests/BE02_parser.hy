@@ -83,6 +83,7 @@
 
     ; AMARKER, RMARKER, JMARKER
     (check_pkinds "$ <$ ," [PKind.NEW_LINE PKind.AMARKER PKind.RMARKER PKind.JMARKER])
+    (check_pkinds "1,0" [PKind.NEW_LINE PKind.NUMBER])
 
     ; RMACRO
     (check_pkinds "#pups #riba" (newline_and 2 PKind.RMACRO))

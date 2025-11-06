@@ -8,10 +8,10 @@
 ; [F] test machinery setup ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ str construct_hy_cmd [#^ str filename]
-        f"hy {filename} & echo [{filename}] test finished")
+        f"hy {filename} & echo [TEST: {filename}] test finished")
 
     (defn #^ str construct_wy_cmd [#^ str filename]
-        f"wy2hy {filename} & echo [{filename}] transpilation finished")
+        f"wy2hy {filename} & echo [TEST: {filename}] transpilation finished")
 
     (defn run_shell_command
         [ #^ str  command

@@ -79,7 +79,8 @@ Just be aware that such `:` introduce new indents, which must be respected by li
        4                 |    4)
 ```
 
-Continuator `\` switches off condensing (and thus new indent levels) for symbols to the right:
+Continuator `\` switches off condensing (and thus new indent levels)
+for symbols to the right:
 ```hy
   ; indents are created only at 2 positions:
   ; ↓  ↓
@@ -98,7 +99,14 @@ Continuator `\` switches off condensing (and thus new indent levels) for symbols
 One more example of how `\` interacts with `:`:
 ```hy
  : x :\y         | ((x (y))) ; this line has one ":" condensed
-\: x : y         | ( x (y))  ; this is seen as a single line, no condensing is happening
+\: x : y         | ( x (y))  ; no condensing is happening here
+```
+
+Notice that continuator `\` is allowed to be used
+without surrounding spaces,
+since it never can be part of some some other word:
+```hy
+    :\x   ; this syntax is correct
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->

@@ -14,10 +14,55 @@
 
     (import argparse)
 
-    (import wy.Backend.Classes   [HyCode])
-    (import wy.Backend.Assembler [transpile_wy2hy])
+    (import wy.Backend.Classes       [HyCode])
+    (import wy.Frontend.ErrorHelpers [run_wy2hy_transpilation])
 
 ; _____________________________________________________________________________/ }}}1
+
+; Predefined app messages ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (setv $NOGO (clrz_r "[wy2hy no run]"))
+    (setv $TXX  (sconcat (clrz_r "[trnspl xx]") " ERROR:"))
+
+    (defclass [dataclass] PMsg []
+        "predefined message;
+         and also preparators for msgs (see attrs starting with f_)"
+        ;
+        (setv welcome  (clrz_b "=== wy2hy transpiler ==="))
+        (setv goodbuy  (clrz_b "========================")) 
+        (setv info     (sconcat   "\nwy2hy usage:"
+                             "\n\n  [-h] [-silent] [-stdout] file [file ...]"
+                             "\n\n  - files can be of *.wy and *.hy extensions only"
+                               "\n  - *.hy can only follow *.wy file"
+                               "\n  - only one file (which has to be *.wy) can be used for -stdout mode"))
+        ;
+        (setv std_n_err   f"{$NOGO} ERROR: only one file (and which also should be of *.wy extension) should be used with -stdout mode")
+        (setv std_ext_err f"{$NOGO} ERROR: file extension should be *.wy")
+        (setv f_std_read  (fn [source_filename]
+                              (sconcat (clrz_r "[trnspl xx]")
+                                       " ERROR: cannot read "
+                                       (clrz_u source_filename)
+                                       " (file not available?)")))
+        (setv f_std_tr    (fn [source_filename]
+                              (sconcat (clrz_r "[trnspl xx]")
+                                       " ERROR: transpilation failed for "
+                                       (clrz_u source_filename))))
+        ;
+        (setv pairs_ext   f"{$NOGO} ERROR: files can only be of *.wy or *.hy extension")
+        (setv pairs_1wy   f"{$NOGO} ERROR: first provided file should be of *.wy type")
+        (setv pairs_wyhy  f"{$NOGO} ERROR: *.hy file may only follow *.wy file")
+        ;
+        (setv trspl_read  f"{$TXX} Can't read source file (file not available?)")
+        (setv trspl_bad   f"{$TXX} Transpilation failed")
+        (setv trspl_write f"{$TXX} Cannot write to target file (file not available?)")
+        ;
+        (setv f_file1_ok  (fn [time_s] (sconcat (clrz_g "[trnspl ok]") f" transpiled in {time_s :.3f} s")))
+        (setv finale_good (clrz_g "All transpilations were successfull"))
+        (setv finale_bad  (clrz_r "Some transpilations failed"))
+        )
+
+; _____________________________________________________________________________/ }}}1
+; utils: clrz_source2target ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ str clrz_source2target
         [ #^ str source
@@ -25,6 +70,8 @@
         (sconcat (clrz_u f"{source}")
                  " -> "
                  (clrz_u f"{target}")))
+
+; _____________________________________________________________________________/ }}}1
 
 ; C: Classes ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
@@ -57,17 +104,19 @@
 
     (defn normal_exit
         [ #^ (of Optional str) [msg None]
+          #^ bool              [closing_msg True]
         ]
-        (when (fnot noneQ msg) (print msg :file sys.stdout)) 
-        (print (clrz_b "========================"))
+        (when (notnoneQ msg) (print msg)) 
+        (when closing_msg    (print PMsg.goodbuy))
         (sys.exit 0))
 
     (defn exit_with_error
         [ #^ int errorN ; 1 for general, >1 for others 
           #^ (of Optional str) [msg None]
+          #^ bool              [closing_msg True]
         ]
-        (print msg :file sys.stderr)
-        (print (clrz_b "========================"))
+        (when (notnoneQ msg) (print :file sys.stderr msg))
+        (when closing_msg    (print :file sys.stderr PMsg.goodbuy))
         (sys.exit errorN))
 
 ; _____________________________________________________________________________/ }}}1
@@ -110,9 +159,9 @@
         ;
         (when _m_stdout
             (when (fnot oflenQ 1 _filenames)
-                  (return (Failure (APP_ERROR "ERROR: only one file (and which also should be of *.wy extension) should be used with -stdout mode"))))
+                  (return (Failure (APP_ERROR PMsg.std_n_err))))
             (when (neq (get_ft (first _filenames)) FTYPE.WY)
-                  (return (Failure (APP_ERROR "ERROR: file extension should be *.wy"))))
+                  (return (Failure (APP_ERROR PMsg.std_ext_err))))
             (return (Success RUN_MODE.STDOUT_1)))
         ;
         (bindR (filenames_pairable_possibility _filenames)
@@ -129,12 +178,14 @@
         ;
         (try (setv _wy_code (read_file source_filename))
              (except [e Exception]
-                     (return (Failure (APP_ERROR f"ERROR: cannot read {source_filename} (file not available?)")))))
-        (try (setv _hy_code (transpile_wy2hy _wy_code))
-             (except [e Exception]
-                     (return (Failure (APP_ERROR f"ERROR: transpilation failed for {source_filename} (incorrect syntax?)")))))
+                     (return (Failure (APP_ERROR (PMsg.f_std_read source_filename))))))
+        ;
+        (setv _trnsplR (run_wy2hy_transpilation _wy_code)) ; Result[HyCode, PrettyTEMsg]
+        (when (failureQ _trnsplR)
+              (setv tr_err_msg (-> _trnsplR unwrapE (getattrm .msg)))
+              (return (Failure (APP_ERROR (sconcat f"{tr_err_msg}\n" (PMsg.f_std_tr source_filename))))))
         ; 
-        (return (Success _hy_code)))
+        (return _trnsplR)) ; Result[HyCode, APP_ERROR] 
 
 ; _____________________________________________________________________________/ }}}1
 
@@ -167,17 +218,17 @@
         ; check if all files are *.wy or *.hy:
         (setv _types (lmap get_ft filenames))
         (when (in FTYPE.ERROR _types)
-              (return (Failure (APP_ERROR "ERROR: files can only be of *.wy or *.hy extension"))))
+              (return (Failure (APP_ERROR PMsg.pairs_ext))))
         ; check if 1st file is *.wy:
         (when (neq (get_ft (first filenames)) FTYPE.WY)
-              (return (Failure (APP_ERROR "ERROR: first provided file should be of *.wy type"))))
+              (return (Failure (APP_ERROR PMsg.pairs_1wy))))
         ; check if *.hy follows *.wy (not another *.hy):
         (setv splitted_by_wy (lmulticut_by (fm (= (get_ft %1) FTYPE.WY))
                                            filenames
                                            :keep_border  True
                                            :merge_border False))
         (when (any (lmapm (>= (len %1) 3) splitted_by_wy))
-              (return (Failure (APP_ERROR "ERROR: *.hy file may only follow *.wy file"))))
+              (return (Failure (APP_ERROR PMsg.pairs_wyhy))))
         ; 
         (Success True))
 
@@ -199,36 +250,30 @@
 ; _____________________________________________________________________________/ }}}1
 ; F: /monadic/ Runner: Transpile one wy-hy pair ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
+
     (defn [validateF] #^ (of Result Transpiled APP_ERROR)
         transpile_wy_file
         [ #^ StrictStr source_filename
           #^ StrictStr target_filename
         ]
         ;
-        (setv _pre (sconcat (clrz_r "[xx] ") (clrz_source2target source_filename target_filename) ":"))
         (try (setv _wy_code (read_file source_filename))
              (except [e Exception]
-                     (return (Failure (APP_ERROR f"{_pre} ERROR - can't read source file (file not available?)")))))
-        (try (setv [_t_s _hy_code] (timing (fm (transpile_wy2hy _wy_code))))
-             (except [e Exception]
-                     (return (Failure (APP_ERROR f"{_pre} ERROR - transpilation failed (incorrect syntax?)")))))
-        (try (write_to_file _hy_code target_filename)
-             (except [e Exception]
-                     (return (Failure (APP_ERROR f"{_pre} ERROR - cannot write to target file (file not available?)")))))
+                     (return (Failure (APP_ERROR PMsg.trspl_read)))))
         ;
-        (return (Success (Transpiled _t_s _hy_code))))
+        (setv [_t_s _trnsplR]
+              (timing run_wy2hy_transpilation _wy_code))
+        (if (failureQ _trnsplR)
+            (do (setv tr_err_msg (-> _trnsplR unwrapE (getattrm .msg)))
+                (return (Failure (APP_ERROR (sconcat f"{tr_err_msg}\n" PMsg.trspl_bad) ))))
+            (try (write_to_file (unwrapR _trnsplR) target_filename)
+                 (except [e Exception]
+                         (return (Failure (APP_ERROR PMsg.trspl_write))))))
+        ;
+        (return (Success (Transpiled _t_s (unwrapR _trnsplR)))))
 
 ; _____________________________________________________________________________/ }}}1
 
-; Info message ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    (setv $INFO_MSG (sconcat   "\nwy2hy usage:"
-                             "\n\n  [-h] [-silent] [-stdout] file [file ...]"
-                             "\n\n  - files can be of *.wy and *.hy extensions only"
-                               "\n  - *.hy can only follow *.wy file"
-                               "\n  - only one file (which has to be *.wy) can be used for -stdout mode"))
-
-; _____________________________________________________________________________/ }}}1
 ; F: run wy2hy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn unwrapEMsg [resultM] (. (unwrapE resultM) msg))
@@ -237,49 +282,52 @@
     (defn run_wy2hy_script [* [dummy_args None]] 
         "dummy_args are only for testing"
         ;
-        (print (clrz_b "=== wy2hy transpiler ==="))
         (setv #^ Wy2Hy_Args wy2hy_args (if (noneQ dummy_args) (get_args) dummy_args))
-        (setv #^ Result run_mode_result  (validate_args_and_decide_on_run_mode wy2hy_args))
-        ; failure path (run_mode_result = Failure):
-        (when (failureQ run_mode_result) (exit_with_error 1 (unwrapEMsg run_mode_result)))
-        ; success path (run_mode_result = Success):
+        (setv run_mode_result (validate_args_and_decide_on_run_mode wy2hy_args))
+        ; run mode was set incorrectly (de facto: incorrect files for stdout-mode):
+        (when (failureQ run_mode_result)
+              (print :file sys.stderr PMsg.welcome)
+              (exit_with_error 1 (unwrapEMsg run_mode_result)))
+        ; 
         (setv run_mode   (unwrapR run_mode_result)) 
         (setv _filenames (. wy2hy_args filenames))
         (setv _m_silent  (. wy2hy_args silent_mode))
-        ;
-        (when (eq run_mode RUN_MODE.INFO) (normal_exit $INFO_MSG))
-        ;
+        ; MODE: info
+        (when (eq run_mode RUN_MODE.INFO)
+              (print PMsg.welcome)
+              (normal_exit PMsg.info))
+        ; MODE: run 1 file in stdout:
         (when (eq run_mode RUN_MODE.STDOUT_1)
               (setv _resultSTD (transpile_in_stdout_mode (first _filenames)))
               (if (successQ _resultSTD)
-                  (normal_exit (unwrapR _resultSTD)) ; this is print of HyCode to stdout
-                  (exit_with_error 1 (unwrapEMsg _resultSTD))))
-        ;
+                  (normal_exit (unwrapR _resultSTD) :closing_msg False)
+                  (exit_with_error 1 (unwrapEMsg _resultSTD) :closing_msg False)))
+        ; MODE: transpile 1+ files
         (when (eq run_mode RUN_MODE.TRANSPILE_N) ; at this stage filenames are guaranteed to be pairable
               (setv _pairs (generate_filenames_pairs _filenames))
               (setv _failedFiles [])
-              (lstarmap
-                        (fm
-                            (do (setv _resultT1 (transpile_wy_file %1 %2))
-                                (if (successQ _resultT1)
-                                    (unless _m_silent (print (clrz_g "[ok]") (clrz_source2target %1 %2) f": transpiled in {(unwrapTime _resultT1) :.3f} s"))
-                                    (do (print (unwrapEMsg _resultT1))
-                                        (_failedFiles.append %1)))))
-                        _pairs)
+              ;
+              (unless _m_silent (print PMsg.welcome))
+              (lmap
+                   (fm
+                       (do (unless _m_silent
+                                   (print (sconcat "\n" (str %2) ") " (clrz_source2target #* %1))))
+                           (setv _resultT1 (transpile_wy_file #* %1))
+                           (if (successQ _resultT1)
+                               (unless _m_silent
+                                       (print (PMsg.f_file1_ok (unwrapTime _resultT1))))
+                               (do (print (unwrapEMsg _resultT1)) ; prints NOT to stderr, yes
+                                   (_failedFiles.append (first %1))))))
+                   _pairs  ; of [wy -> hy] files
+                   (inf_range 1)) 
+              ;
+              (print "")
               ;
               (if (oflenQ 0 _failedFiles)
                   (if _m_silent
-                      (normal_exit)
-                      (normal_exit "Transpilation is finished"))
-                  (exit_with_error 1 "ERROR: Some transpilations failed"))))
+                      (normal_exit :closing_msg False)
+                      (normal_exit PMsg.finale_good))
+                  (exit_with_error 1 PMsg.finale_bad :closing_msg (not _m_silent)))))
 
 ; _____________________________________________________________________________/ }}}1
-
-; /tests/ ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-    (when (eq __name__ "__main__")
-    )
-
-; _____________________________________________________________________________/ }}}1
-
 

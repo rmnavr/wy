@@ -38,6 +38,11 @@ print                   | (print
 print x : + y z         | (print x (+ y z)
     3                   |      3)
 
+; Use line consisting only of ":" to add +1 wrapping level:
+:                       | (
+  fn [x] : + pow 2      |   (fn [x] (pow x 2))
+  3                     |   3)
+
 ; "\" prevents automatic wrapping of line in ():
 print                   | (print
     f : + y 4           |      (f (+ y 4))
@@ -45,7 +50,8 @@ print                   | (print
     t                   |      (t)
    \z                   |      z)
 
-; Some syntax elements (like numbers) do not require "\" (you may still use it nontherless):
+; Some syntax elements (like numbers) do not require "\"
+; (you may still use it nontherless):
 print                   | (print
     f x                 |      (f x)
     3.0                 |      3.0
@@ -67,14 +73,10 @@ y                       | (y
   y                     | (y)
 \ x                     |  x
 
-; Use line consisting only of ":" to add +1 wrapping level:
-:                       | (
-  fn [x] : + pow 2      |   (fn [x] (pow x 2))
-  3                     |   3)
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
-<!-- Empty Lines ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+<!-- Empty Lines ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
 # Empty lines policy
 
@@ -98,29 +100,73 @@ print x     |   (print x
     + k n   |       (+ k n))
 ```
 
+However you still can have empty lines inside valid multiline hy expressions and miltiline strings (see below).
+
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- Hy expressions ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
 # Recognition of valid hy expressions
 
 Wy will avoid looking inside expressions wrapped in valid hy brackets (`(...)`, `~@#{...}` and such).
-Those expressions can also be multiline. This enables writing original hy syntax, or mixing it with wy syntax:
 > List of all valid hy brackets is given in [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
 
+Also:
+* indents inside multiline hy expression do not mess with wy code at all
+* you can have empty lines inside hy expressions
+
+So this syntax is correct:
 ```hy
-abs (+                  | (abs (+
-       x                |         x                 ; notice that x did not require "\"
-       (ncut ys 1 : 3)) |         (ncut ys 1 : 3))) ; notice that ":" was not recognized as wrapper
+abs   (+            | (abs   (+
+                    |                       ; notice empty line
+     x              |       x               ; notice that x did not require "\"
+   (ncut ys 1 : 3)) |     (ncut ys 1 : 3))) ; notice that ":" was not recognized as wrapper
+print x             | (print x)
+```
+
+While outside hy expressions such indents won't compile:
+```
+  abs
+ 3  ; this will throw indent error
 ```
 
 To understand how multiline hy expressions behave in indented world of wy, imagine them
 being forcefully placed one one line (like joining several lines with `\n` symbol). 
-This is how transpiler treats them internally.
+For example, this is how transpiler sees hy expression above:
 ```hy
-(abs (+ <<\n>>        x <<\n>>        (ncut ys 1 : 3)))
+(+ <\n><\n>     x <\n>   (ncut ys 1 : 3))
 ```
 
-Point is: **indents inside multiline hy expression do not mess with wy code at all**.
+Also wy2hy will refuse to transpile if it'll see incorrect brackets (for which their pair is not found):
+```hy
+; this will give error:
+func
+    ( x
+
+; this will give error:
+func
+    x
+    )
+```
+
+<!-- __________________________________________________________________________/ }}}1 -->
+<!-- Strings ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+
+# Strings
+
+All 4 kinds of python strings are recognized by parser (which are: `"string"`, `f"string"`, `b"string"` and `r"string"`)
+
+Multiline strings are parsed same as hy expressions, so this is a valid code:
+```hy
+    print " smth
+        smth
+
+     smth"
+```
+
+Formated strings are parsed as is, meaning you should use hy syntax inside them:
+```hy
+    f"{(* k 1.5) :.2f}"` ; this is correct
+```
 
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- Other openers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
@@ -146,64 +192,32 @@ obey the same rules:
 
 # Elements that do not require continuator
 
-Several syntax elements (that are usually not head of s-expression) do not require continuator `\`:
-```hy
-func                |   (func
-    1.0             |       1.0
-    -1.0            |       -1.0
-    "string"        |       "string"
-    f"string"       |       f"string"
-    b"string"       |       b"string"
-    r"string"       |       r"string"
-    :keyword        |       :keyword
-    #^              |       #^
-    #*              |       #*
-    #**             |       #**
-    ' x             |       ' x
-    ` x             |       ` x
-    ~ x             |       ~ x
-    ~@ x            |       ~@ x)
-                    |
-                    |   ; this is obviously incorrect hy code,
-                    |   ; but it shows how wy2hy works
-```
-
-When line starts with valid hy bracket, eather opening (like `(`, `#{`, `~@{` and such)
-or closing one (`)`, `]`, or `}`), continuator `\` is also not needed.
-And as was already said, everything inside these bracketed expressions will be interpreted as normal hy code:
+Several syntax elements (that are usually not head of s-expression) do not require continuator `\`
+(you can still place it, although not required):
+- valid hy expressions (example: `#{"x" 3 "y" 4}`)
+- all 4 kinds of strings: `"string"`, `f"string"`, `b"string"`, `r"string"`
+- valid hy numbers — anything starting with `±N` (examples: `-1.0E+7`, `0xFF`, `1_000E7`, `+2,000,000E-6+3J`)
+- keywords — anything starting with `:`, like `:x` (obviously excluding wy openers like `:`)
+- 4 sugar symbols: `#*` `#**` `#_` `#^`
+- hy macro-ed words — anything starting with `'`, `` ` ``, `~` or `~@` (obviously excluding wy openers like `~@L`)
+- reader macros — anything starting with `#` (obviously excluding wy openers like `#:`)
 
 ```hy
 func                |   (func
-    ( L             |       ( L     ; notice that here L is variable name, not bracket opener
-    )               |       )
-    [ C             |       [ C     ; notice that here C is variable name, not bracket opener
-    ]               |       ]
-    {               |       {
-      x             |         x     ; notice that continuator \ was not required here
-    }               |       }
-    ~@#{ x          |       ~@#{ x
-    }               |       })
+    (+ x 3)         |       (+ x 3)   ; valid hy expression
+    f"string"       |       f"string" ; string
+    -1.0            |       -1.0      ; valid hy number
+    :z              |       :z        ; keyword
+    #**             |       #**       ; sugar symbol
+    'x              |       'x        ; hy macro-ed words
+    ~ y             |       ~ y)      ; hy macro and word
                     |
                     |   ; this is obviously incorrect hy code,
                     |   ; but it shows how wy2hy works
-```
-
-Also wy2hy will refuse to transpile if it'll see incorrect brackets (for which their pair is not found):
-```hy
-; this will give error:
-func
-    ( x
-
-; this will give error:
-func
-    x
-    )
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
 
 > \>\> Next chapter: [Condensed syntax](https://github.com/rmnavr/wy/blob/main/docs/03_Condensed.md)
-
-
 
 

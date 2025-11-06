@@ -25,7 +25,11 @@ Hy itself has:
   * `{` — dict
   * `#{` — set
 - 4 macros symbols: `` ` ``, `'`, `~`, `~@`
-- Also, `#[` is used as bracketed strings (like `#[=[ ... ]=]`)
+- Also, `#[` is used in wy for so-called bracketed strings (like `#[FOO[ ... ]FOO]`)
+
+Wy has no special symbol for them 
+(so, unlike one might expect, `#L` is not a valid wy opener, because it
+is viewed as reader macro — not as opener).
 
 Macros symbols can prepend (without spaces) to opening brackets, so for example `~@#(` is a valid hy bracket.
 In total it sums up to 5*(1+4) = 25 different kinds of opening brackets.

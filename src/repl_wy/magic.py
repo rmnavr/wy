@@ -10,7 +10,9 @@ from IPython.core.getipython import get_ipython
 from IPython.core.magic import Magics, magics_class, line_cell_magic, needs_local_scope
 
 import hy
+
 from wy import run_wy2hy_transpilation, frame_hycode
+from wy.utils.fptk_local import unwrapR, unwrapE, failureQ
 
 # _____________________________________________________________________________/ }}}1
 
@@ -38,11 +40,18 @@ class WyMagics(Magics):
 
         local_module = sys.modules[local_ns['__name__']]
 
-        return hy.eval(
-            hy.read_many(run_wy2hy_transpilation(code), filename=cell_filename),
-            locals=local_ns,
-            module=local_module,
-        )
+        transpilationResult = run_wy2hy_transpilation(code)
+        if failureQ(transpilationResult):
+            print("wy -> hy transpilation failed:")
+            print(unwrapE(transpilationResult).msg)
+            return None
+        else:
+            hycode = unwrapR(transpilationResult)
+            return hy.eval(
+                hy.read_many(hycode, filename=cell_filename),
+                locals=local_ns,
+                module=local_module,
+            )
 
     @line_cell_magic
     @needs_local_scope
@@ -65,15 +74,16 @@ class WyMagics(Magics):
 
         local_module = sys.modules[local_ns['__name__']]
 
-        try:
-            __transpiled = run_wy2hy_transpilation(code).strip('\n')
-        except Exception as e:
-            print("Unexpected transpilation error:", e)
+        transpilationResult = run_wy2hy_transpilation(code)
+        if failureQ(transpilationResult):
+            print("wy -> hy transpilation failed:")
+            print(unwrapE(transpilationResult).msg)
             return None
-        if __transpiled != "":
-           print(frame_hycode(__transpiled, colored=True))
+        hycode = unwrapR(transpilationResult)
+        if hycode != "":
+           print(frame_hycode(hycode.strip('\n'), colored=True))
         return hy.eval(
-            hy.read_many(__transpiled, filename=cell_filename),
+            hy.read_many(hycode.strip('\n'), filename=cell_filename),
             locals=local_ns,
             module=local_module,
         )

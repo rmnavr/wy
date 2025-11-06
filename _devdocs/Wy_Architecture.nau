@@ -29,17 +29,9 @@
 		ReplHelpers			// Contains some cosmetic functions for %wy and such (for usage in ipython)
 		wy2hy				// entry point for wy2hy.exe
 
-	-------------------------
-
-	Top level transpilation functions:
-
-	(BEnd) Assembler.hy		[⁵transpile_wy2hy⁺]         doesn't do anything with errors; FE-functions that catches errors — they wrap this function as a base
-
-	(FEnd) wy2hy.hy			[⁵run_wy2hy_script⁺]        prints errors (user usage)													// entry point for wy2hy.exe
-	(FEnd) ErrorHelpers.hy	[⁵run_wy2hy_transpilation⁺] prints errors (user usage), returns empty str on error, has silent option	// used by wy-ipython and tests
-	(FEnd) DebugHelpers.hy	[⁵print_wy2hy_steps⁺]       prints steps (dev usage), has option to raise or print WyErrors				// not used in code, but helpfull
 
 // ____________________________________________________________________________/ }}}1
+
 // Backend (detailed dev description) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
 	Terminology:
@@ -101,6 +93,34 @@
 		## Submodules errors are catched at Frontend
 
 // ____________________________________________________________________________/ }}}1
+// Frontend (top level transpilation functions summary) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+	Top level transpilation functions:
+
+	(BEnd) Assembler.hy [⁵transpile_wy2hy⁺]        
+		- doesn't do anything with errors (so it will just raise call trace on error, just as any function)
+	   	- FE-functions that catches errors — they wrap this function as a base
+
+	(FEnd) ErrorHelpers.hy [⁵run_wy2hy_transpilation⁺]
+		- catches ALL error and IMMEDIATELY PRINTS them (user-friendly messages)
+	   	- wraps [⁵transpile_wy2hy⁺] 
+	   	- returns [None on error] or [str on successfull transpilation]
+	   	* has silent option
+	   	// %wy magic uses this function, it allows it to print it's own messages
+
+	(FEnd) wy2hy.hy [⁵run_wy2hy_script⁺]        
+		- entry point for wy2hy.exe
+	   	- uses [⁵run_wy2hy_transpilation⁺], allows it to print it's own messages
+		- transpilation success/fail is decided by return type of run_wy2hy_transpilation
+
+
+	(FEnd) DebugHelpers.hy [⁵print_wy2hy_steps⁺]
+		- wraps [⁵transpile_wy2hy⁺]
+	   	- prints steps (dev usage)
+	   	- has option to raise trace or print user-friendly messages (not using run_wy2hy_transpilation)
+
+// ____________________________________________________________________________/ }}}1
+
 
 
 

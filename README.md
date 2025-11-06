@@ -43,13 +43,14 @@ Wy uses **wy2hy** transpiler to produce *.hy files from *.wy files.
 You then treat generated *.hy files just like normal *.hy files.
 
 Notable features:
-* wy2hy produces hy-code with 1-to-1 line correspondence to source wy-code
+* wy2hy produces hy-code with **1-to-1 line correspondence** to source wy-code
   (you'll get meaningfull number lines in trace messages when raising exceptions in transpiled *.hy files)
-* wy2hy also produces meaningfull error messages when transpilation fails
-* Wy comes with REPL capability via `%wy` magic for ipython/Jupyter 
+* wy2hy also produces **user-friendly error messages** when transpilation fails (or
+  when CLI args are provided incorrectly)
+* Wy comes with `%wy` magic for ipython/Jupyter 
 * Wy-code can be called directly from Python (by importing `transpile_wy2hy` function)
 * You can mix wy and hy code: wy2hy parses correct hy expressions as-is (without poking inside them)
-* Wy covers all the syntax quirks of hy, including 25 kinds of parenthesis (yes, there are so many) and bracket-strings
+* Wy covers all the syntax quirks of hy, including 25 kinds of parenthesis (yes, there are so many)
 
 Also:
 * Wy and wy2hy are fully documented

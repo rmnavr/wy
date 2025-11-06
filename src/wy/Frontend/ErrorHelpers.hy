@@ -12,6 +12,12 @@
 
 ; _____________________________________________________________________________/ }}}1
 
+    (defclass [] PrettyTEMsg [BaseModel]
+        "Pretty Transpilation Error Message.
+         This is essentially str synonim, but differentiated by pydantic."
+        (#^ StrictStr msg)
+        (defn __init__ [self m] (-> (super) (.__init__ :msg m))))
+
 ; helpers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ str
@@ -38,19 +44,19 @@
 ; _____________________________________________________________________________/ }}}1
 ; pretty-process Wy errors :: Code -> Error => str ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn #^ str
+    (defn #^ PrettyTEMsg
         prettify_WyError
         [ #^ WyCode        code
           #^ WyParserError e
         ]
-        (cond (oftypeQ WyParserError e)    (prettify_ParserError    code e)
-              (oftypeQ WyExpanderError e)  (prettify_ExpanderError  code e)
-              (oftypeQ WyBracketerError e) (prettify_BracketerError code e)
+        (cond (oftypeQ WyParserError e)    (PrettyTEMsg (str_prepare_ParserError    code e))
+              (oftypeQ WyExpanderError e)  (PrettyTEMsg (str_prepare_ExpanderError  code e))
+              (oftypeQ WyBracketerError e) (PrettyTEMsg (str_prepare_BracketerError code e))
               ; if non Wy-error types were provided:
               True                         f"Unexpected error:\n{e}"))
 
     (defn #^ str
-        prettify_ParserError
+        str_prepare_ParserError
         [ #^ WyCode        code
           #^ WyParserError e
         ]
@@ -60,8 +66,8 @@
         ;
         (sconcat l1 " " l2))
 
-    (defn 
-        prettify_ExpanderError
+    (defn #^ str
+        str_prepare_ExpanderError
         [ #^ WyCode        code
           #^ WyParserError e
         ]
@@ -76,8 +82,8 @@
         (setv l2 (extract_codeline_with_neighbours code lineN1))
         (sconcat l1 "\n" l2))
                   
-    (defn 
-        prettify_BracketerError
+    (defn #^ str
+        str_prepare_BracketerError
         [ #^ WyCode           code
           #^ WyBracketerError e
         ]
@@ -89,26 +95,27 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-; [F] run_wy2hy_transpilation ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [F] run wy2hy transpilation -> Result[HyCode, PrettyTEMsg] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ HyCode
+    (defn [validateF] #^ (of Result HyCode PrettyTEMsg)
         run_wy2hy_transpilation
         [ #^ WyCode code
-          #^ bool   [silent False]
+          #^ bool   [silent True] ; when False, immediately prints found msg
         ]
-        "prints (not raises!) error when error encountered;
-         returns empty string when transpilation failed"
-        (setv outp "")
-        (try (setv outp (transpile_wy2hy code))
+        "On success returns HyCode, 
+         on failure, returns prettified error msg;
+         Never raises"
+        (try (setv _trnsplR (Success (transpile_wy2hy code)))
              (except [e [ WyParserError
                           WyExpanderError
                           WyBracketerError]]
-                     (unless silent
-                             (print (prettify_WyError code e))))
+                     (setv _trnsplR (Failure (prettify_WyError code e))))
              (except [e Exception]
-                     (unless silent
-                             (print f"Unexpected error:\n{e}"))))
-        (return outp))
+                     (setv _trnsplR (Failure (PrettyTEMsg f"Unexpected error:\n{e}")))))
+        ;
+        (when (and (not silent) (failureQ _trnsplR))
+              (print :file sys.stderr (-> _trnsplR unwrapE (getattrm .msg))))
+        (return _trnsplR))
 
 ; _____________________________________________________________________________/ }}}1
 

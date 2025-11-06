@@ -60,4 +60,3 @@
             (print))
 
     (sum [riba pupos])
-

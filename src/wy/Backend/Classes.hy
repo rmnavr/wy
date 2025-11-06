@@ -182,6 +182,7 @@
               (re_test $HMMR_TEST atom)        (Token atom PKind.HYMACRO_MARK TKind.RACont)
               True                             (Token atom PKind.WORD         TKind.RAOpener)))
 
+
 ; _____________________________________________________________________________/ }}}1
 ; [F] atom checks (used only by Writer) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
@@ -262,7 +263,7 @@
 ; [C] Exceptions ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; .msg does NOT include "ERROR: " prefix or similar.
-    ; This prettification is done at Assembler level instead.
+    ; This prettification is done later.
 
     ; Parser:
 
