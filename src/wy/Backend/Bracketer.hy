@@ -122,7 +122,7 @@
               (setv _deltaIndents    (- (dec (len prev_indents))
                                         (try (get_indent_level prev_indents cur_indent)
                                              (except [e Exception]
-                                                     (raise (WyBracketerError ndline $BAD_INDENT_MSG)))))
+                                                     (raise (WyBracketerError ndline PBMsg.bad_indent)))))
                     _levels_to_close (+ _deltaIndents
                                         (if (= prev_kind SKind.Continuator) 0 1))
                     _new_indents     (drop (neg _deltaIndents) prev_indents)))
@@ -169,7 +169,7 @@
               (setv _deltaIndents    (- (dec (len prev_indents))
                                         (try (get_indent_level prev_indents cur_indent)
                                              (except [e Exception]
-                                                     (raise (WyBracketerError ndline $BAD_INDENT_MSG)))))
+                                                     (raise (WyBracketerError ndline PBMsg.bad_indent)))))
                     _levels_to_close (+ _deltaIndents
                                         (if (= prev_kind SKind.Continuator) 0 1))
                     _new_indents     (drop (neg _deltaIndents) prev_indents)))
@@ -212,7 +212,7 @@
               (setv _deltaIndents    (- (dec (len prev_indents))
                                         (try (get_indent_level prev_indents cur_indent)
                                              (except [e Exception]
-                                                     (raise (WyBracketerError ndline $BAD_INDENT_MSG)))))
+                                                     (raise (WyBracketerError ndline PBMsg.bad_indent)))))
                     _levels_to_close (+ _deltaIndents
                                         (if (= prev_kind SKind.Continuator) 0 1))
                     _new_indents     (drop (neg _deltaIndents) prev_indents)))

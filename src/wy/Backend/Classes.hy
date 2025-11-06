@@ -260,25 +260,55 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-; [C] Exceptions ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [C] Exceptions, Error Messages ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    ; .msg does NOT include "ERROR: " prefix or similar.
-    ; This prettification is done later.
+    (defclass [dataclass] PBMsg []
+        "predefined backend message"
+        ; parser msgs:
+        (setv unmatched_opener "Unmatched opener hy-bracket found")
+        (setv unmatched_closer (sconcat "bad syntax encountered by parser;"
+                                      "\nknown cases of it happening — is when one of those starts indented line:"
+                                      "\n- unmatched closer hy bracket"
+                                      "\n- unmatched double-quote"
+                                      "\n- unicode symbol outside strings/comments"))
+        ; expander msgs:
+        (setv f_bad_solo  (fn [atom] f"solo {atom} on one line is not allowed"))
+        (setv f_bad_start (fn [atom] f"line cannot start with {atom}"))
+        (setv f_bad_end   (fn [atom] f"line cannot end with {atom}"))
+        (setv f_bad_2     (fn [atom1 atom2] f"{atom1} cannot be followed by {atom2}"))
+        (setv f_bad_cont  (fn [atom] f"\\ after {atom} is forbidden here"))
+
+        ; bracketer msgs:
+        (setv bad_indent (sconcat "indent level of de-dented line"
+                                "\nshould be of the same exact indent level as one of previous indents")))
 
     ; Parser:
 
         (defclass [] WyParserError [Exception]
+            "for unmatched open brackets"
             (defn __init__
                 [ self
-                  #^ StrictInt startpos  ; char pos in overall wy-code
-                  #^ StrictInt endpos    ; char pos in overall wy-code
+                  #^ StrictInt startpos  ; char pos in overall prepared-wy-code (because Parser runs on Prepared code)
+                  #^ StrictInt endpos    ; char pos in overall prepared-wy-code
                   #^ StrictInt char      ; like '~@('
-                  #^ StrictStr msg]
+                  #^ StrictStr msg
+                ]
                 (. (super) (__init__ f"{msg}\npos={startpos}-{endpos} char='{char}'"))
                 (setv self.startpos startpos)
                 (setv self.endpos   endpos)
                 (setv self.char     char)
                 (setv self.msg      msg)))
+
+        (defclass [] WyParserError2 [Exception]
+            "for unmatched closer brackets, double-quote and unicode outside strings/comments"
+            (defn __init__
+                [ self
+                  #^ NTLine    ntline
+                  #^ StrictStr msg
+                ]
+                (. (super) (__init__ f"{msg}\nntline: {ntline}"))
+                (setv self.ntline ntline)
+                (setv self.msg    msg)))
 
     ; Expander
 
@@ -292,10 +322,6 @@
                 (setv self.msg    msg)))
 
     ; Bracketer:
-    
-        (setv $BAD_INDENT_MSG
-              (sconcat "indent level of de-dented line"
-                       "\nshould be of the same exact indent level as one of previous indents"))
 
         (defclass [] WyBracketerError [Exception]
             (defn __init__

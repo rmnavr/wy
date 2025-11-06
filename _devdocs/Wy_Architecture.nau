@@ -6,7 +6,7 @@
 
 	utils/
 
-		fptk_local.hy		// Collection of FP-utility functions
+		fptk_local.hy		// Collection of FP-utility functions and macros
   	  	coloring.hy			// helpers for printing colored messages in terminal
 
 	Backend/
@@ -57,7 +57,8 @@
 						 | → trailing spaces are removed here
 
 		Parser.hy		 | [³PreparedCode (=str)⁺] -> [³Token(s)⁺] -> [³NTLine(s)⁺]                 // "☇¦■x☇¦■■y" -> .. -> 2 NTLines
-						 | ## throws error when ORPHANB found
+						 | ## throws error when ORPHANB (unmatched opener bracket) found
+						 | ## throws error when parser encountered unmatched '   )', '   double-quote' or '   •unicode' // ducktape solution
 						 | → "☇¦■" gargabe inside strings and hyexprs is removed at PAtom creation stage
 						 | → [³Token(s)⁺] for whole wy_code are split into [³NTLine(s)⁺] by TKind.NewLine tokens, and they themselves are removed
 						 | + Token.pkind is about parser classification (NUMBER, QSTRING, HYEXPR, etc.)
@@ -90,7 +91,7 @@
 		Assembler.hy	 | [³WyCode (=str)⁺] -> [³HyCode⁺]
 						 | lightweight wrapper of all submodules interfaces
 
-		## Submodules errors are catched at Frontend
+		## Backend errors are catched at Frontend
 
 // ____________________________________________________________________________/ }}}1
 // Frontend (top level transpilation functions summary) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -101,26 +102,38 @@
 		- doesn't do anything with errors (so it will just raise call trace on error, just as any function)
 	   	- FE-functions that catches errors — they wrap this function as a base
 
-	(FEnd) ErrorHelpers.hy [⁵run_wy2hy_transpilation⁺]
-		- catches ALL error and IMMEDIATELY PRINTS them (user-friendly messages)
+	(FEnd) ErrorHelpers.hy [⁵run_wy2hy_transpilation⁺] :: -> Result[HyCode, PrettyErrorMsg]
 	   	- wraps [⁵transpile_wy2hy⁺] 
-	   	- returns [None on error] or [str on successfull transpilation]
-	   	* has silent option
-	   	// %wy magic uses this function, it allows it to print it's own messages
+		- catches ALL errors and converts them to user-friendly error messages
+		- Returns Result type of:
+		  - SUCCESS: HyCode (str)
+		  - FAILURE: User-friendly error messages (stored in simple wrapper around str)
+	   	* with [:silent False] option prints immediately (tests use this feature)
+	   	// %wy magic uses this function
+	   	// wy2hy uses this function
 
 	(FEnd) wy2hy.hy [⁵run_wy2hy_script⁺]        
 		- entry point for wy2hy.exe
-	   	- uses [⁵run_wy2hy_transpilation⁺], allows it to print it's own messages
-		- transpilation success/fail is decided by return type of run_wy2hy_transpilation
-
+		- uses [⁵run_wy2hy_transpilation⁺]
 
 	(FEnd) DebugHelpers.hy [⁵print_wy2hy_steps⁺]
 		- wraps [⁵transpile_wy2hy⁺]
 	   	- prints steps (dev usage)
-	   	- has option to raise trace or print user-friendly messages (not using run_wy2hy_transpilation)
+		- does NOT use [⁵run_wy2hy_transpilation⁺] 
+	   	- has option to:
+		  - raise tradotional function call trace
+		  - or print user-friendly error messages
 
 // ____________________________________________________________________________/ }}}1
 
+
+	[⁵Current ducktapes⁺] (also marked as "QUICK_SOLUTION" in the code)
+	+ "x <$ <$" in expander
+	+ WyExpanderError2 — will not be needed if Parser were updated to catch by itself:
+	  - unmatched closer brackets
+	  - unmatched double-quotas
+	  - unicode outside strings/comments 
+	  This way WyExpanderError should be enough
 
 
 

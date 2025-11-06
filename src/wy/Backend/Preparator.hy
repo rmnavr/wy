@@ -9,10 +9,14 @@
 ; _____________________________________________________________________________/ }}}1
 
     ; indent marks will be inserted like so (not further):
+    ; ☇¦■■:■:■■:■■pups
     ; ☇¦■■:■:■■\■■: pups $ riba <$
     ; ☇¦■■:■:■■\■■pups
-    ; ☇¦■■:■:■■:■■pups
-    ; ☇¦■■:■:■■:
+    ; 
+    ; ☇¦■■:■:■■\: pups $ riba <$
+    ; ☇¦■■:■:■■\pups $ riba <$
+    ; ☇¦■■:■:■■:\■pups $ riba <$
+    ; ☇¦■■:■:■■:\pups $ riba <$
 
 ; [F] substeps ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
@@ -24,7 +28,9 @@
 
     (defn #^ StrictStr insert_indent_marks [#^ WyCodeLine line]
         ; requires rstrip to be already done to work correctly
-        (re_sub (sconcat r"^\s*(" $OMARKERS_REGEX r"\s+)*" $CMARKER_REGEX r"*\s*")
+        ;                                                  [------------------] last omarker is not required to have space before \
+        (re_sub (sconcat r"^\s*(" $OMARKERS_REGEX r"\s+)*" $OMARKERS_REGEX r"?" $CMARKER_REGEX r"*\s*")
+                ; group 0 is whole found string
                 (fm (re_sub r"\s" $INDENT_MARK (%1.group 0)))
                 line))
 

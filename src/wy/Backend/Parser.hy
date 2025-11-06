@@ -78,7 +78,7 @@
 
     (.setParseAction SEMIWORD (fm (semiword_to_token (get it 0))))
 
-    (.setParseAction ORPHANB  (fm (raise (WyParserError #* (pick [0 2 1] it) "Orphan opener hy-bracket found"))))
+    (.setParseAction ORPHANB  (fm (raise (WyParserError #* (pick [0 2 1] it) PBMsg.unmatched_opener))))
 
 ; _____________________________________________________________________________/ }}}1
 
@@ -99,6 +99,7 @@
 ; _____________________________________________________________________________/ }}}1
 ; [F] Split to lines :: [Token ...] -> [NTLine ...] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
+
     (defn [validateF] #^ (of List NTLine)
         tokens_to_NTLines
         [ #^ (of List Token) tokens
@@ -109,11 +110,32 @@
         (setv rowsEnds   (lsums rowsHs))
         (setv rowsStarts (lmapm (- %1 %2 -1) rowsEnds rowsHs))
         ;
-        (lmapm (NTLine :lineNs #(%2 %3 %4) :tokens %1)
-               _tlines
-               rowNs
-               rowsStarts
-               rowsEnds))
+        (setv ntlines
+              (lmapm (NTLine :lineNs #(%2 %3 %4) :tokens %1)
+                             _tlines
+                             rowNs
+                             rowsStarts
+                             rowsEnds))
+        (check_ntlines_for_parser_error ntlines) ; throws error when found
+        (return ntlines))
+
+
+    (defn [validateF] 
+        check_ntlines_for_parser_error
+        [ #^ (of List NTLine) ntlines
+        ]
+        "returns None when no errors found,
+         raises first error when encountered;
+         ;
+         used for discovering: unmatched closer, unmatched double-quote, unparsed unicode symbol
+         (on otherwise empty lines)"
+         (lmap 
+               (fm 
+                   (when (and (oflenQ 1 %1.tokens)
+                              (eq (. (first %1.tokens) tkind) TKind.Indent))
+                         (raise (WyParserError2 :ntline %1 :msg PBMsg.unmatched_closer))))
+               ntlines))
+        
 
     (defn [validateF] #^ (of List (of List Token))
         split_tokens_by_newline_tokens

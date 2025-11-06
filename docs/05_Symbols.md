@@ -65,7 +65,6 @@ One-liners use:
   - `:#:` to represent `) #(`
   - `C#C` to represent `} #{`
 
-Reader macros like `#rmacro` will be recognized just like normal words (i.e. literally as `#rmacro`).
 Space-less syntax like `#rmacro:` is not specially recognized by wy. Use `#rmacro :` or `#rmacro(` instead.
 
 <!-- __________________________________________________________________________/ }}}1 -->

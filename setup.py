@@ -2,7 +2,7 @@
 from setuptools                 import setup, find_packages
 from setuptools.command.install import install 
 
-proj_version = '0.4.5.dev1'
+proj_version = '0.4.5.dev2'
 
 libs_required = [
     'hy        >= 1',
@@ -10,9 +10,9 @@ libs_required = [
     'pyparsing >= 3', 
     'pydantic  >= 2', 
     'lenses    >= 1.2.0',
-    'funcy     >= 2.0',
-    'termcolor >= 3.0'
-    'ipython   >= 9.0'
+    'funcy     >= 2',
+    'termcolor >= 3',
+    'ipython   >= 9'
 ]
 
 # install class ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1

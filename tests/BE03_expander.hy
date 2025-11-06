@@ -1,6 +1,6 @@
 
-    (import  _fptk_local *)
-    (require _fptk_local *)
+    (import  wy.utils.fptk_local *)
+    (require wy.utils.fptk_local *)
 
 ; [F] testing machinery setup ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 

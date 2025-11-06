@@ -1,11 +1,13 @@
-"""Evaluate Wy code cells using %wy and %%wy magics."""
+"""Evaluate Wy code cells using %wy, %%wy, %wy_spy and %%wy_spy magics."""
 
 from __future__ import annotations
 
 from typing import Protocol
+
+import hy
 from .magic import WyMagics
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 class MagicsRegistry(Protocol):
     """Surrogate for InteractiveShell
@@ -16,6 +18,6 @@ class MagicsRegistry(Protocol):
     """
     def register_magics(self, cls: type) -> None: ...
 
-
 def load_ipython_extension(ipython: MagicsRegistry) -> None:
     ipython.register_magics(WyMagics)
+

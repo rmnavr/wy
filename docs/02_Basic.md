@@ -192,29 +192,53 @@ obey the same rules:
 
 # Elements that do not require continuator
 
-Several syntax elements (that are usually not head of s-expression) do not require continuator `\`
-(you can still place it, although not required):
+Several syntax elements (that can never be head of s-expression) do not require continuator `\`.
 - valid hy expressions (example: `#{"x" 3 "y" 4}`)
+  > anything starting with a valid hy bracket, mentioned in 
+  > [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
+  > is seen as valid hy expression in wy
 - all 4 kinds of strings: `"string"`, `f"string"`, `b"string"`, `r"string"`
-- valid hy numbers — anything starting with `±N` (examples: `-1.0E+7`, `0xFF`, `1_000E7`, `+2,000,000E-6+3J`)
-- keywords — anything starting with `:`, like `:x` (obviously excluding wy openers like `:`)
+- valid hy numbers (examples: `-1.0E+7`, `0xFF`, `1_000E7`, `+2,000,000E-6+3J`)
+  > anything starting with `digit` or `±digit` is seen as numbers in wy 
+- keywords like `:x` 
+  > anything starting with `:` and a symbol is seen as keyword in wy 
+  > (obviously excluding wy openers like `:L` and `:C`)
 - 4 sugar symbols: `#*` `#**` `#_` `#^`
-- hy macro-ed words — anything starting with `'`, `` ` ``, `~` or `~@` (obviously excluding wy openers like `~@L`)
-- reader macros — anything starting with `#` (obviously excluding wy openers like `#:`)
+- hy macro-ed words like `'x` and `~@x`
+  > anything starting with `'`, `` ` ``, `~` or `~@` and a symbol 
+  > is seen as hy macro-ed word in wy
+  > (obviously excluding wy openers like `~@L`)
+- reader macros like like `#macro`
+  > anything starting with `#` and a symbol is seen as reader macros in wy
+  > (obviously excluding wy openers like `#:`)
 
 ```hy
-func                |   (func
-    (+ x 3)         |       (+ x 3)   ; valid hy expression
-    f"string"       |       f"string" ; string
-    -1.0            |       -1.0      ; valid hy number
-    :z              |       :z        ; keyword
-    #**             |       #**       ; sugar symbol
-    'x              |       'x        ; hy macro-ed words
-    ~ y             |       ~ y)      ; hy macro and word
-                    |
-                    |   ; this is obviously incorrect hy code,
-                    |   ; but it shows how wy2hy works
+func          | (func
+    (+ x 3)   |     (+ x 3)   ; valid hy expression
+    f"string" |     f"string" ; string
+    -1.0      |     -1.0      ; valid hy number
+    :z        |     :z        ; keyword
+    #**       |     #**       ; sugar symbol
+    'x        |     'x        ; hy macro-ed words
+    ~ y       |     ~ y)      ; hy macro and word
+              |
+              | ; this is obviously incorrect hy code,
+              | ; but it shows how wy2hy works
 ```
+
+Notice that by these rules `NaN`, `Inf`, `True` and `False` are wrapped without continuator:
+
+```hy
+func          | (func
+    NaN       |     (NaN)
+    True      |     (True)
+   \NaN       |     NaN
+   \True      |     True)
+```
+
+Also be aware that:
+* you can still place continuator `\` before those elements, although not required
+* if for some strange reason you need to wrap for example number in expression, use wy opener: `: 1.0`
 
 <!-- __________________________________________________________________________/ }}}1 -->
 

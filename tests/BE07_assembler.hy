@@ -1,6 +1,6 @@
 
-    (import  _fptk_local *)
-    (require _fptk_local *)
+    (import  wy.utils.fptk_local *)
+    (require wy.utils.fptk_local *)
 
     (import wy.Backend.Assembler [ transpile_wy2hy :as w2h ])
 

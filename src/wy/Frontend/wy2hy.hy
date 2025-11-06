@@ -28,37 +28,38 @@
         "predefined message;
          and also preparators for msgs (see attrs starting with f_)"
         ;
-        (setv welcome  (clrz_b "=== wy2hy transpiler ==="))
-        (setv goodbuy  (clrz_b "========================")) 
-        (setv info     (sconcat   "\nwy2hy usage:"
-                             "\n\n  [-h] [-silent] [-stdout] file [file ...]"
-                             "\n\n  - files can be of *.wy and *.hy extensions only"
-                               "\n  - *.hy can only follow *.wy file"
-                               "\n  - only one file (which has to be *.wy) can be used for -stdout mode"))
+        (setv welcome      (clrz_b "=== wy2hy transpiler ==="))
+        (setv goodbuy      (clrz_b "========================")) 
+        (setv info         (sconcat "\nwy2hy usage:"
+                                  "\n\n  [-h] [-silent] [-stdout] file [file ...]"
+                                  "\n\n  - files can be of *.wy and *.hy extensions only"
+                                    "\n  - *.hy can only follow *.wy file"
+                                    "\n  - only one file (which has to be *.wy) can be used for -stdout mode"
+                                    "\n"))
         ;
-        (setv std_n_err   f"{$NOGO} ERROR: only one file (and which also should be of *.wy extension) should be used with -stdout mode")
-        (setv std_ext_err f"{$NOGO} ERROR: file extension should be *.wy")
-        (setv f_std_read  (fn [source_filename]
-                              (sconcat (clrz_r "[trnspl xx]")
-                                       " ERROR: cannot read "
-                                       (clrz_u source_filename)
-                                       " (file not available?)")))
-        (setv f_std_tr    (fn [source_filename]
-                              (sconcat (clrz_r "[trnspl xx]")
-                                       " ERROR: transpilation failed for "
-                                       (clrz_u source_filename))))
+        (setv std_n_err    f"{$NOGO} ERROR: only one file (and which also should be of *.wy extension) should be used with -stdout mode")
+        (setv std_ext_err  f"{$NOGO} ERROR: file extension should be *.wy")
+        (setv f_std_read   (fn [source_filename]
+                               (sconcat (clrz_r "[trnspl xx]")
+                                        " ERROR: cannot read "
+                                        (clrz_u source_filename)
+                                        " (file not available?)")))
+        (setv f_std_tr     (fn [source_filename]
+                               (sconcat (clrz_r "[trnspl xx]")
+                                        " ERROR: transpilation failed for "
+                                        (clrz_u source_filename))))
         ;
-        (setv pairs_ext   f"{$NOGO} ERROR: files can only be of *.wy or *.hy extension")
-        (setv pairs_1wy   f"{$NOGO} ERROR: first provided file should be of *.wy type")
-        (setv pairs_wyhy  f"{$NOGO} ERROR: *.hy file may only follow *.wy file")
+        (setv pairs_ext    f"{$NOGO} ERROR: files can only be of *.wy or *.hy extension")
+        (setv pairs_1wy    f"{$NOGO} ERROR: first provided file should be of *.wy type")
+        (setv pairs_wyhy   f"{$NOGO} ERROR: *.hy file may only follow *.wy file")
         ;
-        (setv trspl_read  f"{$TXX} Can't read source file (file not available?)")
-        (setv trspl_bad   f"{$TXX} Transpilation failed")
-        (setv trspl_write f"{$TXX} Cannot write to target file (file not available?)")
+        (setv trspl_read   f"{$TXX} Can't read source file (file not available?)")
+        (setv trspl_bad    f"{$TXX} Transpilation failed")
+        (setv trspl_write  f"{$TXX} Cannot write to target file (file not available?)")
         ;
-        (setv f_file1_ok  (fn [time_s] (sconcat (clrz_g "[trnspl ok]") f" transpiled in {time_s :.3f} s")))
-        (setv finale_good (clrz_g "All transpilations were successfull"))
-        (setv finale_bad  (clrz_r "Some transpilations failed"))
+        (setv f_file1_ok   (fn [time_s] (sconcat (clrz_g "[trnspl ok]") f" transpiled in {time_s :.3f} s")))
+        (setv finale_good  (clrz_g "All transpilations were successfull"))
+        (setv finale_bad   (clrz_r "Some transpilations failed"))
         )
 
 ; _____________________________________________________________________________/ }}}1
@@ -73,7 +74,7 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-; C: Classes ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [C] Classes ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defclass [] Wy2Hy_Args [BaseModel]
         (#^ (of List StrictStr) filenames)
@@ -100,7 +101,7 @@
         (defn __init__ [self #^ StrictNumber time #^ HyCode code] (-> (super) (.__init__ :time time :code code))))
 
 ; _____________________________________________________________________________/ }}}1
-; F: ErrorHandling helpers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [F] ErrorHandling helpers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn normal_exit
         [ #^ (of Optional str) [msg None]
@@ -121,7 +122,7 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-; F: Get user provided args ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [F] Get user provided args ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ Wy2Hy_Args get_args []
         ;
@@ -144,7 +145,7 @@
                             :stdout_mode _args.stdout)))
 
 ; _____________________________________________________________________________/ }}}1
-; F: /monadic/ decide on run mode ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [F] /monadic/ decide on run mode ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn [validateF] #^ (of Result RUN_MODE APP_ERROR)
         validate_args_and_decide_on_run_mode
@@ -169,7 +170,7 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-; F: /monadic/ Runner: stdout_mode ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [F] /monadic/ Runner: stdout_mode ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn [validateF] #^ (of Result HyCode APP_ERROR) 
         transpile_in_stdout_mode
@@ -189,7 +190,7 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-; F: Filename operations: utils ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [F] Filename operations: utils ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn [validateF] #^ FTYPE
         get_ft
@@ -209,7 +210,7 @@
         (return (sconcat root ".hy")))
 
 ; _____________________________________________________________________________/ }}}1
-; F: /monadic/ Filename operations: try generate pairs ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [F] /monadic/ Filename operations: try generate pairs ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn [validateF] #^ (of Result bool APP_ERROR)
         filenames_pairable_possibility
@@ -248,7 +249,7 @@
                splitted_by_wy))
 
 ; _____________________________________________________________________________/ }}}1
-; F: /monadic/ Runner: Transpile one wy-hy pair ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [F] /monadic/ Runner: Transpile one wy-hy pair ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
 
     (defn [validateF] #^ (of Result Transpiled APP_ERROR)
@@ -274,60 +275,92 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-; F: run wy2hy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [F] run wy2hy modes ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn unwrapEMsg [resultM] (. (unwrapE resultM) msg))
-    (defn unwrapTime [resultM] (. (unwrapR resultM) time))
+    ; helpers:
+    (defn unwrapEMsg [resultM] (. (unwrapE resultM) msg))  ; for run_mode_result/transpilation_result
+    (defn unwrapTime [resultM] (. (unwrapR resultM) time)) ; for transpilation_result
 
-    (defn run_wy2hy_script [* [dummy_args None]] 
+    (defn run_wy2hy_incorrect_mode
+        [ #^ (of Result RUN_MODE APP_ERROR) run_mode_result
+        ]
+        "de facto: called for incorrect files for stdout-mode"
+        (print :file sys.stderr PMsg.welcome)
+        (exit_with_error 1 (unwrapEMsg run_mode_result)))
+
+    (defn run_wy2hy_info_mode []
+        (print PMsg.welcome)
+        (normal_exit PMsg.info))
+
+    (defn run_wy2hy_stdout_mode
+        [ #^ (of List StrictStr) filenames
+        ]
+        (setv _resultSTD (transpile_in_stdout_mode (first filenames)))
+        (if (successQ _resultSTD)
+            (normal_exit (unwrapR _resultSTD) :closing_msg False)
+            (exit_with_error 1 (unwrapEMsg _resultSTD) :closing_msg False)))
+
+    (defn run_wy2hy_transpileN_mode
+        [ #^ (of List StrictStr) filenames
+          #^ bool                silent_mode
+        ]
+        (setv _pairs (generate_filenames_pairs filenames))
+        (setv _failedFiles [])
+        ; aim of variable soloFileMode:
+        ; when only 1 file is transpiled, do not print it as "1) f.wy -> f.hy", but just "f.wy -> f.hy" instead
+        (setv soloFileMode (oflenQ 1 _pairs)) 
+        ;
+        (unless silent_mode (print PMsg.welcome))
+        (lmap
+             (fm
+                 (do (unless silent_mode
+                             (setv prefix
+                                   (if soloFileMode
+                                       "\n"
+                                       (sconcat "\n" (str %2) ") ")))
+                             (print (sconcat prefix (clrz_source2target #* %1))))
+                     (setv _resultT1 (transpile_wy_file #* %1))
+                     (if (successQ _resultT1)
+                         (unless silent_mode
+                                 (print (PMsg.f_file1_ok (unwrapTime _resultT1))))
+                         (do (print (unwrapEMsg _resultT1)) ; prints NOT to stderr, yes
+                             (_failedFiles.append (first %1))))))
+             _pairs  ; of [wy -> hy] files
+             (inf_range 1)) 
+        (print "")
+        ;
+        (if (oflenQ 0 _failedFiles)
+            (if silent_mode
+                (normal_exit :closing_msg False)
+                (normal_exit (if soloFileMode None PMsg.finale_good)))
+            (exit_with_error 1 (if soloFileMode None PMsg.finale_bad)
+                             :closing_msg (not silent_mode))))
+
+; _____________________________________________________________________________/ }}}1
+; [F] run wy2hy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn run_wy2hy_script
+        [ *
+          #^ Wy2Hy_Args [dummy_args None]
+        ] 
         "dummy_args are only for testing"
         ;
-        (setv #^ Wy2Hy_Args wy2hy_args (if (noneQ dummy_args) (get_args) dummy_args))
+        (setv wy2hy_args
+              (if (noneQ dummy_args)
+                  (get_args)
+                  dummy_args))
         (setv run_mode_result (validate_args_and_decide_on_run_mode wy2hy_args))
-        ; run mode was set incorrectly (de facto: incorrect files for stdout-mode):
-        (when (failureQ run_mode_result)
-              (print :file sys.stderr PMsg.welcome)
-              (exit_with_error 1 (unwrapEMsg run_mode_result)))
-        ; 
-        (setv run_mode   (unwrapR run_mode_result)) 
-        (setv _filenames (. wy2hy_args filenames))
-        (setv _m_silent  (. wy2hy_args silent_mode))
-        ; MODE: info
-        (when (eq run_mode RUN_MODE.INFO)
-              (print PMsg.welcome)
-              (normal_exit PMsg.info))
-        ; MODE: run 1 file in stdout:
-        (when (eq run_mode RUN_MODE.STDOUT_1)
-              (setv _resultSTD (transpile_in_stdout_mode (first _filenames)))
-              (if (successQ _resultSTD)
-                  (normal_exit (unwrapR _resultSTD) :closing_msg False)
-                  (exit_with_error 1 (unwrapEMsg _resultSTD) :closing_msg False)))
-        ; MODE: transpile 1+ files
-        (when (eq run_mode RUN_MODE.TRANSPILE_N) ; at this stage filenames are guaranteed to be pairable
-              (setv _pairs (generate_filenames_pairs _filenames))
-              (setv _failedFiles [])
-              ;
-              (unless _m_silent (print PMsg.welcome))
-              (lmap
-                   (fm
-                       (do (unless _m_silent
-                                   (print (sconcat "\n" (str %2) ") " (clrz_source2target #* %1))))
-                           (setv _resultT1 (transpile_wy_file #* %1))
-                           (if (successQ _resultT1)
-                               (unless _m_silent
-                                       (print (PMsg.f_file1_ok (unwrapTime _resultT1))))
-                               (do (print (unwrapEMsg _resultT1)) ; prints NOT to stderr, yes
-                                   (_failedFiles.append (first %1))))))
-                   _pairs  ; of [wy -> hy] files
-                   (inf_range 1)) 
-              ;
-              (print "")
-              ;
-              (if (oflenQ 0 _failedFiles)
-                  (if _m_silent
-                      (normal_exit :closing_msg False)
-                      (normal_exit PMsg.finale_good))
-                  (exit_with_error 1 PMsg.finale_bad :closing_msg (not _m_silent)))))
+        ;
+        (if (failureQ run_mode_result)
+            (run_wy2hy_incorrect_mode run_mode_result)
+            ;
+            (do (setv run_mode   (unwrapR run_mode_result)) 
+                (setv _filenames wy2hy_args.filenames)
+                (setv _m_silent  wy2hy_args.silent_mode)
+                ;
+                (cond (eq run_mode RUN_MODE.INFO)        (run_wy2hy_info_mode)
+                      (eq run_mode RUN_MODE.STDOUT_1)    (run_wy2hy_stdout_mode     _filenames)
+                      (eq run_mode RUN_MODE.TRANSPILE_N) (run_wy2hy_transpileN_mode _filenames _m_silent))))) ; at this stage filenames are guaranteed to be pairable
 
 ; _____________________________________________________________________________/ }}}1
 

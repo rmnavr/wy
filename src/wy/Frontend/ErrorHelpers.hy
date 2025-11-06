@@ -12,19 +12,25 @@
 
 ; _____________________________________________________________________________/ }}}1
 
+; [C] PrettyTEMsg ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
     (defclass [] PrettyTEMsg [BaseModel]
         "Pretty Transpilation Error Message.
-         This is essentially str synonim, but differentiated by pydantic."
+         This is essentially str synonim, but differentiated from pure str
+         (this is used in Result monad subtypes of run_wy2hy_transpilation)"
         (#^ StrictStr msg)
         (defn __init__ [self m] (-> (super) (.__init__ :msg m))))
 
-; helpers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; _____________________________________________________________________________/ }}}1
+
+; helper: pretty extract codeline ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ str
         extract_codeline_with_neighbours
-        [ #^ WyCode    code
-          #^ StrictInt lineN ] ; in 1-based index due to wy line-count logic
-        (setv lineN0 (dec lineN))
+        [ #^ WyCode                  code
+          #^ StrictInt               lineN1         ; in 1-based index due to wy line-count logic
+          #^ (of Optional StrictInt) [lineN2 None]] ; in 1-based index due to wy line-count logic
+        (setv lineN0 (dec lineN1))
         (setv lines  (code.split "\n"))
         ;
         (setv digitsN (len (str (len lines))))
@@ -42,15 +48,45 @@
                   :sep "\n"))
 
 ; _____________________________________________________________________________/ }}}1
-; pretty-process Wy errors :: Code -> Error => str ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; helper: preparedcode charpos to lineN ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn #^ (of Optional StrictInt)
+        charpos_to_lineN
+        [ #^ StrictInt char_pos ; 0-based index
+          #^ StrictStr text
+        ]
+        "returned lineN is given in 1-based index"
+        (setv newline_positions
+              (lfor [&i &ch] (enumerate text)
+                    :if (eq &ch "\n")
+                    &i))
+        (setv breaks [0 #* newline_positions (-> text len dec)])
+        (for [[&i [&a &b]] (enumerate (pairwise breaks))]
+              (when (and (>= char_pos &a) (<= char_pos &b))
+                    (return (inc &i))))
+        (return None))
+
+    (defn #^ (of Optional StrictInt)
+        preparedcode_charpos_to_orig_lineN
+        [ #^ StrictInt char_pos ; 0-based index
+          #^ WyCode    code     ; yes, WyCode is used to calc PreparedCode positions
+         ]
+         (setv lines (code.split "\n"))
+         (setv semiprep_lines (lmap (partial sconcat $NEWLINE_MARK) lines))
+         (setv semiprep_code  (str_join semiprep_lines :sep "\n"))
+         (return (charpos_to_lineN char_pos semiprep_code)))
+
+; _____________________________________________________________________________/ }}}1
+; pretty-process Wy errors :: Code -> Error => PrettyTEMsg ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn #^ PrettyTEMsg
         prettify_WyError
         [ #^ WyCode        code
           #^ WyParserError e
         ]
-        (cond (oftypeQ WyParserError e)    (PrettyTEMsg (str_prepare_ParserError    code e))
-              (oftypeQ WyExpanderError e)  (PrettyTEMsg (str_prepare_ExpanderError  code e))
+        (cond (oftypeQ WyParserError    e) (PrettyTEMsg (str_prepare_ParserError    code e))
+              (oftypeQ WyParserError2   e) (PrettyTEMsg (str_prepare_ParserError2   code e))
+              (oftypeQ WyExpanderError  e) (PrettyTEMsg (str_prepare_ExpanderError  code e))
               (oftypeQ WyBracketerError e) (PrettyTEMsg (str_prepare_BracketerError code e))
               ; if non Wy-error types were provided:
               True                         f"Unexpected error:\n{e}"))
@@ -60,11 +96,28 @@
         [ #^ WyCode        code
           #^ WyParserError e
         ]
-        ; todo: convert positions to actual line JFK
-        (setv l1 (clrz_r f"Parser error at position {e.startpos}-{e.endpos}:"))
-        (setv l2 f"{e.msg}: {e.char}")
+        ; since e.startpos and e.endpos are given on PreparedCode rather than on WyCode,
+        ; positioning have to be readjusted — it is done here
+        (setv lineN (preparedcode_charpos_to_orig_lineN e.startpos code)) ; removes ■ and ☇¦
         ;
-        (sconcat l1 " " l2))
+        (setv l1 (clrz_r f"Parser error at line {lineN}: {e.msg}"))
+        (setv l2 (extract_codeline_with_neighbours code lineN))
+        (sconcat l1 "\n" l2))
+
+    (defn #^ str
+        str_prepare_ParserError2
+        [ #^ WyCode         code
+          #^ WyParserError2 e
+        ]
+        (setv lineN1 (second e.ntline.lineNs))
+        (setv lineN2 (third  e.ntline.lineNs))
+        (if (eq lineN1 lineN2)
+            (setv lineNstr f"line {lineN1}")
+            (setv lineNstr f"lines {lineN1}-{lineN2}"))
+        ;
+        (setv l1 (sconcat (clrz_r f"Parser error at {lineNstr}:\n") f"{e.msg}"))
+        (setv l2 (extract_codeline_with_neighbours code lineN1))
+        (sconcat l1 "\n" l2))
 
     (defn #^ str
         str_prepare_ExpanderError
@@ -107,6 +160,7 @@
          Never raises"
         (try (setv _trnsplR (Success (transpile_wy2hy code)))
              (except [e [ WyParserError
+                          WyParserError2
                           WyExpanderError
                           WyBracketerError]]
                      (setv _trnsplR (Failure (prettify_WyError code e))))

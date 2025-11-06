@@ -1,8 +1,8 @@
 
-    (import  _fptk_local *)
-    (require _fptk_local *)
+    (import  wy.utils.fptk_local *)
+    (require wy.utils.fptk_local *)
 
-    (import wy.Frontend.ErrorHelpers [run_wy2hy_transpilation])
+    (import wy.Frontend.ErrorHelpers [run_wy2hy_transpilation transpile_wy2hy])
 
     (import termcolor [colored :as clrz])
 
@@ -16,7 +16,8 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    (run_err_test "should be Parser error:" "(")
-    (run_err_test "should be Indent error:" "   y\n :\\z")
-    (run_err_test "should be Syntax error:" "x \\ : z")
+    (run_err_test "should be Parser error" "(")
+    (run_err_test "should be Parser error2" "\n\"\n\n\"\n   ) ololo") ; only 4-5 lines in error, wtf?
+    (run_err_test "should be Indent error" "   y\n :\\z")
+    (run_err_test "should be Syntax error" "x \\ : z")
 

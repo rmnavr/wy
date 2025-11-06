@@ -1,6 +1,6 @@
 
-    (import  _fptk_local *)
-    (require _fptk_local *)
+    (import  wy.utils.fptk_local *)
+    (require wy.utils.fptk_local *)
 
     (import wy.Backend.Classes *)
     (import wy.Backend.Preparator [wycode_to_prepared_code  :as w2pc])
@@ -107,10 +107,14 @@
     (check_pkinds random_str1 random_str_result)
 
 ; _____________________________________________________________________________/ }}}1
-; orphan brackets ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; unmatched opener brackets ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (assertm gives_error_typeQ (wy2tokens "#( smth") WyParserError)
+    (assertm gives_error_typeQ (wy2tokens "#( smth")    WyParserError)
     (assertm gives_error_typeQ (wy2tokens "\n \n ~@#[") WyParserError)
+
+    (assertm gives_error_typeQ (wy2ntls " \"") WyParserError2)
+    (assertm gives_error_typeQ (wy2ntls " )" ) WyParserError2)
+    (assertm gives_error_typeQ (wy2ntls " •" ) WyParserError2)
 
 ; _____________________________________________________________________________/ }}}1
 

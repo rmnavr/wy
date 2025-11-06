@@ -106,12 +106,14 @@
         (setv outp "")
         (try (setv outp (print_wy2hy_steps_with_raise code))
              (except [e [ WyParserError
+                          WyParserError2
                           WyExpanderError
-                          WyBracketerError]]
-                     (print (prettify_WyError code e)))
+                          WyBracketerError ]]
+                     (setv PTEMsg (prettify_WyError code e))
+                     (print PTEMsg.msg))
              (except [e Exception]
                      (print "Unexpected error:")
-                     (raise e)))
+                     (raise e))) ; unlike run_wy2hy_transpilation, here Unexpected error is raised instead of returns as Failure
         (return outp))
 
 ; _____________________________________________________________________________/ }}}1
@@ -128,8 +130,15 @@
 
 ; _____________________________________________________________________________/ }}}1
 
+    (setv $TEST "
+    f :x y
+      1
+        2
+          3
+      1
+    ")
+
     (when  (= __name__ "__main__")
-        (print_wy2hy_steps ""
-                           :pretty_errors True)
-    )
+        (print_wy2hy_steps $TEST
+                           :pretty_errors True))
 

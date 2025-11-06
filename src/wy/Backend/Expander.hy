@@ -77,28 +77,28 @@
         (when (oflenQ 1 _tokens)
               (if (eq_any (. (first _tokens) tkind)
                           [TKind.CMarker TKind.AMarker TKind.RMarker TKind.JMarker])
-                  (raise (WyExpanderError :ntline ntline :msg f"solo {(. (first _tokens) atom)} on one line is not allowed"))
+                  (raise (WyExpanderError :ntline ntline :msg (PBMsg.f_bad_solo (. (first _tokens) atom))))
                   (return None)))
         ; forbid lines starting with [$ <$ ,]
         (when (eq_any (. (first _tokens) tkind) [TKind.AMarker TKind.RMarker TKind.JMarker])
-              (raise (WyExpanderError :ntline ntline :msg f"line cannot start with {(. (first _tokens) atom)}")))
+              (raise (WyExpanderError :ntline ntline :msg (PBMsg.f_bad_start (. (first _tokens) atom)) )))
         ; forbid lines ending with [\ $ ,]
         (when (eq_any (. (last _tokens) tkind) [TKind.CMarker TKind.AMarker TKind.JMarker])
-              (raise (WyExpanderError :ntline ntline :msg f"line cannot end with {(. (last _tokens) atom)}")))
+              (raise (WyExpanderError :ntline ntline :msg (PBMsg.f_bad_start (. (last _tokens) atom)))))
         ;
         (for [[&fst &snd] (pairwise _tokens)]
              ; forbid [\ $ ,] before [$ <$ ,]
              (when (and (eq_any &fst.tkind [TKind.CMarker TKind.AMarker TKind.JMarker])
                         (eq_any &snd.tkind [TKind.AMarker TKind.RMarker TKind.JMarker]))
-                   (raise (WyExpanderError :ntline ntline :msg f"{&fst.atom} cannot be followed by {&snd.atom}")))
+                   (raise (WyExpanderError :ntline ntline :msg (PBMsg.f_bad_2 &fst.atom &snd.atom))))
              ; forbid <$ before [$ ,] 
              (when (and (eq &fst.tkind TKind.RMarker)
                         (eq_any &snd.tkind [TKind.AMarker TKind.JMarker]))
-                   (raise (WyExpanderError :ntline ntline :msg f"{&fst.atom} cannot be followed by {&snd.atom}")))
+                   (raise (WyExpanderError :ntline ntline :msg (PBMsg.f_bad_2 &fst.atom &snd.atom))))
              ; forbid \ after anything except [SMARKER $ <$ ,]
              (when (and (eq &snd.tkind TKind.CMarker)
                         (fnot eq_any &fst.tkind [TKind.SMarker TKind.AMarker TKind.RMarker TKind.JMarker]))
-                   (raise (WyExpanderError :ntline ntline :msg f"\\ after {&fst.atom} is forbidden here"))))
+                   (raise (WyExpanderError :ntline ntline :msg (PBMsg.f_bad_cont &fst.atom)))))
         ;
         (return None))
 

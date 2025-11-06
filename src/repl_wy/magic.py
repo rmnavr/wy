@@ -27,7 +27,7 @@ class WyMagics(Magics):
         cell: str | None = None,
         local_ns: Mapping[str, object] | None = None,
     ) -> object:
-        """Magic to execute Hy code within a Python kernel."""
+        """Magic to execute Wy code within a Python kernel."""
         ipython = get_ipython()
         if ipython is None:
             # The last element of `In`, i.e. the just-executed cell
@@ -42,7 +42,7 @@ class WyMagics(Magics):
 
         transpilationResult = run_wy2hy_transpilation(code)
         if failureQ(transpilationResult):
-            print("wy -> hy transpilation failed:")
+            print("wy -> hy transpilation failed:\n")
             print(unwrapE(transpilationResult).msg)
             return None
         else:
@@ -61,7 +61,7 @@ class WyMagics(Magics):
         cell: str | None = None,
         local_ns: Mapping[str, object] | None = None,
     ) -> object:
-        """Magic to execute Hy code within a Python kernel."""
+        """Magic to execute Wy code within a Python kernel."""
         ipython = get_ipython()
         if ipython is None:
             # The last element of `In`, i.e. the just-executed cell
@@ -76,7 +76,7 @@ class WyMagics(Magics):
 
         transpilationResult = run_wy2hy_transpilation(code)
         if failureQ(transpilationResult):
-            print("wy -> hy transpilation failed:")
+            print("wy -> hy transpilation failed:\n")
             print(unwrapE(transpilationResult).msg)
             return None
         hycode = unwrapR(transpilationResult)

@@ -10,11 +10,18 @@
     $ $
 
     ; Should print Indent error
-    x
        y
      z
 
     ; Should print Parser error
+    "
+
+    "
     3 (
+    3 (
+
+    ; hmmm
+    )
+    )
 
 
