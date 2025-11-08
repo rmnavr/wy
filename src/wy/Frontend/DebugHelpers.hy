@@ -133,13 +133,8 @@
 
     (setv $TEST (read_file "E:/00_Vault/SynchW/04 Opensource/Hy/wy/tests/FE03_REPL.wy"))
     (setv $TEST
-    "
-     \"riba\ngus\" $ y
-
-
-    "
-
-        )
+    " \"riba\ngus\" $ y
+    ")
 
     (when  (= __name__ "__main__")
         (print_wy2hy_steps $TEST
