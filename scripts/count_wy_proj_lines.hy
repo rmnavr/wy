@@ -19,8 +19,8 @@
     (defn print_group
         [ #^ str groupname
           #^ (of List str) filenames]
-        (setv total (sum (lmap count_file_lines filenames ))
-        );
+        (setv total (sum (lmap count_file_lines filenames )))
+        ;
         (print (sconcat groupname " (" (str total) "):"))
         (lprint
             (lmap (partial construct_lineN_string (max (map len filenames)))
@@ -69,8 +69,6 @@
           "../tests/FE02_CLI.hy"
           "../tests/FE03_REPL.wy"])
 
-
-
 ; _____________________________________________________________________________/ }}}1
 
     (setv groups ["Docs" "Backend" "Frontend" "Tests"])
@@ -82,5 +80,3 @@
 
     (print "----------------------\nTotal:"
           (sum (lmap count_file_lines (flatten filenames ))))
-
-          (print (str_join [] :sep "1"))

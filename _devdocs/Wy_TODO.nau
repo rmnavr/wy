@@ -1,15 +1,14 @@
 
 	Solve:
-		+ forbid indent after $ <$ ,
-        ? forbid incorrect placement of DMARKERs (at least some of it)
+        ? forbid incorrect placement of DMARKERs (at least: solo/last/start)
 		- bracketed strings in macros (code + doc)
 		+ replace ■ and ☇¦ with rarerer symbols, mention in doc
 		+ prettify output:
-		  - pass )); to line where they belong (maybe even overwrite user hy-expressions)
+		  - space before comments
 		  - ( ( (x))) remove spaces
 
 	wy2hy:
-		+ stdout/stderr
+		+ stdout/stderr (check as in subprocess ALL_BE_tests calls)
 
     Tests:
         + better test coverage and structure (as early as possible)

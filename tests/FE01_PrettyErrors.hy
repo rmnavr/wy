@@ -23,6 +23,7 @@
     (run_err_test "Unmatched quota"     " \"") 
 
     (run_err_test "Incorrect cont pos"  "1 \\ 2\nololo ; smth")
+    (run_err_test "Incorrect one-liner" "ololo ,")
     (run_err_test "Incorrect one-liner" "$ $\nololo")
     (run_err_test "Deconstructor"       "1\n;\n 2")
     (run_err_test "Deconstructor"       "\n\n1\n \"\nsss\n\" 2")

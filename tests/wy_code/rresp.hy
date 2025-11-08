@@ -48,12 +48,12 @@
 
     (defclass [dataclass] DFH_Raw []; DF_Headers
         "headers of Raw extracted table for one entry"
-        (setv F "Freq"
-        );
+        (setv F "Freq")
+        ;
         (setv XT "tr: X")
         (setv YT "tr: Y")
-        (setv ZT "tr: Z"
-        );
+        (setv ZT "tr: Z")
+        ;
         (setv XR "rot: X")
         (setv YR "rot: Y")
         (setv ZR "rot: Z"))
@@ -70,8 +70,8 @@
     (defclass [dataclass] DFH_PData []
         "headers of table for plotting (Plot Data)"
         (setv f "freq")
-        (setv val "value"
-        );
+        (setv val "value")
+        ;
         (setv name "series name")
         (setv color "series color"); p9
         (setv linetype "linetype"); p9
@@ -90,8 +90,8 @@
         ( #^ str series_name)
         ( #^ OUTP_TYPE outp_type)
         ( #^ OUTP_AXIS outp_axis)
-        ( #^ int point_ID
-        );
+        ( #^ int point_ID)
+        ;
         ( #^ str color); p9
         ( #^ str linetype); p9
         ( #^ float alpha)); 0..1
@@ -111,8 +111,8 @@
         (setv psdf_factor (squared 9800))
         (setv psdf_postfix " (psdf)")
         (setv psdf_linetype "solid"); p9
-        (setv psdf_alpha 1.0; 0 .. 1
-        );
+        (setv psdf_alpha 1.0); 0 .. 1
+        ;
         (setv crms_factor 9800)
         (setv crms_postfix " (crms)")
         (setv crms_linetype "dotted"); p9
@@ -199,8 +199,8 @@
         values_table_to_rawDF
         [ #^ str vtable]
         (setv found (re_all $VALUES_ENTRY_PARTS vtable))
-        (setv _schema [DFH_Raw.F DFH_Raw.XT DFH_Raw.YT DFH_Raw.ZT DFH_Raw.XR DFH_Raw.YR DFH_Raw.ZR]
-        );
+        (setv _schema [DFH_Raw.F DFH_Raw.XT DFH_Raw.YT DFH_Raw.ZT DFH_Raw.XR DFH_Raw.YR DFH_Raw.ZR])
+        ;
         (. (pl.DataFrame found :schema _schema :orient "row")
             (with_columns (. (pl.col _schema) (cast pl.Float64)))))
 
@@ -218,12 +218,12 @@
             (lmapm
                 [ it; PCH_Card
                    (fltr1st (partial pch_card_matches_eentryQ it) entries)]; EEntry
-                pcards
-        ));
+                pcards))
+        ;
         (setv non_matched (lfilterm (noneQ (second it)) pairs))
         (when (fnot zerolenQ non_matched)
-               (raise (PCHFindingError (lpluck 0 non_matched))
-        ));
+               (raise (PCHFindingError (lpluck 0 non_matched))))
+        ;
         (setv dfs (lmapm (pch_card_to_df (first it) (second it)) pairs))
         (return (pl.concat dfs)))
 
@@ -327,25 +327,25 @@
         (print (clrz ["light_yellow"] "=== Random Resp Plotter ==="))
         (try (setv _content (read_file filename ))
               (except [e Exception] (exit_app 1 e "read file failed"))
-              (else (print_success (sconcat (clrz ["yellow"] filename) " content was read successfully" ))
-        )); parse all entries in pch file:
+              (else (print_success (sconcat (clrz ["yellow"] filename) " content was read successfully" ))))
+        ; parse all entries in pch file:
         (try (setv _entries (find_all_entries _content ))
               (except [e Exception] (exit_app 1 e "*.pch parsing failed"))
-              (else (print_success (sconcat "found " (str (len _entries)) " entries" ))
-        )); build pch_cards from user_cards:
+              (else (print_success (sconcat "found " (str (len _entries)) " entries" ))))
+        ; build pch_cards from user_cards:
         (try (setv _pch_cards (build_both_crms_and_psdf_cards $USER_CARDS ))
               (except [e ] (exit_app 1 e "error converting user cards to pch cards"))
               (except [e Exception] (exit_app 1 e "error converting user cards to pch cards"))
-              (else (print_success (sconcat "constructed " (str (len _pch_cards)) " pch_cards from " (str (len $USER_CARDS)) " user cards" ))
-        )); prepare df for plot:
+              (else (print_success (sconcat "constructed " (str (len _pch_cards)) " pch_cards from " (str (len $USER_CARDS)) " user cards" ))))
+        ; prepare df for plot:
         (try (setv _df (pdataDF_from_pch_cards _pch_cards _entries ))
               (except [e PCHFindingError]
                      (print $XX "following pch_cards were not found:")
                      (lprint (lmap pch_card_to_oneliner e.non_found_pch_cards))
                      (sys.exit 1))
               (except [e Exception] (exit_app 1 e "error finding pch_cards in found entries"))
-              (else (print_success "all pch_cards successfully found in parsed entries")
-        )); build_plot
+              (else (print_success "all pch_cards successfully found in parsed entries")))
+        ; build_plot
         (try (setv _plot (build_plot _df ))
               (except [e Exception] (exit_app 1 e "error constructing plot"))
               (else (print_success "plot constructed")))
@@ -363,8 +363,8 @@
         [
           (UCard $Y $ZT 3000001 "Engine" "red")
           (UCard $Y $ZT 3000002 "Engine" "green")
-          (UCard $Y $ZT 3000003 "Engine" "blue"
-          );
+          (UCard $Y $ZT 3000003 "Engine" "blue")
+          ;
           (UCard $X $XT 6660666 "Ground" "grey")])
 
 

@@ -20,7 +20,7 @@
         (setv result
               (subprocess.run command
                               :shell          True
-                              :check          True
+                              :check          False ; do not raise error on exit status ≠ 0
                               :text           True
                               :capture_output True))
         (when printQ
@@ -56,3 +56,4 @@
     (->> $WY_FILES
          (lmap construct_wy_cmd)
          (lmap run_shell_command))
+

@@ -151,7 +151,7 @@
         count_n_of_rows_that_tline_takes
         [#^ (of List Token) tokens]
         (->> tokens
-             (filterm (eq it.pkind PKind.QSTRING))
+             (filterm (eq_any it.pkind [PKind.QSTRING PKind.HYEXPR]))
              (mapm (len (re.findall "\n" %1.atom)))
              sum
              (plus 1)))

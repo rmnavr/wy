@@ -131,13 +131,11 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    (setv $TEST "
-  riba
-    gus
-     svin ; gus
-     ")
+    (setv $TEST (read_file "E:/00_Vault/SynchW/04 Opensource/Hy/wy/tests/FE03_REPL.wy"))
 
     (when  (= __name__ "__main__")
         (print_wy2hy_steps $TEST
-                           :pretty_errors True))
+                           :pretty_errors False))
+
+
 

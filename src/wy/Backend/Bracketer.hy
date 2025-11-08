@@ -229,15 +229,42 @@
 
 ; _____________________________________________________________________________/ }}}1
 
+; [F] pass closers through comments ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+      ; without this function, see example of where last closers would be placed
+      ; (which is correct, but ugly)
+      ; 
+      ; (riba
+      ;   (gus
+      ;    (svin
+      ; ;cmnt
+      ; ;cmnt
+      ; )));
+
+
+     (defn #^ (of List BLine) 
+         pass_closers_through_comments
+         [ #^ (of List BLine) blines
+         ]
+         (setv rblines (lreversed blines)) ; rblines will be MUTATED
+         (for [[&i [&rbl1 &rbl2]] (enumerate (pairwise rblines))]
+              (when (and (eq &rbl2.ndline.kind SKind.OnlyOComment))
+                    (setv _passed_closers &rbl1.prev_closers)
+                    (setv (. rblines [&i] prev_closers) [])
+                    (setv (. rblines [(inc &i)] prev_closers)
+                          (lconcat (. rblines [(inc &i)] prev_closers) _passed_closers))))
+         (return (lreversed rblines)))
+
+; _____________________________________________________________________________/ }}}1
 
 ; [F] assm ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (setv $LINE0INFO (NDLineInfo :indents      [0]
                                  :brckt_stack  []
                                  :kind         SKind.EmptyLine)) 
-    
+
     (defn #^ (of List BLine)
-        bracktify_ndlines
+        run_bracketer_processor
         [ #^ (of List NDLine) ndlines
         ]
         (setv _result [])
@@ -258,29 +285,16 @@
             (setv _cur_card (first step_result))
             (_result.append (second step_result)))
         (return _result))
-
-; _____________________________________________________________________________/ }}}1
-
-; [F] pass closers through comments ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-      ; (riba
-      ;   (gus
-      ;    (svin
-      ; ;
-      ; ;•■
-      ; )));
-
-
-    (defn #^ (of List BLine) 
-        pass_closers_through_comments
-        [ #^ (of List BLine) blines
+    
+    (defn #^ (of List BLine)
+        bracktify_ndlines
+        [ #^ (of List NDLine) ndlines
         ]
-        (setv rblines (lreversed blines))
-        (for [[&i &rbl] (enumerate rblines)]
-             (if &rbl)
-             )
-        )
+        (-> ndlines
+            run_bracketer_processor
+            pass_closers_through_comments))
 
 ; _____________________________________________________________________________/ }}}1
+
 
 

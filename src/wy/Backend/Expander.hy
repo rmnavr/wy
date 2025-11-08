@@ -84,7 +84,7 @@
               (raise (WyExpanderError :ntline ntline :msg (PBMsg.f_bad_start (. (first _tokens) atom)) )))
         ; forbid lines ending with [\ $ ,]
         (when (eq_any (. (last _tokens) tkind) [TKind.CMarker TKind.AMarker TKind.JMarker])
-              (raise (WyExpanderError :ntline ntline :msg (PBMsg.f_bad_start (. (last _tokens) atom)))))
+              (raise (WyExpanderError :ntline ntline :msg (PBMsg.f_bad_end (. (last _tokens) atom)))))
         ;
         (for [[&fst &snd] (pairwise _tokens)]
              ; forbid [\ $ ,] before [$ <$ ,]
@@ -119,13 +119,13 @@
     ;           |     z ; indents length: see guaranteed_excessive_len_of_line and $A_INDENT_LEN
 
     ; RMARKERS:
-    ; L Monad x <$ 3 <$ 4 | L
-    ;   5                 |   :
-    ;                     |     :
-    ;                     |       Monad x   ; indents lengths?
-    ;                     |       3
-    ;                     |     4
-    ;                     |   5
+    ; f <$ x <$ y         | : : f
+    ;                     |     x
+    ;                     |   y  
+    ;
+    ;\f <$\x <$\y         | : :\f
+    ;                     |    \x
+    ;                     |  \y  
 
 ; _____________________________________________________________________________/ }}}1
 
@@ -300,17 +300,29 @@
                       :merge_border False))
 
     (defn [validateF] #^ (of List Token)
-        prepend_rmarker_opener
+        prepend_rmarker_openers
         [ #^ (of List Token) tokens
+          #^ StrictInt       n
         ]
-        "['■■■','riba'] -> ['■■■', ':', '■', 'riba']"
-        (setv token1 (first tokens))
-        (if (= token1.tkind TKind.Indent)
-            (lconcat [token1]
-                     [(Token ":" PKind.OMARKER TKind.SMarker) (indent_token 1)]
-                     (drop 1 tokens))
-            (lconcat [(Token ":" PKind.OMARKER TKind.SMarker) (indent_token 1)]
-                     tokens)))
+        " 
+        | ⎤  f      < this input        ; ⎤ is continuator in this notation
+        |   ⎤f      < or this input
+        |    : :⎤f  < produce this output
+        |
+        |  f    < this input
+        |  : f  < produces this output
+        "
+        (setv [ind1 cont ind2] (first_indent_profile tokens)) ; n 0/1 n
+        ; tokens with profile tokens dropped:
+        (setv main_tokens (list (dropwhile (fm (or (= it.tkind TKind.Indent)
+                                                   (= it.tkind TKind.CMarker)))
+                                           tokens)))
+        (lconcat [(indent_token (plus ind1 cont ind2))]
+                 (lmul [(Token ":" PKind.OMARKER TKind.SMarker) (indent_token 1)]
+                       (minus n cont))
+                 (lmul [(Token ":" PKind.OMARKER TKind.SMarker) t_cmarker]
+                       cont)
+                 main_tokens))
 
 ; _____________________________________________________________________________/ }}}1
 ; [F] expand rmarkers :: NTLine -> [NTLine ...] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -330,13 +342,13 @@
         [ #^ (of List Token) tokens
         ]
         "|this line:
-         | ⎤  f <$ ⎤ x <$ y
+         |■⎤■■f <$ ⎤ x <$ y
          |
          |will be transpiled to this:
          |            ; ⎤ is continuator in this notation
-         |■:■:■⎤■■f   ; _head_line
-         |■■■■■■■⎤x   ; _expd_line1 (expanded)
-         |■■■4        ; _expd_line2
+         |■■■■:■:■⎤f  ; _head_line
+         |■■■■■■■■⎤x  ; _expd_line1 (expanded)
+         |■■■■■■4     ; _expd_line2
         "
         (unless (in t_rmarker tokens) (return [tokens]))
         ;
@@ -344,24 +356,22 @@
         ;
         (setv _head_line  (first _chunks))
         (setv _expd_lines (drop 1 _chunks))
-        (setv _head_line_updated (apply_n (len _expd_lines) prepend_rmarker_opener _head_line))
+        (setv _head_line_updated
+            (prepend_rmarker_openers _head_line (len _expd_lines)))
         ;
         ; building indents for expd lines:
-        (setv indent_profile (first_indent_profile _head_line)) ; notice: here is head_line, not head_line_updated
-        (setv _i1    (sum indent_profile))
-        (setv _iRest (lrepeat (first indent_profile)
-                              (dec (len _expd_lines))))
-        (setv _indents (lmapm (+ (double %1) %2)
-                              (lreversed (range_ 1 (len _expd_lines)))
-                              (lconcat [_i1] _iRest)))
+        (setv indent_profile (first_indent_profile _head_line)) 
+        (setv _nPre  (sum indent_profile))
+        (setv _indents (lmapm (plus _nPre (double it))
+                              (lreversed (range_ 1 (len _expd_lines)))))
         ;
         (setv _expd_lines_updated
-              (lmapm (lconcat [(indent_token (+ (toLeft_when_cmarker_1st %1) %2))]
+              (lmapm (lconcat [(indent_token (+ (minus1_when_cmarker_1st %1) %2))]
                               %1)
                      _expd_lines
                      _indents))
         ;
-        (setv _expd_lines_updated                   ; [QUICK_SOLUTION] because case "x <$" and such generate lines consisting only of indent
+        (setv _expd_lines_updated                   ; [HACK_REV] because case "x <$" and such generate lines consisting only of indent
               (lreject (fm (and (oflenQ 1 it)
                                 (= (. (first it) tkind) TKind.Indent)))
                        _expd_lines_updated))       
@@ -369,9 +379,9 @@
         (return (lconcat [_head_line_updated] _expd_lines_updated)))
 
     (defn [validateF] #^ StrictInt
-        toLeft_when_cmarker_1st
+        minus1_when_cmarker_1st
         [#^ (of List Token) tokens]
-        (when (zerolenQ tokens) (return 0))         ; [QUICK_SOLUTION] case of "x <$" and such (empty arg after <$)
+        (when (zerolenQ tokens) (return 0))         ; [HACK_REV] case of "x <$" and such (empty arg after <$)
         (if (= (. (first tokens) tkind) TKind.CMarker)
             -1
              0))
