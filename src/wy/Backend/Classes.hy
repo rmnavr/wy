@@ -264,8 +264,9 @@
 
     (defclass [dataclass] PBMsg []
         "predefined backend message"
-        ; parser msgs:
+        ; parser1 msgs:
         (setv unmatched_opener "Unmatched opener hy-bracket found")
+        ; parser2 msgs:
         (setv unmatched_closer (sconcat "bad syntax encountered by parser;"
                                       "\nknown cases of it happening — is when one of those starts indented line:"
                                       "\n- unmatched closer hy bracket"
@@ -329,10 +330,12 @@
         (defclass [] WyDeconstructorError [Exception]
             (defn __init__
                 [ self
-                  #^ NDLine    ndline
+                  #^ NDLine    ndline1 ; 1   line with parent indent 
+                  #^ NDLine    ndline2 ;  2  line that was tried to be indented
                   #^ StrictStr msg]
-                (. (super) (__init__ f"{msg}\nndline:\n{ndline}"))
-                (setv self.ndline ndline)
+                (. (super) (__init__ f"{msg}\nndline1:\n{ndline1}\nndline2:\n{ndline2}"))
+                (setv self.ndline1 ndline1)
+                (setv self.ndline2 ndline2)
                 (setv self.msg    msg)))
 
     ; Bracketer:

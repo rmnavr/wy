@@ -16,8 +16,16 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    (run_err_test "should be Parser error" "(")
-    (run_err_test "should be Parser error2" "\n\"\n\n\"\n   ) ololo") ; only 4-5 lines in error, wtf?
-    (run_err_test "should be Indent error" "   y\n :\\z")
-    (run_err_test "should be Syntax error" "x \\ : z")
+    (run_err_test "Unmatched opener"    "(")
+
+    (run_err_test "Naked Unicode"       " •") 
+    (run_err_test "Unmatched closer"    " ]") 
+    (run_err_test "Unmatched quota"     " \"") 
+
+    (run_err_test "Incorrect cont pos"  "1 \\ 2\nololo ; smth")
+    (run_err_test "Incorrect one-liner" "$ $\nololo")
+    (run_err_test "Deconstructor"       "1\n;\n 2")
+    (run_err_test "Deconstructor"       "\n\n1\n \"\nsss\n\" 2")
+    (run_err_test "Bracketer"           "  y\n;smth\n z")
+
 

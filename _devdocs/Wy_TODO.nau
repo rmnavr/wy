@@ -1,0 +1,62 @@
+
+	Solve:
+		+ forbid indent after $ <$ ,
+        ? forbid incorrect placement of DMARKERs (at least some of it)
+		- bracketed strings in macros (code + doc)
+		+ replace ■ and ☇¦ with rarerer symbols, mention in doc
+		+ prettify output:
+		  - pass )); to line where they belong (maybe even overwrite user hy-expressions)
+		  - ( ( (x))) remove spaces
+
+	wy2hy:
+		+ stdout/stderr
+
+    Tests:
+        + better test coverage and structure (as early as possible)
+        + test all error messages (all ways to reach to them)
+
+	Docs upd: // for 0.5.0 do NOT plan big doc rewrite, only add those where appropriate please
+		- <,4> is word, but \ does not need to have spaces
+		- transpile_wy2hy
+		- comments/multiline-hy/multiline-strings do not interfere with indent
+		- x <$
+		- 3 ways to write oneliner
+
+	Packaging:
+		- test if requirements are correct (including python version 3.9)
+		- looks like 3.10 currently is needed for magic (3.9 should be enough)
+
+=========================================================
+
+// Later ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+	TODO from README.md:
+	    + TABLEN=4
+	    + ¹ unicode, ² unmatched hy-closers, ³ unmatched double-qupte — not recognized, partially catched
+	    + shebang (for wy? for hy?)
+		// + colored/non-colored output
+
+    Packaging:
+        * squash readme_creation branch
+
+    Codebase upd:
+        + renames:
+          + PMSg -> PAMsg (app-messages)
+          + hymacromark -> hymacroed_word
+		  + ORPHANB -> UNMATCHED_OPENER_BRACKET
+          + NDLine.rowN     -> lineNs
+          + NDLine.kind     -> skind 
+          + NDLineInfo.kind -> skind
+        + add [validateF] to FE
+		+ currently Expander.hy has: 
+		  - omarker_clasify // move it to parser
+		  - check_syntax    // move it to new module
+		+ profile performance (fptk import, map/lmap, lens, validateF, NTLine.upd_1_field)
+
+// ____________________________________________________________________________/ }}}1
+// New features ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+	+ allow indent after \x ?
+
+// ____________________________________________________________________________/ }}}1
+

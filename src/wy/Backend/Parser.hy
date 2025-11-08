@@ -32,7 +32,7 @@
                                                       :unquoteResults False))))
 
     (setv OCOMMENT (pp.Combine (+  (pp.Literal ";")
-                                     (pp.SkipTo (pp.lineEnd)))))
+                                   (pp.SkipTo (pp.lineEnd)))))
 
     ; =========================================================
     ; parsing is done on CONTENT

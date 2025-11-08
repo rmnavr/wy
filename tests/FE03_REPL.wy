@@ -17,17 +17,14 @@
     )
 
     ; Deconstructor error
-     riba
-      gus
+    riba
+     \gus
 
     ; Expander error
     $ $
     $ $
 
     ; Bracketer error
-       y
-     z
-
-
-
+      \y
+    \z
 

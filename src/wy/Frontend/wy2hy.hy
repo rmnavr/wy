@@ -1,7 +1,4 @@
 
-    ; TODO:
-    ; - propagate failure exit if at least one file failed?
-
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (import  wy.utils.fptk_local *)

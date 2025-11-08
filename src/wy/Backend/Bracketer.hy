@@ -8,8 +8,6 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    ; UPD THIS INFO:
-    ; 
     ; at this stage:
     ; - GroupStarters are having OMarkers acting as SMarkers
     ; - only ImpliedOpener and Continuator can have OMarkers, and there they can be only MMarkers
@@ -23,7 +21,7 @@
         [ #^ (of List StrictInt) indents      #_ "[0 4 8 20]"
           #^ StrictInt           cur_indent
         ]
-        "when can't calculate indent, will throw error
+        "when can't calculate indent, will raise error
          (I don't care of what kind, i catch all of them)"
         (for [&idx (range 0 (len indents))]
              (when (= cur_indent (get indents &idx))
@@ -230,6 +228,8 @@
 ; ________________________________________________________________________/ }}}2
 
 ; _____________________________________________________________________________/ }}}1
+
+
 ; [F] assm ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (setv $LINE0INFO (NDLineInfo :indents      [0]
@@ -258,6 +258,28 @@
             (setv _cur_card (first step_result))
             (_result.append (second step_result)))
         (return _result))
+
+; _____________________________________________________________________________/ }}}1
+
+; [F] pass closers through comments ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+      ; (riba
+      ;   (gus
+      ;    (svin
+      ; ;
+      ; ;•■
+      ; )));
+
+
+    (defn #^ (of List BLine) 
+        pass_closers_through_comments
+        [ #^ (of List BLine) blines
+        ]
+        (setv rblines (lreversed blines))
+        (for [[&i &rbl] (enumerate rblines)]
+             (if &rbl)
+             )
+        )
 
 ; _____________________________________________________________________________/ }}}1
 

@@ -28,24 +28,44 @@
     (defn #^ str
         extract_codeline_with_neighbours
         [ #^ WyCode                  code
-          #^ StrictInt               lineN1         ; in 1-based index due to wy line-count logic
-          #^ (of Optional StrictInt) [lineN2 None]] ; in 1-based index due to wy line-count logic
-        (setv lineN0 (dec lineN1))
-        (setv lines  (code.split "\n"))
+          #^ StrictInt               lineN1         ; start     ; in 1-based index due to wy line-count logic
+          #^ (of Optional StrictInt) [lineN2 None]] ; end>start ; in 1-based index due to wy line-count logic
+        (setv $PRE 5)
+        (setv $POST 3)
         ;
-        (setv digitsN (len (str (len lines))))
-        (setv lines   (lmap (fn [n l] (sconcat f"{n :0{digitsN}d}| " l))
-                            (inf_range 1)
-                            lines))
+        (if (noneQ lineN2)
+            (setv lineN2_ lineN1)
+            (setv lineN2_ lineN2))
         ;
-        (setv pre  (cut lines 0 lineN0))
-        (setv post (cut lines (inc lineN0) None))
-        (setv main (clrz_r (get lines lineN0)))
+        (setv nmbrdLines (numerize_lines code))
         ;
-        (str_join [ #* (take -5 pre)
-                    main
-                    #* (take 3 post) ]
+        (setv preNs                                                 ; in 1-based index
+            (lfilter (pflip geq 1)
+                     (range_ (minus lineN1 $PRE) (dec lineN1))))    
+        (setv mainNs (lrange_ lineN1 lineN2_))                       ; in 1-based index
+        (setv postNs                                                ; in 1-based index
+            (lfilter (pflip leq (len nmbrdLines))
+                     (range_ (inc lineN2_) (plus lineN2_ $POST))))  
+        ;
+        (str_join
+            (flatten [ (pick (lmap dec preNs) nmbrdLines)                 
+                       (lmap clrz_r (pick (lmap dec mainNs) nmbrdLines))
+                       (pick (lmap dec postNs) nmbrdLines)])
                   :sep "\n"))
+
+    (defn #^ (of List str)
+        numerize_lines
+        [ #^ str code
+        ]
+        "returns code in form (numbering starts from 1):
+         1| smth smth
+         2| ololo
+        "
+        (setv codelines (code.split "\n"))
+        (setv nZeroes (len (str (len codelines))))
+        (lmap (fn [n cl] (sconcat f"{n :0{nZeroes}d}| " cl))
+                  (inf_range 1)
+                  codelines))
 
 ; _____________________________________________________________________________/ }}}1
 ; helper: preparedcode charpos to lineN ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -101,7 +121,7 @@
         ; positioning have to be readjusted — it is done here
         (setv lineN (preparedcode_charpos_to_orig_lineN e.startpos code)) ; removes ■ and ☇¦
         ;
-        (setv l1 (clrz_r f"Parser error at line {lineN}: {e.msg}"))
+        (setv l1 (sconcat (clrz_r f"Parser error at {lineN}: ") f"{e.msg}"))
         (setv l2 (extract_codeline_with_neighbours code lineN))
         (sconcat l1 "\n" l2))
 
@@ -110,15 +130,29 @@
         [ #^ WyCode         code
           #^ WyParserError2 e
         ]
-        (setv lineN1 (second e.ntline.lineNs))
-        (setv lineN2 (third  e.ntline.lineNs))
+        (setv [_ lineN1 lineN2] e.ntline.lineNs)
         (if (eq lineN1 lineN2)
             (setv lineNstr f"line {lineN1}")
             (setv lineNstr f"lines {lineN1}-{lineN2}"))
         ;
-        (setv l1 (sconcat (clrz_r f"Parser error at {lineNstr}:\n") f"{e.msg}"))
-        (setv l2 (extract_codeline_with_neighbours code lineN1))
+        (setv l1 (sconcat (clrz_r f"Parser error at {lineNstr}: ") f"{e.msg}"))
+        (setv l2 (extract_codeline_with_neighbours code lineN1 lineN2))
         (sconcat l1 "\n" l2))
+
+    (defn #^ str
+         str_prepare_ExpanderError
+         [ #^ WyCode        code
+           #^ WyParserError e
+         ]
+         ;
+        (setv [_ lineN1 lineN2] e.ntline.lineNs)
+         (if (eq lineN1 lineN2)
+             (setv lineNstr f"line {lineN1}")
+             (setv lineNstr f"lines {lineN1}-{lineN2}"))
+         ;
+         (setv l1 (sconcat (clrz_r f"Syntax error at {lineNstr}: ") f"{e.msg}"))
+         (setv l2 (extract_codeline_with_neighbours code lineN1 lineN2))
+         (sconcat l1 "\n" l2))
 
     (defn #^ str
         str_prepare_DeconstructorError
@@ -126,14 +160,14 @@
           #^ WyParserError e
         ]
         ;
-        (setv lineN1 (second e.ndline.rowN))
-        (setv lineN2 (third  e.ndline.rowN))
+        (setv lineN1 (second e.ndline1.rowN))
+        (setv lineN2 (second e.ndline2.rowN)) ; because indent error happens at line start
         (if (eq lineN1 lineN2)
             (setv lineNstr f"line {lineN1}")
             (setv lineNstr f"lines {lineN1}-{lineN2}"))
         ;
         (setv l1 (sconcat (clrz_r f"Indent error at {lineNstr}: ") f"{e.msg}"))
-        (setv l2 (extract_codeline_with_neighbours code lineN1))
+        (setv l2 (extract_codeline_with_neighbours code lineN1 lineN2))
         (sconcat l1 "\n" l2))
                   
     (defn #^ str
@@ -154,11 +188,15 @@
     (defn [validateF] #^ (of Result HyCode PrettyTEMsg)
         run_wy2hy_transpilation
         [ #^ WyCode code
-          #^ bool   [silent True] ; when False, immediately prints found msg
+          #^ bool   [silent True]          
         ]
-        "On success returns HyCode, 
-         on failure, returns prettified error msg;
-         Never raises"
+        "On success returns transpiled HyCode,
+         on failure returns prettified error msg;
+         ;
+         Never raises (catches ALL errors)
+         ;
+         silent=True - immediately prints found error msg (prettified)
+        "
         (try (setv _trnsplR (Success (transpile_wy2hy code)))
              (except [e [ WyParserError
                           WyParserError2
