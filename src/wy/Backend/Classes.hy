@@ -273,15 +273,15 @@
                                       "\n- unmatched double-quote"
                                       "\n- unicode symbol outside strings/comments"))
         ; expander msgs:
-        (setv f_bad_solo      (fn [atom] f"solo {atom} on one line is not allowed"))
-        (setv f_bad_start     (fn [atom] f"line cannot start with {atom}"))
-        (setv f_bad_end       (fn [atom] f"line cannot end with {atom}"))
-        (setv f_bad_2         (fn [atom1 atom2] f"{atom1} cannot be followed by {atom2}"))
-        (setv f_bad_cont      (fn [atom] f"\\ after {atom} is forbidden here"))
+        (setv f_bad_solo      (fn [atom] f"solo '{atom}' on one line is not allowed"))
+        (setv f_bad_start     (fn [atom] f"line cannot start with '{atom}'"))
+        (setv f_bad_end       (fn [atom] f"line cannot end with '{atom}'"))
+        (setv f_bad_2         (fn [atom1 atom2] f"'{atom1}' cannot be followed by '{atom2}'"))
+        (setv f_bad_cont      (fn [atom] f"'\\' after '{atom}' is forbidden here"))
         (setv oneL_bad_indent f"bad indent after one-liner:\nincreasing indent after one-liner is allowed no further than\nto indents of openers at the one-liner start")
         ; deconstructor msgs:
         (setv bad_cont_indent f"increasing indent after continuation line is not allowed")
-        (setv f_bad_oneL_appl (fn [atom] f"continuator expression\n'\\{atom}'\nis forbidden to be placed to the left of applicator $"))
+        (setv f_bad_oneL_appl (fn [string] f"continuator expression '{string}'\nis forbidden to be placed to the left of applicator '$'"))
         ; bracketer msgs:
         (setv bad_indent (sconcat "indent level of de-dented line"
                                 "\nshould be of the same exact indent level as one of previous indents")))

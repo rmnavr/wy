@@ -22,7 +22,7 @@
           #^ StrictInt           cur_indent
         ]
         "when can't calculate indent, will raise error
-         (I don't care of what kind, i catch all of them)"
+         (I don't care of what kind, i catch all of them later)"
         (for [&idx (range 0 (len indents))]
              (when (= cur_indent (get indents &idx))
                    (setv outp &idx)))
