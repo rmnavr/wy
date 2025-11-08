@@ -16,9 +16,12 @@
     )
     )
 
+
     ; Deconstructor error
    \riba
      \gus
+
+    \x $ \y
 
     ; Expander error
     $ $

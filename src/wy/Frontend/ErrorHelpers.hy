@@ -161,7 +161,7 @@
         ]
         ;
         (setv lineN1 (second e.ndline1.rowN))
-        (setv lineN2 (second e.ndline2.rowN)) ; because indent error happens at line start
+        (setv lineN2 (third  e.ndline2.rowN))
         (if (eq lineN1 lineN2)
             (setv lineNstr f"line {lineN1}")
             (setv lineNstr f"lines {lineN1}-{lineN2}"))

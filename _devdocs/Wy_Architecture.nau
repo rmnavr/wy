@@ -69,17 +69,21 @@
 						 | → 2) Then syntax correctness checks (for [\ $ <$ ,]) are performed
 						 |      ## throws error when wrong syntax for [\ $ <$ ,] is used
 						 | → 3) Then expansion happens in the following order: SMARKERs, RMARKERs, AMARKERs, JMARKERs
-						 | + for SMARKERs lines ending with ":" are not expanded (there is no need), but they are steel called SMARKERs
+						 |      ## throws error when indent after one-liner is encountered
+						 | + SMARKERs lines ending with ":" are not expanded (there is no need), but they are steel called SMARKERs
 
 		Deconstructor.hy | [³NTLine(s)⁺] -> [³NDLine(s)⁺]
 						 | + NDLine.skind is about function of line (GroupStarter, Continuator, ... — overall 5 kinds)
-						 | ## throws error when found indent increase after Continuator
+						 | ## throws error when found indent increase after Continuator (eather like ¹ \x \n    \y, or in oneliner like ² \x $ y)
 						 | + [³NDLine⁺] = skind + lineN (x3) + ident (as int) + t_smarker* + body_tokens + t_ocomment*
 
 		Bracketer.hy	 | [³NDLine(s)⁺] -> [³BLine(s)⁺]
 						 | → heavy cross-line indent-recognition lifting is done here (like: base on indents, should new level be opened/closed/keeped?)
 						 |   ## throws error when indent calculation fails (de facto: bad de-dent)
 						 | → closers/openers are stored as literal "`(", "]" and such
+						 | 1) first, bracketer processor runs (it only sees cur and prev line and adds closers/openers based on that)
+						 | 2) second, uplifting of closers through comments happens
+						 |    (because by processor logic, closers are placed at last comment line — which is still correct, but would produce ugly final outp)
 						 | + [³BLine⁺] = ndline + prev_closers + this_openers
 
 		Writer.hy		 | [³BLine(s)⁺] -> [³HyCode⁺]

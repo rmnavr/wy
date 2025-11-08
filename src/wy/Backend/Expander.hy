@@ -286,6 +286,82 @@
 
 ; _____________________________________________________________________________/ }}}1
 
+; check on smarker-expanded lines:
+; [F] check indent after oneliners ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    (defn [validateF] #^ None
+        check_indent_after_oneliners
+        [ #^ (of List NTLine) ntlines
+        ]
+        "should be done immediately after smarkers expansion;
+         will raise error when found and return None otherwise;
+         ;
+         forbids things like
+         | x <$ y
+         |  3
+         but allows for
+         | : x <$ y
+         |   3
+         "
+         (setv blocks ; without comments and group_starters
+             (lmulticut_by (fm
+                               (eq (decide_structural_kind it)
+                                   SKind.EmptyLine))
+                           (lreject
+                               (fm
+                                   (eq_any (decide_structural_kind it)
+                                           [SKind.OnlyOComment SKind.GroupStarter]))
+                                   ntlines)
+                           :keep_border  False
+                           :merge_border True))
+        ;
+        (for [&block blocks]
+            (for [[&fst &snd] (pairwise &block)]
+                 (when (and (or (in t_amarker &fst.tokens)
+                                (in t_rmarker &fst.tokens)
+                                (in t_jmarker &fst.tokens))
+                            (lt (sum (first_indent_profile &fst.tokens))
+                                (sum (first_indent_profile &snd.tokens))))
+                       (raise (WyExpanderError :ntline &snd :msg PBMsg.oneL_bad_indent))))))
+
+; _____________________________________________________________________________/ }}}1
+; [F] decide SKind :: NTLine -> SKind (further used by Deconstructor.hy) ‾‾‾‾‾‾\ {{{1
+
+    ; |■:  groupstarter
+    ; |■1  continuator
+    ; |■\\ continuator
+    ; |■;  comment
+    ; |■x  implied opener
+    ; |    empty line (always has 0 tokens, since trailing spaces are removed at Preparator stage)
+
+    ; this function is used in Expander.hy only for checking indent after oneliners;
+    ; main usage is in Deconstructor.hy
+    (defn [validateF] #^ SKind
+        decide_structural_kind
+        [ #^ NTLine ntline
+        ]
+        (when (zerolenQ ntline.tokens) (return SKind.EmptyLine))
+        ; first 2 tokens are always enough to decide on SKind:
+        (setv _tokens (cut_ ntline.tokens 1 2))
+        (setv _decider_token
+              (first
+                     (lreject (fm (eq_any it.tkind [TKind.Indent TKind.NegIndent]))
+                              _tokens)))
+        ;
+        (cond (eq     _decider_token.tkind TKind.OComment)
+              SKind.OnlyOComment
+              ;
+              (eq_any _decider_token.tkind [TKind.RACont TKind.CMarker])
+              SKind.Continuator
+              ;
+              (eq     _decider_token.tkind TKind.SMarker)
+              SKind.GroupStarter
+              ;
+              True
+              SKind.ImpliedOpener))
+
+; _____________________________________________________________________________/ }}}1
+
 ; RMARKERs (no OMarker is supposed to be at NTLine start at this stage):
 ; helpers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
@@ -388,6 +464,7 @@
 
 ; _____________________________________________________________________________/ }}}1
 
+; AMARKERs (no OMarker is supposed to be at NTLine start at this stage):
 ; helpers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defn [validateF] #^ (of List (of List Token))
@@ -516,6 +593,7 @@
 
 ; _____________________________________________________________________________/ }}}1
 
+
 ; Assembly all:
 ; [I] check and expand ntlines :: [NTLine ...] -> [NTLine ...] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
@@ -523,13 +601,18 @@
         expand_ntlines
         [ #^ (of List NTLine) ntlines
         ]
-        (->> ntlines
-             (map classify_omarkers)
-             (mapm (do (check_syntax it) it)) ; raises error when problems found
-             (mapcat  expand_smarkers)
+        (setv _clsfd_ntlines (lmap classify_omarkers ntlines))
+        (lmap check_syntax _clsfd_ntlines)            ; raises error when problems found
+        ;
+        (setv _expd_ntlines (lmapcat expand_smarkers _clsfd_ntlines))
+        (check_indent_after_oneliners _expd_ntlines)   ; raises error when problems found
+        ;
+        (->> _expd_ntlines
              (mapcat  expand_rmarkers)
              (mapcat  expand_amarkers)
              (lmapcat expand_jmarkers)))
 
 ; _____________________________________________________________________________/ }}}1
+
+
 
