@@ -74,24 +74,24 @@
          "
         (setv _tokens (remove_non_check_relevant_tokens ntline.tokens))
         (when (oflenQ 0 _tokens) (return None))
-        ; forbid solo [\ $ <$ ,] on line
+        ; forbid solo [\ $ <$ , DMARKER] on line
         (when (oflenQ 1 _tokens)
               (if (eq_any (. (first _tokens) tkind)
-                          [TKind.CMarker TKind.AMarker TKind.RMarker TKind.JMarker])
+                          [TKind.CMarker TKind.AMarker TKind.RMarker TKind.JMarker TKind.DMarker])
                   (raise (WyExpanderError :ntline ntline :msg (PBMsg.f_bad_solo (. (first _tokens) atom))))
                   (return None)))
-        ; forbid lines starting with [$ <$ ,]
-        (when (eq_any (. (first _tokens) tkind) [TKind.AMarker TKind.RMarker TKind.JMarker])
+        ; forbid lines starting with [$ <$ , DMARKER]
+        (when (eq_any (. (first _tokens) tkind) [TKind.AMarker TKind.RMarker TKind.JMarker TKind.DMarker])
               (raise (WyExpanderError :ntline ntline :msg (PBMsg.f_bad_start (. (first _tokens) atom)) )))
-        ; forbid lines ending with [\ $ ,]
-        (when (eq_any (. (last _tokens) tkind) [TKind.CMarker TKind.AMarker TKind.JMarker])
+        ; forbid lines ending with [\ $ , DMARKER]
+        (when (eq_any (. (last _tokens) tkind) [TKind.CMarker TKind.AMarker TKind.JMarker TKind.DMarker])
               (raise (WyExpanderError :ntline ntline :msg (PBMsg.f_bad_end (. (last _tokens) atom)))))
         ;
         (for [[&fst &snd] (pairwise _tokens)]
-             ; forbid SMARKER/MMARKER right before [$ <$ ,] 
-             (when (and (eq_any &fst.tkind [TKind.SMarker TKind.MMarker])
+             ; forbid SMARKER (but not MMARKER) right before [$ <$ ,] 
+             (when (and (eq     &fst.tkind TKind.SMarker)
                         (eq_any &snd.tkind [TKind.AMarker TKind.RMarker TKind.JMarker]))
-                   (raise (WyExpanderError :ntline ntline :msg (PBMsg.f_bad_2 &fst.atom &snd.atom))))
+                   (raise (WyExpanderError :ntline ntline :msg (PBMsg.f_bad_2s &fst.atom &snd.atom))))
              ; forbid [\ $ ,] before [$ <$ ,]
              (when (and (eq_any &fst.tkind [TKind.CMarker TKind.AMarker TKind.JMarker])
                         (eq_any &snd.tkind [TKind.AMarker TKind.RMarker TKind.JMarker]))

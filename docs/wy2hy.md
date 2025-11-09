@@ -9,7 +9,7 @@ wy syntax:
 
 running wy code:
 1. [wy2hy transpiler](https://github.com/rmnavr/wy/blob/main/docs/wy2hy.md) 
-2. [wy repl](https://github.com/rmnavr/wy/blob/main/docs/repl.md) 
+2. [wy in ipython](https://github.com/rmnavr/wy/blob/main/docs/ipywy.md) 
 ---
 
 # wy2hy transpiler

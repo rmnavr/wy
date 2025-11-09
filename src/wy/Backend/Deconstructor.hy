@@ -132,11 +132,12 @@
                         (> &l2.indent &l1.indent))
                    (setv isOnOneliner (eq &l1.rowN &l2.rowN))
                    (setv msg (if isOnOneliner
-                                 (PBMsg.f_bad_oneL_appl (str_join (lconcat (if (eq (. (first &l1.body_tokens) tkind) TKind.RAOpener)
-                                                                               ["\\"]
-                                                                               [])
-                                                                           (lmapm (getattrm it .atom) &l1.body_tokens))
-                                                                  :sep " "))
+                                 (PBMsg.f_bad_oneL_appl
+                                     (str_join (lconcat (if (eq (. (first &l1.body_tokens) tkind) TKind.RAOpener)
+                                                            ["\\"]
+                                                            [])
+                                                        (lmapm (getattrm it .atom) &l1.body_tokens))
+                                               :sep " "))
                                  PBMsg.bad_cont_indent))
                    (raise (WyDeconstructorError :ndline1 &l1
                                                 :ndline2 &l2

@@ -36,8 +36,8 @@
           "../docs/03_Condensed.md"
           "../docs/04_One_liners.md"
           "../docs/05_Symbols.md"
-          "../docs/repl.md"
           "../docs/wy2hy.md"
+          "../docs/ipywy.md"
 
     setv $BACKEND
         L "../src/wy/Backend/Classes.hy"
@@ -54,7 +54,7 @@
           "../src/wy/Frontend/ErrorHelpers.hy"
           "../src/wy/Frontend/ReplHelpers.hy"
           "../src/wy/Frontend/wy2hy.hy"
-          "../src/repl_wy/magic.py"
+          "../src/ipy_wy/magic.py"
 
     setv $TESTS
         L "../tests/ALL_BE_tests.hy"

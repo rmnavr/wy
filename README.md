@@ -98,7 +98,7 @@ wy syntax:
 
 running wy code:
 1. [wy2hy transpiler](https://github.com/rmnavr/wy/blob/main/docs/wy2hy.md) 
-2. [wy repl](https://github.com/rmnavr/wy/blob/main/docs/repl.md) 
+2. [wy in ipython](https://github.com/rmnavr/wy/blob/main/docs/ipywy.md) 
 
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- Install ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
@@ -109,16 +109,16 @@ running wy code:
 pip install git+https://github.com/rmnavr/wy.git@main
 ```
 
-Dependencies (with versions tested):
+Dependencies:
 * python 3.9
-* ipython 8.0
-* hy 1.0.0
-* hyrule 1.0.0
-* funcy 2.0
-* pyparsing 3.0.9
-* pydantic 2.11.7
-* lenses 1.2.0
-* termcolor 3.1.0
+* ipython *(tested with 8.18.1)*
+* hy *(tested with 1.0.0)*
+* hyrule *(tested with 1.0.0)*
+* pydantic *(tested with 2.11.7)*
+* pyparsing *(tested with 3.0.9)*
+* funcy *(tested with 2.0)*
+* lenses *(tested with 1.2.0)*
+* termcolor *(tested with 3.1.0)*
 
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- Changelog ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
@@ -128,7 +128,7 @@ Dependencies (with versions tested):
 * Version 0.5.0 (05 nov 2025)
   * for user:
     * added meaningfull error messages for wy2hy
-    * added `%hy_`, `%wy` and `%wy_spy` magics to ipython
+    * added `hy_`, `wy` and `wy_spy` magics to ipython
     * updated wy2hy API
   * internally:
     * updated parser

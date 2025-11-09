@@ -12,7 +12,7 @@ libs_required = [
     'lenses    >= 1.2.0',
     'funcy     >= 2',
     'termcolor >= 3',
-    'ipython   >= 9'
+    'ipython   >= 8'
 ]
 
 # install class ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1

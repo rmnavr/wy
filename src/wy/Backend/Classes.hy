@@ -51,6 +51,13 @@
 ; _____________________________________________________________________________/ }}}1
 ; [=] hy syntax elements ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
+    ; note on bracketed strings:
+    ; - omarkers and dmarkers do NOT include #L, ~@#L, L#L and such
+    ;   (parser will see #L as RMACRO, L#L as WORD )
+    ; - but hy_openers DO INCLUDE ~@#[ and others as a valid hy opener,
+    ;   so parser recognizes them as hy exprs
+    ;   (by the way '#[] is syntax error in hy, and '#[[smth]] is correct br-string)
+
     ; used in pyparser, so order is important: (upd not really used now?)
     (setv $HY_MACROMARKS       [ "~@" "~" "`" "'"])
     (setv $HY_MACROMARKS_REGEX r"(~@|~|`|\')")
@@ -260,7 +267,7 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-; [C] Exceptions, Error Messages ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+; [C] Exceptions/ErrorMessages ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     (defclass [dataclass] PBMsg []
         "predefined backend message"
@@ -277,6 +284,7 @@
         (setv f_bad_start     (fn [atom] f"line cannot start with '{atom}'"))
         (setv f_bad_end       (fn [atom] f"line cannot end with '{atom}'"))
         (setv f_bad_2         (fn [atom1 atom2] f"'{atom1}' cannot be followed by '{atom2}'"))
+        (setv f_bad_2s        (fn [atom1 atom2] f"condensed opener '{atom1}' cannot be followed by '{atom2}'"))
         (setv f_bad_cont      (fn [atom] f"'\\' after '{atom}' is forbidden here"))
         (setv oneL_bad_indent f"bad indent after one-liner:\nincreasing indent after one-liner is allowed no further than\nto indents of openers at the one-liner start")
         ; deconstructor msgs:

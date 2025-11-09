@@ -9,7 +9,7 @@ wy syntax:
 
 running wy code:
 1. [wy2hy transpiler](https://github.com/rmnavr/wy/blob/main/docs/wy2hy.md)
-2. [wy repl](https://github.com/rmnavr/wy/blob/main/docs/repl.md)
+2. [wy in ipython](https://github.com/rmnavr/wy/blob/main/docs/ipywy.md) 
 ---
 
 <!-- Indenting ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
@@ -184,11 +184,12 @@ Just be aware, that indent in openers like `':` counts from first symbol:
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- No continuator required ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
-# Elements that do not require continuator
+# Elements that do not autowrap
 
 When line starts with elements, that by hy logic can never be head of s-expression,
-they will not be auto-wrapped, so continuator `\` may be omitted:
+they will not be auto-wrapped, so continuator `\` may be omitted.
 
+Code below gives full list of such elements:
 ```hy
 func          | (func
     #(+ x 3)  |     #(+ x 3)  ; valid hy expression
@@ -198,27 +199,30 @@ func          | (func
     f"string" |     f"string" ; formatted string
     -1.0      |     -1.0      ; number (anything starting with ±digit)
     :z 3      |     :z 3      ; keyword
-    #* m      |     #*  m     ; sugar symbol (args unpacker)
+    #* m      |     #* m      ; sugar symbol (args unpacker)
     #rmacro   |     #rmacro   ; reader macro
-    'x        |     'x)       ; hy macro-ed words
+    'x        |     'x        ; hy macro-ed words
+    ;         |     ;       
+    + 1 2     |     (+ 1 2)   ; everything else is autowrapped
+    smth      |     (smth))   
 
 func          | (func
-   \1         |      1        ; writing '\1' instead of just '1' is allowed ...
-    2         |      2)       ; ... although not required
+   \1         |      1        ; adding '\' before non-autowrapped '1'
+    2         |      2)       ; is allowed although it does nothing
 ```
 
-Everything else is autowrapped.
+Everything else is autowrapped, including:
+* `±NaN` and `Inf` (they are NOT seen as numbers by wy logic)
+* `True`, `False` and `None`
 
-Notice, that in this logic:
-* `::z` is keyword
-* `#*_` is reader macro
-* Things like `$a`, `&b`, `^c`, `-f` are all words (they will be auto-wrapped)
-* Currently `1:` will be seen as number in wy (will not be auto-wrapped), although it is not a valid number in hy
-  > It will be patched in future release
-
-Regarding numbers, `±NaN` and `Inf` are NOT seen as numbers by wy logic,
-i.e. you need to use continuator before them to avoid auto-wrapping.
-Same is true for `True` and `False`.
+Notice, that by this logic:
+* `::z` is keyword, no auto-wrapping
+* `#*_` is reader macro, no auto-wrapping
+* Things like `$a`, `&b`, `^c`, `-f`, `,1`, `_1` are all words
+* `1:` will be seen as a number in wy (it will not be auto-wrapped), although it is not a valid number in hy
+  > may be changed in future releases
+* wy words can never have `\` in their name, for example `x\y` 
+  is seens as continuator between 2 words: `x`, `\` and `y`
 
 <!-- __________________________________________________________________________/ }}}1 -->
 

@@ -136,8 +136,8 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    (when  (= __name__ "__main__")
-        (setv $TEST (read_file "../../../tests/FE03_REPL.wy"))
+    (when (= __name__ "__main__")
+        (setv $TEST ":#:")
         (print_wy2hy_steps $TEST
                            :pretty_errors True))
 
