@@ -24,7 +24,7 @@ Condensing is syntactic sugar, meaning that condensed openers are internally pro
 ; ↓
   : fn [x] : + pow 2      | ( (fn [x] (pow x 2))
     3                     |   3)
-;          ↑ this is normap opener (not expanded)
+;          ↑ this is normal opener (not expanded)
 
 ; internally, lines above will be processed as if they were expanded to:
   :                       | (
@@ -52,7 +52,7 @@ You can have as many `:` at the start of the line as you like.
 Just be aware that such `:` introduce new indents, which must be respected by lines that follow it:
 
 ```hy
-  ; wy will see indents at these positions due to ":"
+  ; wy will see indents at these positions due to ':'
   ; at the start of the line
   ; ↓  ↓ ↓
     :  : f x : y         | (  ( (f x (y))
@@ -68,7 +68,7 @@ for symbols to the right:
     : \: f x : y         | (  (f x (y))
        4                 |    4)
   ;    ↑
-  ;    ":" at this position will not be seen as condensed
+  ;    ':' at this position will not be seen as condensed
 
   ; expanded form:
 
@@ -80,9 +80,9 @@ for symbols to the right:
 Notice, that you can't switch off condensing for non-condensing openers:
 ```hy
 ; these lines are correct:
- : x : y         | ((x (y))) ; this line has one ":" condensed
- :\x : y         | (x (y))   ; this line has one ":" condensed
-\: x : y         | (x (y))   ; this line has zero ":" condensed
+ : x : y         | ((x (y))) ; this line has one ':' condensed
+ :\x : y         | (x (y))   ; this line has one ':' condensed
+\: x : y         | (x (y))   ; this line has zero ':' condensed
 
 ; this line is illegal:
  : x :\y         | <will not transpile>
@@ -108,7 +108,7 @@ and see how they can be condensed:
     L \x y : f 3        | [ x y (f 3)
        g 4 L 2 5        |   (g 4 [2 5])]
 
-    ; notice that without continuator "\"
+    ; notice that without continuator '\'
     ; we would get unwanted extra wrapping:
     L  x y : f 3        | [ (x y (f 3))
        g 4 L 2 5        |   (g 4 [2 5])]
@@ -121,7 +121,7 @@ and see how they can be condensed:
     ; condensed:
     `: \get ~x ~indx    | `( get ~x ~indx)
 
-    ; notice that without continuator "\"
+    ; notice that without continuator '\'
     ; we would get unwanted extra wrapping:
     `: get ~x ~indx    | `( (get ~x ~indx))
 ```

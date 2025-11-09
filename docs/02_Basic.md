@@ -9,18 +9,19 @@ wy syntax:
 
 running wy code:
 1. [wy2hy transpiler](https://github.com/rmnavr/wy/blob/main/docs/wy2hy.md)
-2. [wy in ipython](https://github.com/rmnavr/wy/blob/main/docs/ipywy.md) 
+2. [wy in ipython](https://github.com/rmnavr/wy/blob/main/docs/ipywy.md)
 ---
 
-<!-- Indenting ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+<!-- Indenting and wrapping ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
-# Basic indenting
+# Basic indenting and wrapping
 
 ```hy
 ; New line by default is wrapped in () :
 print 3 4               | (print 3 4)
 
-; Indent introduces new wrap level:
+; Indent (can be of arbitrary length)
+; introduces new wrap level:
 print                   | (print
     x                   |      (x)
     + y z               |      (+ y z))
@@ -28,24 +29,32 @@ print                   | (print
 ; New line does NOT have to start at column-0:
     print 3 4           |      (print 3 4)
 
-; ":" in the middle of the line adds parentheses,
+; ':' in the middle of the line adds parentheses,
 ; that are closed at the end of the line:
 print x : + y z         | (print x (+ y z)
     3                   |      3)
+                        |
+setv x L 1 2 3          | (setv x [1 2 3])
 
-; Use line consisting only of ":" to add +1 wrapping level:
+; Use line consisting only of ':' to add +1 wrapping level:
 :                       | (
   fn [x] : + pow 2      |   (fn [x] (pow x 2))
   3                     |   3)
 
-; "\" prevents automatic wrapping of line in ():
+; Orphan ':' is allowed — it produces empty expression
+; For example, this one is probably useless:
+  print x :             | (print x ())
+; However this one defines empty list:
+  setv x L              | (setv x [])
+
+; '\' prevents automatic wrapping of line in ():
 print                   | (print
     f : + y 4           |      (f (+ y 4))
    \f : + x 3           |      f (+ x 3)
     t                   |      (t)
    \z                   |      z)
 
-; Some syntax elements (like numbers) do not require "\"
+; Some syntax elements (like numbers) do not require '\'
 ; (you may still use it nontherless):
 print                   | (print
     f x                 |      (f x)
@@ -53,16 +62,16 @@ print                   | (print
    \4.0                 |      4.0)
 
 
-; When \ is used, indent position is seen at next printable symbol after it,
-; so there is a little bit of stylistic freedom of where to place \
+; When '\' is used, indent position is seen at next printable symbol after it,
+; so there is a little bit of stylistic freedom of where to place '\'
 print                   | (print
    \x                   |      x
 \   y                   |      y
   \ z                   |      z)
 ;   ↑
-;   this is where wy will see indent level for all 3 "\"-prefixed lines
+;   this is where wy will see indent level for all 3 '\'-prefixed lines
 
-; Notice how described indent rule for \ works in following example:
+; Notice how described indent rule for '\' works in following example:
 y                       | (y
 \x                      |    x)
                         |
@@ -95,10 +104,12 @@ print x     |   (print x)
 ; Use comment line (at any indent level) to unite them in single expression:
 
 print x     |   (print x
-    ;       |       ;
+  ;         |     ;
     + z y   |       (+ z y)
     ;       |       ;
-    + k n   |       (+ k n))
+    + k n   |       (+ k n)
+          ; |                ;
+    + 3 4   |       (+ 3 4))
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
@@ -108,23 +119,29 @@ print x     |   (print x
 
 Continuator is the only wy special symbol that can be used without surrounding spaces:
 ```hy
- :\: x | ( (x)) ; recognized as ':', '\', ':' and 'x'
+ :\: x    | ( (x))   ; recognized as ':', '\', ':' and 'x'
+          |
+ L\x      | [x]      ; recognized as 'L', '\' and 'x'
 ```
 
-Every other wy special element need to be spaced — or it will
+
+Every other wy special element (like `:` or `L`) need to be spaced — or it will
 be recognized as a normal hy word (since hy allows for ASCII chars in names):
 ```hy
- x : y   | (x (y))  ; recognized as word 'x', opener ':' and word 'y'
- x:y     | (x:y)    ; recognized as one word 'x:y'
+ x : y    | (x (y))  ; recognized as word 'x', opener ':' and word 'y'
+ x:y      | (x:y)    ; recognized as single word 'x:y'
+          |
+ Lx,y     | (Lx,y)   ; recognized as single word 'Lx,y'
 ```
+
 
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- Hy expressions + Strings ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
 # Multiline elements (hy-expressions and strings)
 
-Wy parses valid hy-expressions (with valid bracket balancing) as-is, without looking inside them.
-This allows for mixing wy and hy code.
+Wy parses valid hy-expressions (with valid bracket balancing) as-is,
+without looking inside them. This allows for mixing wy and hy code.
 
 Same is also true for strings.
 
@@ -137,16 +154,16 @@ This entails following rules:
 ;     ↓ this is the only indent-level introduced by hy-expression
 plus  (+            | (plus  (+
                     |                       ; notice that empty line didn't close indent block
-     x              |       x               ; notice that x did not require "\"
-   (ncut ys 1 : 3)) |     (ncut ys 1 : 3))  ; notice that ":" was not recognized as wy-wrapper
+     x              |       x               ; notice that x did not require '\'
+   (ncut ys 1 : 3)) |     (ncut ys 1 : 3))  ; notice that ':' was not recognized as wy-wrapper
       f z           |        (f z))
 print x             | (print x)
 
-print "multiline    | (print "multiline
-   string           |    string
-                    |
-      string more   |       string more
-    more string"    |     more string")
+print "oh wy        | (print "oh wy
+   such             |    such               ; notice that indending didn't produce any wrapping
+                    |                       ; notice that empty line didn't close indent block
+      transpiler    |       transpiler
+    very hy"        |     very hy")
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
@@ -157,9 +174,9 @@ print "multiline    | (print "multiline
 Formated strings are parsed as is, meaning you should use hy syntax
 when having expressions inside them:
 ```hy
-    f"{(* k 1.5) :.2f}"` ; this is correct
+    f"{(* k 1.5) :.2f}"  ; this is correct
 
-    f"{* k 1.5 :.2f}"`   ; this will be transpiled wihout changes,
+    f"{* k 1.5 :.2f}"    ; this will be transpiled wihout changes,
                          ; so you'll end up having incorrect hy code
 ```
 
@@ -186,7 +203,7 @@ Just be aware, that indent in openers like `':` counts from first symbol:
 
 # Elements that do not autowrap
 
-When line starts with elements, that by hy logic can never be head of s-expression,
+When line starts with elements, that by hy logic normally are not head of s-expression,
 they will not be auto-wrapped, so continuator `\` may be omitted.
 
 Code below gives full list of such elements:
@@ -202,27 +219,32 @@ func          | (func
     #* m      |     #* m      ; sugar symbol (args unpacker)
     #rmacro   |     #rmacro   ; reader macro
     'x        |     'x        ; hy macro-ed words
-    ;         |     ;       
+    ;         |     ;
     + 1 2     |     (+ 1 2)   ; everything else is autowrapped
-    smth      |     (smth))   
+    smth      |     (smth))
 
 func          | (func
    \1         |      1        ; adding '\' before non-autowrapped '1'
     2         |      2)       ; is allowed although it does nothing
 ```
 
-Everything else is autowrapped, including:
-* `±NaN` and `Inf` (they are NOT seen as numbers by wy logic)
-* `True`, `False` and `None`
+Everything else is autowrapped.
 
 Notice, that by this logic:
 * `::z` is keyword, no auto-wrapping
 * `#*_` is reader macro, no auto-wrapping
+* `.` and `...` are words, they will be auto-wrapped
 * Things like `$a`, `&b`, `^c`, `-f`, `,1`, `_1` are all words
-* `1:` will be seen as a number in wy (it will not be auto-wrapped), although it is not a valid number in hy
-  > may be changed in future releases
-* wy words can never have `\` in their name, for example `x\y` 
-  is seens as continuator between 2 words: `x`, `\` and `y`
+
+Some possible caveats:
+* `±NaN` and `Inf` are auto-wrapped (since they are NOT seen as numbers by wy logic)
+* `True`, `False` and `None` are auto-wrapped too
+* If for some reason you need to make non-auto-wrapped element (like `-1.0`)
+  a head of expression, eather use `: -1.0` or just wrap it in hy-expr like `(-1.0)`
+* `1:` will be seen as a number in wy (it will not be auto-wrapped),
+  although it is not a valid number in hy
+  > this may be changed in future releases
+* In hy logic `"string".format` isn't correct syntax, this is why strings are autowrapped in wy
 
 <!-- __________________________________________________________________________/ }}}1 -->
 

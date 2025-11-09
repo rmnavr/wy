@@ -137,7 +137,7 @@
 ; _____________________________________________________________________________/ }}}1
 
     (when (= __name__ "__main__")
-        (setv $TEST ":#:")
+        (setv $TEST "setv x L")
         (print_wy2hy_steps $TEST
                            :pretty_errors True))
 

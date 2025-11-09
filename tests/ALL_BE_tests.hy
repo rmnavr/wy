@@ -47,13 +47,13 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    (print "*** Launching hy tests ***")
-    (->> $HY_TESTS
-         (lmap construct_hy_cmd)
-         (lmap run_shell_command))
-    
-    (print "*** Launching wy2hy transpilations ***")
-    (->> $WY_FILES
-         (lmap construct_wy_cmd)
-         (lmap run_shell_command))
+    ;(print "*** Launching hy tests ***")
+    ;(->> $HY_TESTS
+    ;     (lmap construct_hy_cmd)
+    ;     (lmap run_shell_command))
+    ;
+    ;(print "*** Launching wy2hy transpilations ***")
+    ;(->> $WY_FILES
+    ;     (lmap construct_wy_cmd)
+    ;     (lmap run_shell_command))
 

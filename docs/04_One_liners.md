@@ -9,7 +9,7 @@ wy syntax:
 
 running wy code:
 1. [wy2hy transpiler](https://github.com/rmnavr/wy/blob/main/docs/wy2hy.md)
-2. [wy in ipython](https://github.com/rmnavr/wy/blob/main/docs/ipywy.md) 
+2. [wy in ipython](https://github.com/rmnavr/wy/blob/main/docs/ipywy.md)
 ---
 
 <!-- Intro ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
@@ -22,6 +22,9 @@ One-liners is advanced wy topic, that enables writing even more condensed code l
 ; Example 1:
 
     map $ fn [x y] : * : + x 3 :: + y 4 , \xs ys
+    ;   ↑                               ↑
+    ; those 2 symbols are main separators here;
+    ; focusing on them should make this readable
 
     ; this transpiles into:
     (map (fn [x y] (* (+ x 3) (+ y 4))) xs ys)
@@ -39,7 +42,7 @@ One-liners is advanced wy topic, that enables writing even more condensed code l
 Internally wy one-liners symbols are just syntactic sugar for indenting and wrapping.
 You don't need to use them if you don't want to — basic and condensed syntax are already enough for writing code.
 
-One-liners do not have set-in-stone usage patterns. 
+One-liners do not have set-in-stone usage patterns.
 They do obey strict rules described below, but there are usually many ways to express the same thing.
 Like for example all those lines produce the same code:
 ```hy
@@ -158,7 +161,7 @@ You can even have `<$` with no expression to the right:
 
 ## Double mid brackets (`::` and others)
 Simpliest one-liner symbol is `::`, and it is literally `)(`, and that's it.
-No other special rules apply. 
+No other special rules apply.
 There are several cases where it may be usefull:
 
 ```hy
@@ -201,12 +204,15 @@ Lines coming directly after lines with `<$`, `$` or `,` symbol can't start with 
 
 ; incorrect syntax
 : f , 3  | <will not transpile>
-   z     |
+   z     | 
 
 ; correct syntax:
 : f 3    | ( (f 3
    z     |   (z))
 ```
+
+This rule exists because allowing such indent in many cases
+would make user intent ambiguous.
 
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- Closing var openers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
@@ -240,7 +246,8 @@ one-liner symbols have to be surrounded by spaces, but continuator does not have
  1 , 000 | 1 000     ; parser sees it as number '1', joiner ',' and number '000'
 ```
 
-Space before/after '\' and one-liner symbols is allowed, although it has no direct effect on indenting:
+Space before/after '\' and one-liner symbols is allowed,
+although it has no direct effect on indenting:
 ```
 ; those 3 lines will have the same indenting behaviour:
     : \   f <$ \   x
@@ -259,9 +266,9 @@ Remember precedence order of one-liners:
 
 Precedence order:
 * condensed `:` — highest priority
-* `<$` 
-* `$` 
-* `,` 
+* `<$`
+* `$`
+* `,`
 * non-condensed `:` — lowest priority
 
 ## Simple examples
@@ -347,57 +354,57 @@ This is how precedence is applied step by step:
 
   ; 1) first, expansion of leftmost condensed opener is done:
 
-    : 
+    :
       a : b $ : c : d , : e : f <$ : h : i
 
   ; 2) then expansion of <$
 
-    : 
+    :
       : a : b $ : c : d , : e : f
         : h : i
 
-    : 
-      : 
+    :
+      :
         a : b $ : c : d , : e : f
-        : 
+        :
           h : i
 
   ; 3) then expansion of $
 
-    : 
-      : 
+    :
+      :
         a : b
           : c : d , : e : f
-        : 
+        :
           h : i
 
-    : 
-      : 
+    :
+      :
         a : b
-          : 
+          :
             c : d , : e : f
-        : 
+        :
           h : i
 
   ; 4) then expansion of ,
 
-    : 
-      : 
+    :
+      :
         a : b
-          : 
+          :
             c : d
             : e : f
-        : 
+        :
           h : i
 
-    : 
-      : 
+    :
+      :
         a : b
-          : 
+          :
             c : d
             :
               e : f
-        : 
+        :
           h : i
 
   ; And then there is nothing more left to expand

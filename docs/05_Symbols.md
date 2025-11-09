@@ -9,7 +9,7 @@ wy syntax:
 
 running wy code:
 1. [wy2hy transpiler](https://github.com/rmnavr/wy/blob/main/docs/wy2hy.md)
-2. [wy in ipython](https://github.com/rmnavr/wy/blob/main/docs/ipywy.md) 
+2. [wy in ipython](https://github.com/rmnavr/wy/blob/main/docs/ipywy.md)
 ---
 
 <!-- hy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
@@ -60,7 +60,7 @@ So for example `~@#C` will represent `~@#{`.
 
 Notice that wy does not use `#L` for `#[`, you'll have to use `#[ ... ]` form in hy-syntax
 (and wy2hy will not care what's inside it).
-> Using `#L` in wy will be seen as a reader macro.
+> Symbols `#L` are seen in wy as a reader macro.
 
 In total it sums up to (1+4)*5 = 25 different kinds of wy openers.
 
@@ -79,13 +79,6 @@ One-liners use:
 Space-less syntax like `#rmacro:` is not specially recognized by wy.
 Use `#rmacro :` or `#rmacro(` instead.
 
-Note on hy's recognition of sets:
-> In hy 1.0.0 `#{1}` is for some reason seen as reader macro `#1` (instead of set `#{1}`),
-> however `#{1 1}` is seen as a set `#{1}` as it should be. I'm not sure, but it looks like hy's bug.
->
-> Anyway, when wy2hy sees `#{1}` or `#C 1`, it transpiles as usual, producing `#{1}`.
-> What hy makes of it — is on hy's consciousness.
-
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- L/C sacrifice ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
@@ -96,25 +89,62 @@ since they are transpiled into brackets.
 
 > I know this is meh, but hey.
 
-Intended universal workaround is wrapping them inside hy expressions, since wy parses them as is:
+Same is true for `#C` (you can't have reader macro named `#C` in wy) and others.
+
+Intended universal workaround is **wrapping them inside hy expressions**,
+since wy parses them as is
+(just make sure hy expression is correct in the first place, meaning it has balanced brackets).
+
+## L and C example
+
+Wrap `L` into hy expression to have variable named `L`:
 ```hy
 setv L : + L 1   | (setv [(+ [1])])  ; not as desired
 (setv L (+ L 1)) | (setv L (+ L 1))  ; as desired
 ```
 
-Another case.
-Inside `ncut`-macro `:` is used to produce slices, but in wy it will be transpiled into `(` opener.
-Solution is the same — wrap it in hy expression
+## `:` example
+
+Inside `ncut`-macro `:` is used to produce slices,
+but in wy it will be transpiled into `(` opener.
+
+Solution is the same — wrap it in hy expression:
 
 ```hy
 ncut x :       | (ncut x ())   ; not as desired
 (ncut x :)     | (ncut x :)    ; as desired
 ```
 
-Although since `1:2` are recognized as is (see [Basic syntax](https://github.com/rmnavr/wy/blob/main/docs/02_Basic.md)),
-you can avoid using hy wrapping in such cases:
+But since `1:2` (and alike) are actually recognized as single words,
+rather than `1`, `:` and `2`
+(see [Basic syntax](https://github.com/rmnavr/wy/blob/main/docs/02_Basic.md)),
+you don't actually need hy wrapping in such cases:
+```hy
 ncut x 1:2     | (ncut x 1:2)  ; as desired
 ncut x :2      | (ncut x :2)   ; as desired
+```
+
+## Special case for `\`
+
+Remember that unlike all other wy symbols, you don't need `\` to be surrounded by spaces:
+```hy
+  \x           | x      ; seen by parser as '\' and 'x'
+  \ x          | x      ; seen by parser as '\' and 'x'
+
+  Lx           | (Lx)   ; seen by parser as word 'Lx'
+  L x          | [(x)]  ; seen by parser as 'L' wrapper and 'x' word
+
+  L\x          | [x]    ; seen by parser as 'L', '\' and 'x'
+```
+
+For this reason wy words can never have `\` in their name.
+Like for example `L\x` is not a walid wy name.
+
+Once again, wrap this in hy-brackets and you'll get
+variable named `L\x` if you need it:
+```hy
+  (setv L\x 3) | (setv L\x 3) ; there you have variable named 'L\x', nice
+```
 
 <!-- __________________________________________________________________________/ }}}1 -->
 

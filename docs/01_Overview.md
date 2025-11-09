@@ -12,6 +12,8 @@ running wy code:
 2. [wy in ipython](https://github.com/rmnavr/wy/blob/main/docs/ipywy.md) 
 ---
 
+<!-- syntax ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+
 # Wy syntax overview
 
 Wy can be written in 3 increasingly more terse styles:
@@ -42,6 +44,14 @@ Wy can be written in 3 increasingly more terse styles:
 
    Uses symbols `$`, `<$` and `,` to represent wrapping and indenting.
 
+   Also there is `::` and similar symbols to represent things like `)(`:
+   > ```hy
+   > print : + 1 2 :: + 1 3 | (print (+ 1 2) (+ 1 3))
+   > ```
+
+<!-- __________________________________________________________________________/ }}}1 -->
+<!-- symbols ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+
 # Wy symbols overview
 
 In total Wy uses:
@@ -55,10 +65,13 @@ In total Wy uses:
 * 5 double markers like `::` to represent `)(`
 
 Symbols `L` and `C` (and some others) are sacrificed to be seen as openers.
-> To use them as name variables, put them in a valid hy-expr like (setv L 3),
+> To use them as name variables, put them in a valid hy-expression like (setv L 3),
+> since wy parses valid hy-expressions as-is.
 
 This is described in details in:
 [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
+
+<!-- __________________________________________________________________________/ }}}1 -->
 
 ---
 

@@ -26,7 +26,7 @@ Example code from real project:
 <p align="center"><img src="https://github.com/rmnavr/wy/blob/main/examples/RL_example.png?raw=true" alt="Wy example" /></p>
 
 Wy also offers special **one-liners syntax**, which provides
-variability in styling the same expression:
+variability in styling of the same expression:
 ```hy
 ; vanilla hy-code style (parsed as-is):
 (map (fn [x y] (+ x y)) xs ys)
@@ -55,10 +55,10 @@ Don't be afraid to try Wy:
 * Wy works with all 25 kinds of hy parenthesis (including those that are used for macros)
 * You can freely mix Wy and Hy code (wy2hy transpiles correct hy expressions as-is)
 * All the edge cases (that I could think of) are covered in the testing suite
-* Wy and wy2hy are fully documented
+* Wy and wy2hy are fully documented and ready-to-use
 
 Also:
-* Wy comes with `%wy` magic for ipython/Jupyter 
+* Wy comes with `%wy` magic for ipython
 * Wy-code can be called directly from Python (by importing `transpile_wy2hy` function)
 
 What not to like?
