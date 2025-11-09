@@ -87,6 +87,17 @@ Notice, that you can't switch off condensing for non-condensing openers:
 ; this line is illegal:
  : x :\y         | <will not transpile>
 ;    ↑ this is non-codensing opener, '\' can't be used after it
+
+; once you switched of condensing, you
+; can't use continuator where you would normally do:
+ : : x           | (((x)))   ; this is legal
+ :\: x           | ((x))     ; this is legal
+\: : x           | ((x))     ; this is legal
+
+; but this is illegal:
+; - first '\' made all symbols to the right non-condensing
+; - so now second '\' is placed before non-condensing opener, which is forbidden
+\:\: x           | <will not tranpile> 
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->

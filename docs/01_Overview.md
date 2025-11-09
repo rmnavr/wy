@@ -35,11 +35,13 @@ Wy can be written in 3 increasingly more terse styles:
    >  \y                    |   y)
    > ```
 
-   Has different rules for `:` placed at the start or in the mid of the line.
+   Has different rules for:
+   * condensing `:` (those ones that are placed at the start of the line)
+   * non-condensing `:` (those ones that are placed in the mid of the line)
 
 3. [One-liners](https://github.com/rmnavr/wy/blob/main/docs/04_One_liners.md) syntax: 
    > ```hy
-   > fn [x] : + x 3 <$\y    | ((fn [x] (+ x 3)) y)
+   > fn [x] : + x 3 <$ \y   | ((fn [x] (+ x 3)) y)
    > ```
 
    Uses symbols `$`, `<$` and `,` to represent wrapping and indenting.
@@ -64,7 +66,7 @@ In total Wy uses:
 * 3 one-liner symbols: `$`, `<$` and `,`
 * 5 double markers like `::` to represent `)(`
 
-Symbols `L` and `C` (and some others) are sacrificed to be seen as openers.
+Yes, symbols `L` and `C` (and some others) are sacrificed to be seen as openers.
 > To use them as name variables, put them in a valid hy-expression like (setv L 3),
 > since wy parses valid hy-expressions as-is.
 

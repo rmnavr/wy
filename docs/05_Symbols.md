@@ -116,7 +116,7 @@ ncut x :       | (ncut x ())   ; not as desired
 ```
 
 But since `1:2` (and alike) are actually recognized as single words,
-rather than `1`, `:` and `2`
+rather than separate `1`, `:` and `2`
 (see [Basic syntax](https://github.com/rmnavr/wy/blob/main/docs/02_Basic.md)),
 you don't actually need hy wrapping in such cases:
 ```hy
@@ -124,20 +124,24 @@ ncut x 1:2     | (ncut x 1:2)  ; as desired
 ncut x :2      | (ncut x :2)   ; as desired
 ```
 
+Anyway, when in doubt, just wrap it in hy expression.
+
 ## Special case for `\`
 
 Remember that unlike all other wy symbols, you don't need `\` to be surrounded by spaces:
 ```hy
   \x           | x      ; seen by parser as '\' and 'x'
+
   \ x          | x      ; seen by parser as '\' and 'x'
 
   Lx           | (Lx)   ; seen by parser as word 'Lx'
+
   L x          | [(x)]  ; seen by parser as 'L' wrapper and 'x' word
 
   L\x          | [x]    ; seen by parser as 'L', '\' and 'x'
 ```
 
-For this reason wy words can never have `\` in their name.
+For this reason wy words can't normally have `\` in their name.
 Like for example `L\x` is not a walid wy name.
 
 Once again, wrap this in hy-brackets and you'll get
