@@ -66,7 +66,59 @@ Obvious quick way to run *.wy files is to chain 2 commands in shell:
 ```
 
 When transpilation of at least one file fails, wy2hy exits with sys.exit(1),
-thus avoiding evaluating older version of transpiled *.hy file if it exists (this is indended behaviour of `&&` in shell).
+thus avoiding evaluating older version of transpiled *.hy file
+if it exists (this is indended behaviour of `&&` in shell).
+
+<!-- __________________________________________________________________________/ }}}1 -->
+
+# Calling wy transpiler from hy/py
+
+<!-- details ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+
+You can use several functions to call wy transpilation from hy (or py).
+They all run the same transpilation, but have different behaviour
+regarding error messages.
+
+```hy
+
+    (import wy [ transpile_wy2hy ])
+
+    (transpile_wy2hy   ; will raise function call trace
+        "x <$ y")      ; when error is encountered
+
+    ; ---------------------------------------------------
+
+    (import wy [ run_wy2hy_transpilation ])
+    (import wy [ successQ unwrapR unwrapE ])
+
+    (setv result
+        (run_wy2hy_transpilation   
+             "x <$ y"
+             :silent True))
+
+    ; - It actually returns Result monad lol
+    ; - with silent=False will immediately print 
+    ;   user-friendly error message when encountered
+
+    ; You don't have to understand how Result monad works,
+    ; just use this code to extract data:
+    (if (successQ result)
+        (unwrapR result)          ; extracts correct HyCode as a string
+        (. (unwrapE result) msg)) ; extracts user-friendly msg as a string
+
+    ; ---------------------------------------------------
+
+    (import wy [ print_wy2hy_steps ])
+
+    (print_wy2hy_steps "x <$ y"
+                       :pretty_errors True))
+
+    ; will produce readable result of each transpilation step;
+    ; will print eather function call trace (when pretty_errors=False)
+    ; or user-friendly message (same as for run_wy2hy_transpilation)
+    ; on error
+
+```
 
 <!-- __________________________________________________________________________/ }}}1 -->
 

@@ -125,20 +125,19 @@
         [ #^ WyCode code
           #^ bool   [pretty_errors True]
         ]
+        "prints steps of wy2hy transpilation
+         - pretty_errors=True  will print user-friendly message
+         - pretty_errors=False will raised function trace
+         Unexpected errors are always raised
+        "
         (if pretty_errors
             (print_wy2hy_steps_with_pretty_errors_print code)
             (print_wy2hy_steps_with_raise               code)))
 
 ; _____________________________________________________________________________/ }}}1
 
-    (setv $TEST (read_file "E:/00_Vault/SynchW/04 Opensource/Hy/wy/tests/FE03_REPL.wy"))
-    (setv $TEST
-    " \"riba\ngus\" $ y
-    ")
-
     (when  (= __name__ "__main__")
+        (setv $TEST (read_file "../../../tests/FE03_REPL.wy"))
         (print_wy2hy_steps $TEST
                            :pretty_errors True))
-
-
 

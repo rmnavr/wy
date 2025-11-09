@@ -63,6 +63,7 @@
                              [TKind.OComment TKind.Indent])) ; NewLine is already removed at this stage
                  tokens)) ; NegIndent is not existing at this moment
 
+
     (defn [validateF] #^ None
         check_syntax
         [ #^ NTLine ntline
@@ -87,6 +88,10 @@
               (raise (WyExpanderError :ntline ntline :msg (PBMsg.f_bad_end (. (last _tokens) atom)))))
         ;
         (for [[&fst &snd] (pairwise _tokens)]
+             ; forbid SMARKER/MMARKER right before [$ <$ ,] 
+             (when (and (eq_any &fst.tkind [TKind.SMarker TKind.MMarker])
+                        (eq_any &snd.tkind [TKind.AMarker TKind.RMarker TKind.JMarker]))
+                   (raise (WyExpanderError :ntline ntline :msg (PBMsg.f_bad_2 &fst.atom &snd.atom))))
              ; forbid [\ $ ,] before [$ <$ ,]
              (when (and (eq_any &fst.tkind [TKind.CMarker TKind.AMarker TKind.JMarker])
                         (eq_any &snd.tkind [TKind.AMarker TKind.RMarker TKind.JMarker]))
@@ -303,21 +308,22 @@
          | : x <$ y
          |   3
          "
-         (setv blocks ; without comments and group_starters
+         (setv blocks ; blocks of ntlines without comments
              (lmulticut_by (fm
                                (eq (decide_structural_kind it)
                                    SKind.EmptyLine))
                            (lreject
                                (fm
-                                   (eq_any (decide_structural_kind it)
-                                           [SKind.OnlyOComment SKind.GroupStarter]))
-                                   ntlines)
+                                   (eq (decide_structural_kind it)
+                                       SKind.OnlyOComment))
+                               ntlines)
                            :keep_border  False
                            :merge_border True))
         ;
         (for [&block blocks]
             (for [[&fst &snd] (pairwise &block)]
-                 (when (and (or (in t_amarker &fst.tokens)
+                 (when (and (not (eq (decide_structural_kind &fst) SKind.GroupStarter))
+                            (or (in t_amarker &fst.tokens)
                                 (in t_rmarker &fst.tokens)
                                 (in t_jmarker &fst.tokens))
                             (lt (sum (first_indent_profile &fst.tokens))
@@ -593,7 +599,6 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-
 ; Assembly all:
 ; [I] check and expand ntlines :: [NTLine ...] -> [NTLine ...] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
@@ -604,7 +609,7 @@
         (setv _clsfd_ntlines (lmap classify_omarkers ntlines))
         (lmap check_syntax _clsfd_ntlines)            ; raises error when problems found
         ;
-        (setv _expd_ntlines (lmapcat expand_smarkers _clsfd_ntlines))
+        (setv _expd_ntlines (lmapcat expand_smarkers _clsfd_ntlines)) ; expands only leading smarkers of the line since no r/a/j-markers are processed yet
         (check_indent_after_oneliners _expd_ntlines)   ; raises error when problems found
         ;
         (->> _expd_ntlines

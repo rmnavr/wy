@@ -14,33 +14,53 @@ running wy code:
 
 # Wy syntax overview
 
-Wy has 2 distinct "levels" of syntax:
+Wy can be written in 3 increasingly more terse styles:
 
-1. Basic syntax *— quick to grasp and enough to write anything in wy*:
+1. [Basic syntax](https://github.com/rmnavr/wy/blob/main/docs/02_Basic.md):
    > ```hy
    > :                      | (
    >   fn [x] : + x 3       |   (fn [x] (+ x 3))
-   >   7                    |   7)
+   >  \y                    |   y)
    > ```
 
-   Here 2 special symbols were used:
-   - `:` — opener that represent new wrapping level starting with `(`
-   - `\` — continuator that supresses automatic wrapping
+   Uses special symbols:
+   * Openers like `:` that represent new wrapping level starting with `(`
+   * Continuator `\` that prevents automatic wrapping
 
-2. Condensed syntax and one-liners *— syntactic sugar for indenting and wrapping*:
+2. [Condensed syntax](https://github.com/rmnavr/wy/blob/main/docs/03_Condensed.md):
    > ```hy
    > : fn [x] : + x 3       | ( (fn [x] (+ x 3))    
-   >   7                    |   7)
-   > 
-   > fn [x] : + x 3 <$ 7    | ((fn [x] (+ x 3)) 7)
+   >  \y                    |   y)
    > ```
 
-   Symbols `$`, `<$` and `,` are used to control indenting and wrapping.
+   Has different rules for `:` placed at the start or in the mid of the line.
 
-Aside from aforementioned symbols, overall wy has about 35 special symbols.
-Wy sacrifices `L` and `C` to be recognized as `[` and `{` wrappers respectively.
-This is described in: [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
+3. [One-liners](https://github.com/rmnavr/wy/blob/main/docs/04_One_liners.md) syntax: 
+   > ```hy
+   > fn [x] : + x 3 <$\y    | ((fn [x] (+ x 3)) y)
+   > ```
+
+   Uses symbols `$`, `<$` and `,` to represent wrapping and indenting.
+
+# Wy symbols overview
+
+In total Wy uses:
+* 25 bracket openers:
+  * `:` for `(`
+  * `L` for `[`
+  * `C` for `{`
+  * and 22 more like: `#:` for `#(`, or `~@:` for `~@(`
+* 1 continuator `\`
+* 3 one-liner symbols: `$`, `<$` and `,`
+* 5 double markers like `::` to represent `)(`
+
+Symbols `L` and `C` (and some others) are sacrificed to be seen as openers.
+> To use them as name variables, put them in a valid hy-expr like (setv L 3),
+
+This is described in details in:
+[List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
 
 ---
 
 > \>\> Next chapter: [Basic syntax](https://github.com/rmnavr/wy/blob/main/docs/02_Basic.md) 
+

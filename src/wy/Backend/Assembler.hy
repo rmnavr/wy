@@ -20,6 +20,9 @@
         transpile_wy2hy
         [ #^ WyCode code
         ]
+        "takes wy code as a string,
+         produces hy code as a string,
+         raises function call trace when errors encountered"
         (->> code
              wycode_to_prepared_code
              prepared_code_to_ntlines

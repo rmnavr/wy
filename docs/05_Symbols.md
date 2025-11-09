@@ -2,14 +2,14 @@
 ---
 wy syntax:
 1. [Syntax overview](https://github.com/rmnavr/wy/blob/main/docs/01_Overview.md)
-2. [Basic syntax](https://github.com/rmnavr/wy/blob/main/docs/02_Basic.md) 
+2. [Basic syntax](https://github.com/rmnavr/wy/blob/main/docs/02_Basic.md)
 3. [Condensed syntax](https://github.com/rmnavr/wy/blob/main/docs/03_Condensed.md)
-4. [One-liners](https://github.com/rmnavr/wy/blob/main/docs/04_One_liners.md) 
+4. [One-liners](https://github.com/rmnavr/wy/blob/main/docs/04_One_liners.md)
 5. [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
 
 running wy code:
-1. [wy2hy transpiler](https://github.com/rmnavr/wy/blob/main/docs/wy2hy.md) 
-2. [wy repl](https://github.com/rmnavr/wy/blob/main/docs/repl.md) 
+1. [wy2hy transpiler](https://github.com/rmnavr/wy/blob/main/docs/wy2hy.md)
+2. [wy repl](https://github.com/rmnavr/wy/blob/main/docs/repl.md)
 ---
 
 <!-- hy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
@@ -18,21 +18,22 @@ running wy code:
 
 Hy itself has:
 - 3 kinds of closing bracket: `)`, `]` and `}`
-- 5 basic kinds of opening bracket:
+- 5+1 basic kinds of opening bracket ...
   * `(` — expression
   * `#(` — tuple
   * `[` — list
   * `{` — dict
   * `#{` — set
-- 4 macros symbols: `` ` ``, `'`, `~`, `~@`
-- Also, `#[` is used in wy for so-called bracketed strings (like `#[FOO[ ... ]FOO]`)
+  * `#[` — this one is special, since it is used only as a part of bracketed string like `#[FOO[ ... ]FOO]`
+- ... that can be prepended (without spaces) by any of 4 macros symbols:
+  * `` ` ``
+  * `'`
+  * `~`
+  * `~@`
 
-Wy has no special symbol for them 
-(so, unlike one might expect, `#L` is not a valid wy opener, because it
-is viewed as reader macro — not as opener).
+So for example `~@#( ... [#(...) ... ])` will be recognized by Wy as a valid hy-expression.
 
-Macros symbols can prepend (without spaces) to opening brackets, so for example `~@#(` is a valid hy bracket.
-In total it sums up to 5*(1+4) = 25 different kinds of opening brackets.
+In total it sums up to (1+4)*(5+1) = 30 different kinds of opening brackets.
 
 <!-- __________________________________________________________________________/ }}}1 -->
 <!-- wy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
@@ -42,16 +43,24 @@ In total it sums up to 5*(1+4) = 25 different kinds of opening brackets.
 Basic syntax and also condensed syntax rely on:
 - Indent rules
 - 25 various bracket openers (they all obey the same rules):
-  - 5 basic openers
+  - 5 basic openers...
     - `:` to represent `(`
     - `L` to represent `[`
     - `C` to represent `{`
     - `#:` to represent `#(`
     - `#C` to represent `#{`
-	- notice that wy does not use `#L` for `#[`, you'll have to use `#[` directly (and wy2hy will not care what's inside it)
-  - 4 hy macro symbols can be prepended to any of 5 basic openers without spaces (example: `~@#C` will represent `~@#{`),
-    thus generating 25 various openers
+  - ... that can be prepended (without spaces) by any of 4 hy macros symbols:
+    * `` ` ``
+    * `'`
+    * `~`
+    * `~@`
 - Continuator `\`
+
+So for example `~@#C` will represent `~@#{`.
+
+Notice that wy does not use `#L` for `#[`, you'll have to use `#[ ... ]` form in hy-syntax (and wy2hy will not care what's inside it)
+
+In total it sums up to (1+4)*5 = 25 different kinds of wy openers.
 
 One-liners use:
 - 3 symbols that control wrapping level:
@@ -65,37 +74,45 @@ One-liners use:
   - `:#:` to represent `) #(`
   - `C#C` to represent `} #{`
 
-Space-less syntax like `#rmacro:` is not specially recognized by wy. Use `#rmacro :` or `#rmacro(` instead.
+Space-less syntax like `#rmacro:` is not specially recognized by wy.
+Use `#rmacro :` or `#rmacro(` instead.
+
+Note on hy's recognition of sets:
+> In hy 1.0.0 `#{1}` is for some reason seen as reader macro `#1` (instead of set `#{1}`),
+> however `#{1 1}` is seen as a set `#{1}` as it should be. I'm not sure, but it looks like hy's bug.
+>
+> Anyway, when wy2hy sees `#{1}` or `#C 1`, it transpiles as usual, producing `#{1}`.
+> What hy makes of it — is on hy's consciousness.
 
 <!-- __________________________________________________________________________/ }}}1 -->
-<!-- L/C sacrifice ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+<!-- L/C sacrifice ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
-# Sacrificing L and C
+# Sacrificing L, C and other symbols
 
-Symbols `L`, `C` (and also `LL` and `CC` and similar) cannot be normally used as variable names in wy syntax.
+Symbols `L`, `C`, `LL` and `CC` cannot be normally used as variable names in wy syntax,
+since they are transpiled into brackets.
 
-> I know this is kind of dumb design, but hey, hy has lot's of various brackets.
+> I know this is meh, but hey.
 
-However, since wy does not look inside expressions with original hy syntax, you can have `L` and friends there:
+Intended universal workaround is wrapping them inside hy expressions, since wy parses them as is:
 ```hy
-; Seeing this code, wy2hy will strictly follow wy rules
-; and produce corresponding non-working hy code:
-setv L : + L 1          | (setv [(+ [1])])
-
-; In order for L to be recognized as variable (as opposed to "[" bracket opener),
-; L needs to be inside parentheses, since wy2hy does not modify anything inside parentheses:
-(setv L (+ L 1))        | (setv L (+ L 1))
+setv L : + L 1   | (setv [(+ [1])])  ; not as desired
+(setv L (+ L 1)) | (setv L (+ L 1))  ; as desired
 ```
 
-Another common usage of original hy syntax might be using of `ncut` macro (it uses `:` for slicing):
-```hy
-; Seeing this code, wy2hy will strictly follow wy rules
-; and produce corresponding non-working hy code:
-ncut x 1:2:3            | (ncut x 1(2(3)))
+Another case.
+Inside `ncut`-macro `:` is used to produce slices, but in wy it will be transpiled into `(` opener.
+Solution is the same — wrap it in hy expression
 
-; Wrap ncut with parentheses to produce correct code:
-(ncut x 1:2:3)          | (ncut x 1:2:3)
+```hy
+ncut x :       | (ncut x ())   ; not as desired
+(ncut x :)     | (ncut x :)    ; as desired
 ```
+
+Although since `1:2` are recognized as is (see [Basic syntax](https://github.com/rmnavr/wy/blob/main/docs/02_Basic.md)),
+you can avoid using hy wrapping in such cases:
+ncut x 1:2     | (ncut x 1:2)  ; as desired
+ncut x :2      | (ncut x :2)   ; as desired
 
 <!-- __________________________________________________________________________/ }}}1 -->
 

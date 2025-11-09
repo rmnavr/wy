@@ -2,20 +2,15 @@
 ---
 wy syntax:
 1. [Syntax overview](https://github.com/rmnavr/wy/blob/main/docs/01_Overview.md)
-2. [Basic syntax](https://github.com/rmnavr/wy/blob/main/docs/02_Basic.md) 
+2. [Basic syntax](https://github.com/rmnavr/wy/blob/main/docs/02_Basic.md)
 3. [Condensed syntax](https://github.com/rmnavr/wy/blob/main/docs/03_Condensed.md)
-4. [One-liners](https://github.com/rmnavr/wy/blob/main/docs/04_One_liners.md) 
+4. [One-liners](https://github.com/rmnavr/wy/blob/main/docs/04_One_liners.md)
 5. [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
 
 running wy code:
-1. [wy2hy transpiler](https://github.com/rmnavr/wy/blob/main/docs/wy2hy.md) 
-2. [wy repl](https://github.com/rmnavr/wy/blob/main/docs/repl.md) 
+1. [wy2hy transpiler](https://github.com/rmnavr/wy/blob/main/docs/wy2hy.md)
+2. [wy repl](https://github.com/rmnavr/wy/blob/main/docs/repl.md)
 ---
-
-Basic syntax uses:
-* indents
-* inline openers (we will focus for now mostly on `:`)
-* continuator `\`
 
 <!-- Indenting ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
@@ -55,7 +50,8 @@ print                   | (print
 print                   | (print
     f x                 |      (f x)
     3.0                 |      3.0
-    4.0                 |      4.0)
+   \4.0                 |      4.0)
+
 
 ; When \ is used, indent position is seen at next printable symbol after it,
 ; so there is a little bit of stylistic freedom of where to place \
@@ -73,6 +69,10 @@ y                       | (y
   y                     | (y)
 \ x                     |  x
 
+; Also, increasing indent after continuation line is forbidden:
+print                   |
+   \x                   |
+      f x               | <will not transpile>
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
@@ -80,7 +80,8 @@ y                       | (y
 
 # Empty lines policy
 
-Wy has special policy about empty lines — **you can't have empty lines inside one expression**.
+Wy has special policy about empty lines — **you can't have empty lines inside one expression**
+(with exception to valid hy-expressions and strings, which are always parsed as-is).
 
 ```hy
 ; Code below will be seen as 3 distinct s-expressions:
@@ -100,72 +101,66 @@ print x     |   (print x
     + k n   |       (+ k n))
 ```
 
-However you still can have empty lines inside valid multiline hy expressions and miltiline strings (see below).
+<!-- __________________________________________________________________________/ }}}1 -->
+<!-- Whitespace ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+
+# Whitespace policy
+
+Continuator is the only wy special symbol that can be used without surrounding spaces:
+```hy
+ :\: x | ( (x)) ; recognized as ':', '\', ':' and 'x'
+```
+
+Every other wy special element need to be spaced — or it will
+be recognized as a normal hy word (since hy allows for ASCII chars in names):
+```hy
+ x : y   | (x (y))  ; recognized as word 'x', opener ':' and word 'y'
+ x:y     | (x:y)    ; recognized as one word 'x:y'
+```
 
 <!-- __________________________________________________________________________/ }}}1 -->
-<!-- Hy expressions ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+<!-- Hy expressions + Strings ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
-# Recognition of valid hy expressions
+# Multiline elements (hy-expressions and strings)
 
-Wy will avoid looking inside expressions wrapped in valid hy brackets (`(...)`, `~@#{...}` and such).
-> List of all valid hy brackets is given in [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
+Wy parses valid hy-expressions (with valid bracket balancing) as-is, without looking inside them.
+This allows for mixing wy and hy code.
 
-Also:
-* indents inside multiline hy expression do not mess with wy code at all
-* you can have empty lines inside hy expressions
+Same is also true for strings.
 
-So this syntax is correct:
+This entails following rules:
+* Indents of multiline hy-expressions/strings do not mess with wy code
+  (just place very first symbol of hy-expression/string correctly)
+* You can have empty lines inside hy-expressions/strings, they will NOT close indent blocks
+
 ```hy
-abs   (+            | (abs   (+
-                    |                       ; notice empty line
+;     ↓ this is the only indent-level introduced by hy-expression
+plus  (+            | (plus  (+
+                    |                       ; notice that empty line didn't close indent block
      x              |       x               ; notice that x did not require "\"
-   (ncut ys 1 : 3)) |     (ncut ys 1 : 3))) ; notice that ":" was not recognized as wrapper
+   (ncut ys 1 : 3)) |     (ncut ys 1 : 3))  ; notice that ":" was not recognized as wy-wrapper
+      f z           |        (f z))
 print x             | (print x)
-```
 
-While outside hy expressions such indents won't compile:
-```
-  abs
- 3  ; this will throw indent error
-```
-
-To understand how multiline hy expressions behave in indented world of wy, imagine them
-being forcefully placed one one line (like joining several lines with `\n` symbol). 
-For example, this is how transpiler sees hy expression above:
-```hy
-(+ <\n><\n>     x <\n>   (ncut ys 1 : 3))
-```
-
-Also wy2hy will refuse to transpile if it'll see incorrect brackets (for which their pair is not found):
-```hy
-; this will give error:
-func
-    ( x
-
-; this will give error:
-func
-    x
-    )
+print "multiline    | (print "multiline
+   string           |    string
+                    |
+      string more   |       string more
+    more string"    |     more string")
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
-<!-- Strings ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+<!-- fStrings ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
-# Strings
+## Formatted strings
 
-All 4 kinds of python strings are recognized by parser (which are: `"string"`, `f"string"`, `b"string"` and `r"string"`)
-
-Multiline strings are parsed same as hy expressions, so this is a valid code:
-```hy
-    print " smth
-        smth
-
-     smth"
-```
-
-Formated strings are parsed as is, meaning you should use hy syntax inside them:
+Formated strings are parsed as is, meaning you should use hy syntax
+when having expressions inside them:
 ```hy
     f"{(* k 1.5) :.2f}"` ; this is correct
+
+    f"{* k 1.5 :.2f}"`   ; this will be transpiled wihout changes,
+                         ; so you'll end up having incorrect hy code
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
@@ -173,18 +168,17 @@ Formated strings are parsed as is, meaning you should use hy syntax inside them:
 
 # Other kinds of openers
 
-All other openers
-(summarized in [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md))
-obey the same rules:
+Other openers obey the same rules.
+Just be aware, that indent in openers like `':` counts from first symbol:
 
 ```hy
     L                   | [
       \x y : f 3        |   x y (f 3)
        g 4 L 2 5        |   (g 4 [2 5])]
 
-;   ↓ this is where wy will see indent level
-    `:                  | `(
-       \get ~x ~indx    |    get ~x ~indx)
+;   ↓   ↓ this is where wy will see indent levels
+    ':                  | '(
+       \get ~x ~indx    |     get ~x ~indx)
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
@@ -192,56 +186,39 @@ obey the same rules:
 
 # Elements that do not require continuator
 
-Several syntax elements (that can never be head of s-expression) do not require continuator `\`.
-- valid hy expressions (example: `#{"x" 3 "y" 4}`)
-  > anything starting with a valid hy bracket, mentioned in 
-  > [List of all special symbols](https://github.com/rmnavr/wy/blob/main/docs/05_Symbols.md)
-  > is seen as valid hy expression in wy
-- all 4 kinds of strings: `"string"`, `f"string"`, `b"string"`, `r"string"`
-- valid hy numbers (examples: `-1.0E+7`, `0xFF`, `1_000E7`, `+2,000,000E-6+3J`)
-  > anything starting with `digit` or `±digit` is seen as numbers in wy 
-- keywords like `:x` 
-  > anything starting with `:` and a symbol is seen as keyword in wy 
-  > (obviously excluding wy openers like `:L` and `:C`)
-- 4 sugar symbols: `#*` `#**` `#_` `#^`
-- hy macro-ed words like `'x` and `~@x`
-  > anything starting with `'`, `` ` ``, `~` or `~@` and a symbol 
-  > is seen as hy macro-ed word in wy
-  > (obviously excluding wy openers like `~@L`)
-- reader macros like like `#macro`
-  > anything starting with `#` and a symbol is seen as reader macros in wy
-  > (obviously excluding wy openers like `#:`)
+When line starts with elements, that by hy logic can never be head of s-expression,
+they will not be auto-wrapped, so continuator `\` may be omitted:
 
 ```hy
 func          | (func
-    (+ x 3)   |     (+ x 3)   ; valid hy expression
-    f"string" |     f"string" ; string
-    -1.0      |     -1.0      ; valid hy number
-    :z        |     :z        ; keyword
-    #**       |     #**       ; sugar symbol
-    'x        |     'x        ; hy macro-ed words
-    ~ y       |     ~ y)      ; hy macro and word
-              |
-              | ; this is obviously incorrect hy code,
-              | ; but it shows how wy2hy works
-```
+    #(+ x 3)  |     #(+ x 3)  ; valid hy expression
+    "string"  |     "string"  ; string
+    r"string" |     r"string" ; formatted string
+    b"string" |     b"string" ; byte string
+    f"string" |     f"string" ; formatted string
+    -1.0      |     -1.0      ; number (anything starting with ±digit)
+    :z 3      |     :z 3      ; keyword
+    #* m      |     #*  m     ; sugar symbol (args unpacker)
+    #rmacro   |     #rmacro   ; reader macro
+    'x        |     'x)       ; hy macro-ed words
 
-Notice that by these rules `NaN`, `Inf`, `True` and `False` are wrapped without continuator:
-
-```hy
 func          | (func
-    NaN       |     (NaN)
-    True      |     (True)
-   \NaN       |     NaN
-   \True      |     True)
+   \1         |      1        ; writing '\1' instead of just '1' is allowed ...
+    2         |      2)       ; ... although not required
 ```
 
-Also be aware that:
-* you can still place continuator `\` before those elements, although not required
-* if for some strange reason you need to wrap for example number in expression, use wy opener: `: 1.0`
+Everything else is autowrapped.
+
+Notice, that in this logic:
+* `::z` is keyword
+* `#*_` is reader macro
+* Things like `$a`, `&b`, `^c`, `-f` are all words (they will be auto-wrapped)
+* Currently `1:` will be seen as number in wy (will not be auto-wrapped), although it is not a valid number in hy
+  > It will be patched in future release
+
+Regarding numbers, `±NaN` and `Inf` are NOT seen as numbers by wy logic,
+i.e. you need to use continuator before them to avoid auto-wrapping.
+Same is true for `True` and `False`.
 
 <!-- __________________________________________________________________________/ }}}1 -->
-
-> \>\> Next chapter: [Condensed syntax](https://github.com/rmnavr/wy/blob/main/docs/03_Condensed.md)
-
 

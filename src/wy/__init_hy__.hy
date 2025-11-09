@@ -5,4 +5,8 @@
     (import wy.Backend.Assembler     [ transpile_wy2hy ])
     (import wy.Frontend.ErrorHelpers [ run_wy2hy_transpilation ])
     (import wy.Frontend.ReplHelpers  [ frame_hycode ])
+    (import wy.Frontend.DebugHelpers [ print_wy2hy_steps ])
+
+    (import wy.utils.fptk_local      [ successQ failureQ unwrapR unwrapE])
+
 

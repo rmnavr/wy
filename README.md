@@ -20,17 +20,25 @@ defn #^ int                         | (defn #^ int
       \n                            |         n
        + : fibonacci : - n 1        |         (+ (fibonacci (- n 1))
            fibonacci : - n 2        |            (fibonacci (- n 2)))))
-
-; special Wy feature — one-liners:
-setv x : range : abs -3 :: abs -10  | (setv x (range (abs -3) (abs -10)))
-map $ fn [x] : + x 1 , range 0 10   | (map (fn [x] (+ x 1)) (range 0 10))
 ```
 
-Code from real project:
+Example code from real project:
+<p align="center"><img src="https://github.com/rmnavr/wy/blob/main/examples/RL_example.png?raw=true" alt="Wy example" /></p>
 
-<p align="center">
-<img src="https://github.com/rmnavr/wy/blob/main/examples/RL_example.png?raw=true" alt="Wy example" />
-</p>
+Wy also offers special **one-liners syntax**, which provides
+variability in styling the same expression:
+```hy
+; vanilla hy-code style (parsed as-is):
+(map (fn [x y] (+ x y)) xs ys)
+
+; basic style:
+map : fn [x y] (+ x y)
+   \xs
+   \ys
+
+; one-liners style:
+map $ fn [x y] : + x y , \xs ys
+```
 
 > More examples: [/examples](https://github.com/rmnavr/wy/blob/main/examples)
 
@@ -56,11 +64,11 @@ Also:
 What not to like?
 
 <!-- __________________________________________________________________________/ }}}1 -->
-<!-- Caveats ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+<!-- Awaited QoL features ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
 # Awaited QoL features
 
-There are still some features on the TODO list:
+Of high priority:
 * Make TAB length configurable (currently TAB is hardcoded to be 4 spaces wide)
   > for now convert tabs to spaces before transpiling
   > if you want tabs to be of another lengths
@@ -69,6 +77,11 @@ There are still some features on the TODO list:
 * Forbid unmatched hy brackets and unmatched double-quotas
   > currently parser may behave unexpectedly when those are found
 * Add shebang line recognition
+
+I consider current transpilation speed reasonable, so increasing performance is of low priority.
+> On my 2020 year laptop, transpiling 300 LOC wy-file requires
+> ~1s of hy/py-startup time and ~0.5s of transpilation time.
+> Meh, but reasonable.
 
 <!-- __________________________________________________________________________/ }}}1 -->
 

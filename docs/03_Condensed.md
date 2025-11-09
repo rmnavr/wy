@@ -16,54 +16,35 @@ running wy code:
 
 # Condensed syntax
 
-Openers (like `:`) when they begin the line are considered to be **condensed**.
+Openers (like `:`) at the start of the line are considered to be **condensed**.
 Condensing is syntactic sugar, meaning that condensed openers are internally processed in expanded form:
 
 ```hy
-: fn [x] : + pow 2      | ( (fn [x] (pow x 2))
-  3                     |   3)
+; this is condensed opener (will be expanded)
+; ↓
+  : fn [x] : + pow 2      | ( (fn [x] (pow x 2))
+    3                     |   3)
+;          ↑ this is normap opener (not expanded)
 
 ; internally, lines above will be processed as if they were expanded to:
-:                       | (
-  fn [x] : + pow 2      |   (fn [x] (pow x 2))
-  3                     |   3)
+  :                       | (
+    fn [x] : + pow 2      |   (fn [x] (pow x 2))
+    3                     |   3)
 ```
 
 All the same rules apply to other openers:
 ```hy
-~@: f y                 | ~@((f y))
+  ~@: f y                 | ~@((f y))
 
 ; internally, lines above will be processed as if they were expanded to:
-~@:                     | ~@(
-    f y                 |     (f y))
+  ~@:                     | ~@(
+      f y                 |     (f y))
 ```
 
 This internal expansion does not mess with final numbering of generated code lines.
 
 <!-- __________________________________________________________________________/ }}}1 -->
-<!-- smarker vs mmarker ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
-
-# Openers behaviour depending on position
-
-Notice that `:` behaviour is different depending on it's placement:
-```hy
-                ; ↓↓ 2 wraps around x due to ":" at the start of the line
-: x : y         | ((x (y)))
-                ;     ↑ 1 wrap around y due to ":" in the middle of the line
-```
-
-Logic of such behaviour is more clear in expanded form:
-```hy
-                ; /--- 1st wrap is due to ":" at the start of the line
-                ; | /- 2nd wrap is due to "x" being autowrapped, since it starts the line
-                ; ↓ ↓
-:               | (
-  x : y         |   (x (y)))
-                ;      ↑ 1 wrap around "y" due to ":" in the middle of the line
-```
-
-<!-- __________________________________________________________________________/ }}}1 -->
-<!-- indenting ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+<!-- Indenting ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
 # Indenting in condensed syntax
 
@@ -96,25 +77,24 @@ for symbols to the right:
        4                 |    4)
 ```
 
-One more example of how `\` interacts with `:`:
+Notice, that you can't switch off condensing for non-condensing openers:
 ```hy
- : x :\y         | ((x (y))) ; this line has one ":" condensed
-\: x : y         | ( x (y))  ; no condensing is happening here
-```
+; these lines are correct:
+ : x : y         | ((x (y))) ; this line has one ":" condensed
+ :\x : y         | (x (y))   ; this line has one ":" condensed
+\: x : y         | (x (y))   ; this line has zero ":" condensed
 
-Notice that continuator `\` is allowed to be used
-without surrounding spaces,
-since it never can be part of some some other word:
-```hy
-    :\x   ; this syntax is correct
+; this line is illegal:
+ : x :\y         | <will not transpile>
+;    ↑ this is non-codensing opener, '\' can't be used after it
 ```
 
 <!-- __________________________________________________________________________/ }}}1 -->
-<!-- examples ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+<!-- Examples ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
 # Examples with other openers
 
-Let's get back to examples from [Basic syntax](https://github.com/rmnavr/wy/blob/main/docs/02_Basic.md) chapter
+Let's get back to examples from [Basic syntax](https://github.com/rmnavr/wy/blob/main/docs/02_Basic.md)
 and see how they can be condensed:
 
 ```hy

@@ -190,8 +190,9 @@
         [ #^ WyCode code
           #^ bool   [silent True]          
         ]
-        "On success returns transpiled HyCode,
-         on failure returns prettified error msg;
+        "Returns result monad.
+         On success places transpiled HyCode in monad,
+         on failure places prettified error msg in monad;
          ;
          Never raises (catches ALL errors)
          ;
