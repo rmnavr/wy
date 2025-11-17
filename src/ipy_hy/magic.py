@@ -14,9 +14,9 @@ class HyMagics(Magics):
     @needs_local_scope
     def hy_(
         self,
-        line: str | None,
-        cell: str | None = None,
-        local_ns: Mapping[str, object] | None = None,
+        line: Union[str, None],
+        cell: Union[str, None] = None,
+        local_ns: Union[Mapping[str, object], None] = None,
     ) -> object:
         """Magic to execute Hy code within a Python kernel."""
         ipython = get_ipython()

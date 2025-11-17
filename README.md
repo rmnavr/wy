@@ -52,8 +52,8 @@ Don't be afraid to try Wy:
   * You'll get meaningfull number lines in trace messages when raising exceptions in transpiled *.hy files
   * If you decide that Wy is not your cup of tea, just take your transpiled *.hy files and continue from there
 * wy2hy produces **user-friendly error messages** when transpilation fails
-* Wy works with all 25 kinds of hy parenthesis (including those that are used for macros)
-* You can freely mix Wy and Hy code (wy2hy transpiles correct hy expressions as-is)
+* Wy works with **all 25 kinds of hy parenthesis** (including those that are used for macros)
+* You can freely **mix Wy and Hy code** (wy2hy transpiles correct hy expressions as-is)
 * All the edge cases (that I could think of) are covered in the testing suite
 * Wy and wy2hy are fully documented and ready-to-use
 
@@ -64,9 +64,10 @@ Also:
 What not to like?
 
 <!-- __________________________________________________________________________/ }}}1 -->
-<!-- Awaited QoL features ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
-# Awaited QoL features
+<!-- Awaited features ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+
+# Secondary features to add
 
 Of high priority:
 * Make TAB length configurable (currently TAB is hardcoded to be 4 spaces wide)
@@ -80,7 +81,7 @@ Of high priority:
 
 I consider current transpilation speed reasonable, so increasing performance is of low priority.
 > On my 2020 year laptop, transpiling 300 LOC wy-file requires
-> ~1s of hy/py-startup time and ~0.5s of transpilation time.
+> ~0.5s of hy/py-startup time and ~0.5s of transpilation time.
 > Meh, but reasonable.
 
 <!-- __________________________________________________________________________/ }}}1 -->

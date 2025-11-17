@@ -1,81 +1,89 @@
 
-	Todo:
-		+ check/upd stdout/stderr (check as in subprocess ALL_BE_tests calls)
-		* replace ■ and ☇¦ with rarerer symbols, mention in doc
+// wy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-	Packaging:
-		+ test if requirements are correct (including python version 3.9)
-		+ looks like 3.10 currently is needed for magic (3.9 should be enough)
+    Add features:
+        + allow indent after \x  like:
+            \x      |  x
+               f x  |     (f x)
+        + TABLEN=4
+        + prepend "trnspld by wy2hy v.0.5.0"
+        + ¹ unicode, ² unmatched hy-closers, ³ unmatched double-qupte — not recognized, partially catched
+        // + shebang (for wy? for hy?)
+        // + colored/non-colored output
+
+    Parser:
+        * replace ■ and ☇¦ with rarerer symbols, mention in doc
+        + sss"sss" incorrect prefix of strings
+        + 1: is not a number
+
+    Syntax checks:
+        ? forbid more incorrect placements of DMARKERs 
+
+    Codebase upd:
+        + renames:
+          + PMSg -> PAMsg (app-messages)
+          + hymacromark -> hymacroed_word
+          + ORPHANB -> UNMATCHED_OPENER_BRACKET
+          + NDLine.rowN     -> lineNs
+          + NDLine.kind     -> skind 
+          + NDLineInfo.kind -> skind
+        + add [validateF] to FE
+        + remove lens requirement
+        + currently Expander.hy has: 
+          - omarker_clasify // move it to parser
+          - check_syntax    // move it to new module
+        + recursion limit, where to put?
+
+    Prettify output:
+        + space before comments
+        + ( ( (x))) remove spaces?
+
+    Prettify errors:
+        + better classify errors: Indent error, Syntax error, One-liner error, etc.
+        + use words "condensing/non-condensing opener" in user-friendly messages
+        + when bad de-dent, also visualize all available indents so far
+
+    Other:
+        + performance (fptk import, map/lmap, lens, validateF, NTLine.upd_1_field)
+
+// ____________________________________________________________________________/ }}}1
+// tests ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    + check/upd stdout/stderr (check as in subprocess ALL_BE_tests calls)
 
     Tests:
         + reorganize test coverage and structure (as early as possible)
         + add wy-direct tests
         + test all error messages (all the ways to reach to them)
         + bracketed string
-		+ : f : x $ : g : y , : k : z <$ : m : t
-	     \: f : x $ : g : y , : k : z <$ : m : t
-		  will it forbid all the followup continuators correctly further?
-		+ \  f <$ x <$ y
-	       \ f <$\x <$ y
-	        \f <$ x <$\y
-		+ \ x $ 4
-		  \ x , 4
-
-
-=========================================================
-
-	// Planned after 0.5.0 release:
-
-// Later ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-	TODO from README.md:
-	    + TABLEN=4
-	    + ¹ unicode, ² unmatched hy-closers, ³ unmatched double-qupte — not recognized, partially catched
-	    + shebang (for wy? for hy?)
-		// + colored/non-colored output
-
-	Parser correctness:
-	    + sss"sss" incorrect prefix of strings
-	    + 1: is not a number
-
-	More syntax checks:
-        ? forbid more incorrect placements of DMARKERs 
-
-    Packaging:
-        * squash readme_creation branch
-
-    Codebase upd:
-        + renames:
-          + PMSg -> PAMsg (app-messages)
-          + hymacromark -> hymacroed_word
-		  + ORPHANB -> UNMATCHED_OPENER_BRACKET
-          + NDLine.rowN     -> lineNs
-          + NDLine.kind     -> skind 
-          + NDLineInfo.kind -> skind
-        + add [validateF] to FE
-        + remove lens requirement
-		+ currently Expander.hy has: 
-		  - omarker_clasify // move it to parser
-		  - check_syntax    // move it to new module
-
-	Prettify output:
-		+ space before comments
-		+ ( ( (x))) remove spaces
-
-	Prettify errors:
-        + better classify errors: Indent error, Syntax error, One-liner error, etc.
-		+ use words "condensing/non-condensing opener" in user-friendly messages
-		+ when bad de-dent, also visualize all available indents so far
-
-	Other:
-		+ performance (fptk import, map/lmap, lens, validateF, NTLine.upd_1_field)
+        + : f : x $ : g : y , : k : z <$ : m : t
+         \: f : x $ : g : y , : k : z <$ : m : t
+          will it forbid all the followup continuators correctly further?
+        + \  f <$ x <$ y
+           \ f <$\x <$ y
+            \f <$ x <$\y
+        + \ x $ 4
+          \ x , 4
 
 // ____________________________________________________________________________/ }}}1
-// New features ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+// packaging ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-	+ allow indent after \x  like:
-	    \x      |  x
-		   f x  |     (f x)
+    + squash 'readme-creation' branch
 
 // ____________________________________________________________________________/ }}}1
+// docs ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+
+    - big and usable cheetsheet doc
+
+// ____________________________________________________________________________/ }}}1
+
+	······························
+
+	Current:
+        - check requirements (3.9) by uv
+        - publish 0.5.0 to main
+
+    Next:
+        - check performance bottlenecks (fptk, pydantic startup, parser, ...)
+
 

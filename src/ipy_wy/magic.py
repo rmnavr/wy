@@ -23,9 +23,9 @@ class WyMagics(Magics):
     @needs_local_scope
     def wy(
         self,
-        line: str | None,
-        cell: str | None = None,
-        local_ns: Mapping[str, object] | None = None,
+        line: Union[str, None],
+        cell: Union[str, None] = None,
+        local_ns: Union[Mapping[str, object], None] = None,
     ) -> object:
         """Magic to execute Wy code within a Python kernel."""
         ipython = get_ipython()
@@ -57,9 +57,9 @@ class WyMagics(Magics):
     @needs_local_scope
     def wy_spy(
         self,
-        line: str | None,
-        cell: str | None = None,
-        local_ns: Mapping[str, object] | None = None,
+        line: Union[str, None],
+        cell: Union[str, None] = None,
+        local_ns: Union[Mapping[str, object], None] = None,
     ) -> object:
         """Magic to execute Wy code within a Python kernel."""
         ipython = get_ipython()
