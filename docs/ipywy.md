@@ -88,8 +88,8 @@ hy-ipython (and thus ipy_hy and ipy_wy) internally uses
 And there is small hy.read bug in hy 1.0.0 regarging sets.
 
 When sending hy-code `#{1}` to ipython via hy-ipython
-(internally it will call `(hy.read "#{1}")`,
-it will be seen as reader macro `#1` (instead of set `#{1}`).
+(internally it will call `(hy.read "#{1}")`),
+it will be seen as reader macro `#1` instead of set `#{1}`.
 > By the way, `#{1 1}` has no such problem — it is seen as set `#{1}` as it should be.
 
 Anyway, when wy2hy sees `#{1}` or `#C 1`, it transpiles it to usual `#{1}`,

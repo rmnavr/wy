@@ -151,7 +151,7 @@ object1 adder <$ \x <$ + y 3    | (((object1 adder) x) (+ y 3))
 ```
 
 You can even have `<$` with no expression to the right:
-```
+```hy
   f <$     | ((f))
   f <$ <$  | (((f)))
 ```
@@ -193,7 +193,7 @@ And they all act in the same manner as described for `::`.
 ## Rules for indenting
 
 Lines coming directly after lines with `<$`, `$` or `,` symbol can't start with increased indents:
-```
+```hy
 ; correct syntax:
 : f , 3  | ( (f) 3
   z      |   (z))
@@ -246,9 +246,9 @@ one-liner symbols have to be surrounded by spaces, but continuator does not have
  1 , 000 | 1 000     ; parser sees it as number '1', joiner ',' and number '000'
 ```
 
-Space before/after '\' and one-liner symbols is allowed,
+Space before/after `\` and one-liner symbols is allowed,
 although it has no direct effect on indenting:
-```
+```hy
 ; those 3 lines will have the same indenting behaviour:
     : \   f <$ \   x
     :   \ f    <$ \x
@@ -295,7 +295,7 @@ Applicator:
 ```
 
 Reverse applicator:
-```
+```hy
   object <$ 3 , 4  | ( (object) 3 4)
   object <$ f $ 4  | ( (object) (f 4))
 

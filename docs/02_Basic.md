@@ -244,7 +244,8 @@ Some possible caveats:
 * `1:` will be seen as a number in wy (it will not be auto-wrapped),
   although it is not a valid number in hy
   > this may be changed in future releases
-* In hy logic `"string".format` isn't correct syntax, this is why strings are autowrapped in wy
+* In hy logic `"string".format` isn't correct syntax, this is why strings are not autowrapped in wy
 
 <!-- __________________________________________________________________________/ }}}1 -->
 
+> \>\> Next chapter: [Condensed syntax](https://github.com/rmnavr/wy/blob/main/docs/03_Condensed.md)

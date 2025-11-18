@@ -64,10 +64,19 @@ Also:
 What not to like?
 
 <!-- __________________________________________________________________________/ }}}1 -->
+<!-- Motivation ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
-<!-- Awaited features ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+# Motivation for creating Wy
 
-# Secondary features to add
+In short:
+* Full access to Python ecosystem -> `Python`
+* LISP macros, homoiconicity and stuff -> `hy`
+* No parentheses -> `wy`
+
+<!-- __________________________________________________________________________/ }}}1 -->
+<!-- TODOs ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
+
+# TODOs
 
 Of high priority:
 * Make TAB length configurable (currently TAB is hardcoded to be 4 spaces wide)
@@ -79,7 +88,11 @@ Of high priority:
   > currently parser may behave unexpectedly when those are found
 * Add shebang line recognition
 
-I consider current transpilation speed reasonable, so increasing performance is of low priority.
+I consider current transpilation speed reasonable,
+so increasing performance is of low priority.
+Upon installing wy2hy first run will be slow
+(because hy needs to compile all the macroses),
+but any subsequent runs are of normal speed.
 > On my 2020 year laptop, transpiling 300 LOC wy-file requires
 > ~0.5s of hy/py-startup time and ~0.5s of transpilation time.
 > Meh, but reasonable.
@@ -106,15 +119,21 @@ running wy code:
 
 # Installation
 
+Using pip:
 ```
 pip install git+https://github.com/rmnavr/wy.git@main
 ```
 
+Using uv:
+```
+uv add git+https://github.com/rmnavr/wy.git@main
+```
+
 Dependencies:
-* python 3.9
-* ipython *(tested with 8.18.1)*
-* hy *(tested with 1.0.0)*
-* hyrule *(tested with 1.0.0)*
+* python >= 3.9 *(tested with 3.9 and 3.10)*
+* ipython *(tested with 8.18.1 and some 9 version)*
+* hy *(tested with 1.0.0 and 1.1.0)*
+* hyrule *(tested with 1.0.0 and 1.1.0)*
 * pydantic *(tested with 2.11.7)*
 * pyparsing *(tested with 3.0.9)*
 * funcy *(tested with 2.0)*
@@ -126,7 +145,7 @@ Dependencies:
 
 # Changelog
 
-* Version 0.5.0 (05 nov 2025)
+* Version 0.5.0 (17 nov 2025)
   * for user:
     * added meaningfull error messages for wy2hy
     * added `hy_`, `wy` and `wy_spy` magics to ipython

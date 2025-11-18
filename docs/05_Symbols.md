@@ -60,7 +60,7 @@ So for example `~@#C` will represent `~@#{`.
 
 Notice that wy does not use `#L` for `#[`, you'll have to use `#[ ... ]` form in hy-syntax
 (and wy2hy will not care what's inside it).
-> Symbols `#L` are seen in wy as a reader macro.
+> Symbol `#L` is seen in wy as a reader macro.
 
 In total it sums up to (1+4)*5 = 25 different kinds of wy openers.
 

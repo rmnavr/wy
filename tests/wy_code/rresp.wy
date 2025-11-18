@@ -353,7 +353,6 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    ;setv $FILENAME "V:/Electric Propulsion/Averyanov_CalcNode/z_result.pch"
     setv $FILENAME "test_data/rand_resp_02.pch"
 
     setv [$X  $Y  $Z ] ["RANDOM X (1 SIGMA)" "RANDOM Y (1 SIGMA)" "RANDOM Z (1 SIGMA)"]

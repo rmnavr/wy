@@ -14,7 +14,8 @@ running wy code:
 
 # wy2hy transpiler
 
-Once wy is installed, you acquire `wy2hy` executable (usually placed at some place like `../conda/Scripts`).
+Once wy is installed, you acquire `wy2hy` executable
+(usually placed at some place like `../conda/Scripts`).
 
 <!-- wy2hy ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1 -->
 
