@@ -80,10 +80,19 @@
 	······························
 
 	Current:
-        - check requirements (3.9) by uv
-        - publish 0.5.0 to main
+	- upd fptk.local (for more speed)
+	* remove pydantic (for more speed)
+	+ allow indent increase after continuator
+	+ $ cutter
 
-    Next:
-        - check performance bottlenecks (fptk, pydantic startup, parser, ...)
+	······························
 
+	<$ — forbid indent
+	,  — ?
 
+	forbid indent further that start of 
+	multiline line for $
+	      
+	print $ str "line
+	             multi" $ str "ln2"
+              OK xNONOKx

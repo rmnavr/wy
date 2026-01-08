@@ -248,7 +248,6 @@
 ; _____________________________________________________________________________/ }}}1
 ; [F] /monadic/ Runner: Transpile one wy-hy pair ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-
     (defn [validateF] #^ (of Result Transpiled APP_ERROR)
         transpile_wy_file
         [ #^ StrictStr source_filename
@@ -260,7 +259,7 @@
                      (return (Failure (APP_ERROR PMsg.trspl_read)))))
         ;
         (setv [_t_s _trnsplR]
-              (timing run_wy2hy_transpilation _wy_code))
+              (timing (run_wy2hy_transpilation _wy_code)))
         (if (failureQ _trnsplR)
             (do (setv tr_err_msg (-> _trnsplR unwrapE (getattrm .msg)))
                 (return (Failure (APP_ERROR (sconcat f"{tr_err_msg}\n" PMsg.trspl_bad) ))))

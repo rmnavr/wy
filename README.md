@@ -68,6 +68,12 @@ What not to like?
 
 # Motivation for creating Wy
 
+> Why would you do such a thing?
+> 
+> Because nothing is sacred, not even your parens.
+> 
+> (from: https://www.draketo.de/software/wisp)
+
 In short:
 * Full access to Python ecosystem -> `Python`
 * LISP macros, homoiconicity and stuff -> `hy`
@@ -158,5 +164,4 @@ Dependencies:
   * first public release
 
 <!-- __________________________________________________________________________/ }}}1 -->
-
 

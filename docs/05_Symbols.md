@@ -142,7 +142,7 @@ Remember that unlike all other wy symbols, you don't need `\` to be surrounded b
 ```
 
 For this reason wy words can't normally have `\` in their name.
-Like for example `L\x` is not a walid wy name.
+Like for example `L\x` is not a valid wy name.
 
 Once again, wrap this in hy-brackets and you'll get
 variable named `L\x` if you need it:
