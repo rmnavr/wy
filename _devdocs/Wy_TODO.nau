@@ -71,27 +71,20 @@
     + squash 'readme-creation' branch
 
 // ____________________________________________________________________________/ }}}1
-// docs ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
+// doc ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    - big and usable cheetsheet doc
+	* short usable cheetsheet of syntax
 
 // ____________________________________________________________________________/ }}}1
 
-	······························
+······························
 
 	Current:
-	* remove pydantic/monad-pydantic/lens (for more speed)
 	+ allow indent increase after \continuator
-	+ $ cutter
+	+ $ cutter (<$ — forbid indent, «,» — ?)
+	  // also, forbid indent further than start of multiline line for $, example:
+	  print $ str "line
+	               multi" $ str "ln2"
+                OK xNONOKx
+	* pydantic was removed totally — was it a good descision (instead of on/off approach)?
 
-	······························
-
-	<$ — forbid indent
-	,  — ?
-
-	forbid indent further than start of 
-	multiline line for $
-	      
-	print $ str "line
-	             multi" $ str "ln2"
-              OK xNONOKx
