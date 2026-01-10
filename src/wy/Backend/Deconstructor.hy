@@ -13,7 +13,7 @@
 ; [F] ntl2ndl :: NTLine -> NDLine ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
 
-    (defn [validateF] #^ NDLine
+    (defn [] #^ NDLine
         ntl2ndl
         [ #^ NTLine ntline
         ]
@@ -26,7 +26,7 @@
 
 ; ■ build_ndl_EL ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
 
-    (defn [validateF] #^ NDLine
+    (defn [] #^ NDLine
         build_ndl_EL
         [ #^ NTLine ntline
         ]
@@ -41,7 +41,7 @@
 ; ________________________________________________________________________/ }}}2
 ; ■ build_ndl_GS ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
 
-    (defn [validateF] #^ NDLine
+    (defn [] #^ NDLine
         build_ndl_GS
         [ #^ NTLine ntline
         ]
@@ -59,7 +59,7 @@
 ; ________________________________________________________________________/ }}}2
 ; ■ build_ndl_OC ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
 
-    (defn [validateF] #^ NDLine
+    (defn [] #^ NDLine
         build_ndl_OC
         [ #^ NTLine ntline
         ]
@@ -77,7 +77,7 @@
 ; ________________________________________________________________________/ }}}2
 ; ■ build_ndl_IO ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
 
-    (defn [validateF] #^ NDLine
+    (defn [] #^ NDLine
         build_ndl_IO
         [ #^ NTLine ntline
         ]
@@ -95,7 +95,7 @@
 ; ________________________________________________________________________/ }}}2
 ; ■ build_ndl_C  ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
 
-    (defn [validateF] #^ NDLine
+    (defn [] #^ NDLine
         build_ndl_C
         [ #^ NTLine ntline
         ]
@@ -115,7 +115,7 @@
 ; _____________________________________________________________________________/ }}}1
 ; [F] check_ndlines (error-thrower) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ None
+    (defn [] #^ None
         check_ndlines
         [ #^ (of List NDLine) ndlines
         ]
@@ -146,7 +146,7 @@
 ; _____________________________________________________________________________/ }}}1
 ; [F] assembly: deconstruct ntlines ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ (of List NDLine)
+    (defn [] #^ (of List NDLine)
         deconstruct_ntlines
         [ #^ (of List NTLine) ntlines
         ]

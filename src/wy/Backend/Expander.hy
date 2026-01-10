@@ -21,7 +21,7 @@
     ; - immediately after AMARKER/RMARKER/JMARKER
     ; // OMARKER at every other position is MMARKER
 
-    (defn [validateF] #^ NTLine
+    (defn [] #^ NTLine
         classify_omarkers
         [ #^ NTLine ntline
         ]
@@ -54,7 +54,7 @@
     ; - [\ $ ,] cannot be right before [$ <$ ,]
     ; - <$      cannot be right before [$ ,] 
 
-    (defn [validateF] #^ (of List Token)
+    (defn [] #^ (of List Token)
         remove_non_check_relevant_tokens
         [ #^ (of List Token) tokens
         ]
@@ -64,7 +64,7 @@
                  tokens)) ; NegIndent is not existing at this moment
 
 
-    (defn [validateF] #^ None
+    (defn [] #^ None
         check_syntax
         [ #^ NTLine ntline
         ]
@@ -147,27 +147,27 @@
 ; _____________________________________________________________________________/ }}}1
 ; [util] for Token ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ StrictInt
+    (defn [] #^ int
         tlen
         [#^ Token token]
         (when (eq token.tkind TKind.NegIndent) (return -1))
         (return (len token.atom)))
 
-    (defn [validateF] #^ Token
+    (defn [] #^ Token
         indent_token
-        [#^ StrictInt indent_len]
+        [#^ int indent_len]
         "converts number 3 to Token with atom '■■■'"
         (Token (smul $INDENT_MARK indent_len) PKind.INDENT TKind.Indent))
 
-    (defn [validateF] #^ Token
+    (defn [] #^ Token
         tokens_to_indent_token
         [#^ (of List Token) tokens]
         "converts tokens with atoms ['■', '~:'] to Token with atom '■■■'"
         (indent_token (sum (lmap tlen tokens))))
 
-    (defn [validateF] #^ (of List Token)
+    (defn [] #^ (of List Token)
         prepend_indent_token
-        [ #^ StrictInt       indent_len
+        [ #^ int             indent_len
           #^ (of List Token) tokens
         ]
         " 1 + ['■', ...] will give ['■■', ...] ;
@@ -183,7 +183,7 @@
             (lconcat [(indent_token indent_len)]
                      tokens)))
 
-    (defn [validateF] #^ (of Tuple StrictInt StrictInt StrictInt)
+    (defn [] #^ (of Tuple int int int)
         first_indent_profile
         [ #^ (of List Token) tokens
         ]
@@ -237,7 +237,7 @@
 ; SMARKERs:
 ; [F] expand smarkers :: NTLine -> [NTLine ...] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ (of List NTLine)
+    (defn [] #^ (of List NTLine)
         expand_smarkers
         [ #^ NTLine ntline
         ]
@@ -249,7 +249,7 @@
                               (expand_one_smarker (last _new_lines)))))
         (return _new_lines))
 
-    (defn [validateF] #^ (of List NTLine)
+    (defn [] #^ (of List NTLine)
         expand_one_smarker
         [#^ NTLine ntline]
         "when no smarker is found, return source [ntline],
@@ -268,7 +268,7 @@
                        :tokens it)
                [ntline1_tokens ntline2_tokens]))
 
-    (defn [validateF] #^ bool
+    (defn [] #^ bool
         ntline_has_smarker_for_expandingQ
         [#^ NTLine ntline]
         "True for ['■', ':', ...] and [':', ...] ntlines;
@@ -294,7 +294,7 @@
 ; check on smarker-expanded lines:
 ; [F] check indent after oneliners ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ None
+    (defn [] #^ None
         check_indent_after_oneliners
         [ #^ (of List NTLine) ntlines
         ]
@@ -342,7 +342,7 @@
 
     ; this function is used in Expander.hy only for checking indent after oneliners;
     ; main usage is in Deconstructor.hy
-    (defn [validateF] #^ SKind
+    (defn [] #^ SKind
         decide_structural_kind
         [ #^ NTLine ntline
         ]
@@ -371,7 +371,7 @@
 ; RMARKERs (no OMarker is supposed to be at NTLine start at this stage):
 ; helpers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ (of List (of List Token))
+    (defn [] #^ (of List (of List Token))
         split_tokens_by_rmarker_tokens
         [ #^ (of List Token) tokens
         ]
@@ -381,10 +381,10 @@
                       :keep_border  False
                       :merge_border False))
 
-    (defn [validateF] #^ (of List Token)
+    (defn [] #^ (of List Token)
         prepend_rmarker_openers
         [ #^ (of List Token) tokens
-          #^ StrictInt       n
+          #^ int             n
         ]
         " 
         | ⎤  f      < this input        ; ⎤ is continuator in this notation
@@ -409,7 +409,7 @@
 ; _____________________________________________________________________________/ }}}1
 ; [F] expand rmarkers :: NTLine -> [NTLine ...] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-   (defn [validateF] #^ (of List NTLine)
+   (defn [] #^ (of List NTLine)
         expand_rmarkers
         [ #^ NTLine ntline
         ]
@@ -419,7 +419,7 @@
                             :tokens it))
              (lmapcat expand_smarkers)))
 
-    (defn [validateF] #^ (of List (of List Token))
+    (defn [] #^ (of List (of List Token))
         expand_rmarkers_on_tokens
         [ #^ (of List Token) tokens
         ]
@@ -460,7 +460,7 @@
         ;
         (return (lconcat [_head_line_updated] _expd_lines_updated)))
 
-    (defn [validateF] #^ StrictInt
+    (defn [] #^ int
         minus1_when_cmarker_1st
         [#^ (of List Token) tokens]
         (when (zerolenQ tokens) (return 0))         ; [HACK_REV] case of "x <$" and such (empty arg after <$)
@@ -473,7 +473,7 @@
 ; AMARKERs (no OMarker is supposed to be at NTLine start at this stage):
 ; helpers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ (of List (of List Token))
+    (defn [] #^ (of List (of List Token))
         split_tokens_by_amarker_tokens
         [ #^ (of List Token) tokens
         ]
@@ -483,7 +483,7 @@
                       :keep_border  False
                       :merge_border False))
 
-    (defn [validateF] #^ StrictInt
+    (defn [] #^ int
         guaranteed_excessive_len_of_line
         [ #^ (of List Token) tokens
         ]
@@ -497,7 +497,7 @@
 
    (setv $A_INDENT_LEN 4) ; extra indent generated by AMarkers
 
-   (defn [validateF] #^ (of List NTLine)
+   (defn [] #^ (of List NTLine)
         expand_amarkers
         [ #^ NTLine ntline
         ]
@@ -509,7 +509,7 @@
                             :tokens it))
              (lmapcat expand_smarkers)))
 
-    (defn [validateF] #^ (of List (of List Token))
+    (defn [] #^ (of List (of List Token))
         expand_amarkers_on_tokens
         [ #^ (of List Token) tokens
         ]
@@ -543,7 +543,7 @@
 ; JMARKERs (no OMarker is supposed to be at NTLine start at this stage):
 ; [F] expand jmarkers :: NTLine -> [NTLine ...] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ (of List NTLine)
+    (defn [] #^ (of List NTLine)
         expand_jmarkers
         [ #^ NTLine ntline
         ]
@@ -559,7 +559,7 @@
         (return _new_lines))
 
 
-    (defn [validateF] #^ (of List NTLine)
+    (defn [] #^ (of List NTLine)
         expand_one_jmarker
         [ #^ NTLine ntline
         ]
@@ -602,7 +602,7 @@
 ; Assembly all:
 ; [I] check and expand ntlines :: [NTLine ...] -> [NTLine ...] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ (of List NTLine)
+    (defn [] #^ (of List NTLine)
         expand_ntlines
         [ #^ (of List NTLine) ntlines
         ]

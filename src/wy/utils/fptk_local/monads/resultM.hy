@@ -1,9 +1,9 @@
 
 ; Import/Export ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (import typing [TypeVar Generic Union])
-    (import pydantic [BaseModel])
+    (import typing [Any Union])
     (import funcy [rcompose lmap partial])
+    (import dataclasses [dataclass])
     (require wy.utils.fptk_local.core.from_hyrule [of unless])
 
     (export :objects [ Success Failure Result
@@ -16,22 +16,19 @@
 
 ; Classes ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (setv S (TypeVar "S"))
-    (setv F (TypeVar "F"))
-
-    (defclass _Failure [BaseModel (of Generic F)]
-        #^ F value
+    (defclass [dataclass] _Failure []
+        #^ Any value
         (defn __str__ [self] (+ "Failure: " (str self.value)))
         (defn __repr__ [self] (self.__str__)))
 
-    (defclass _Success [BaseModel (of Generic S)]
-        #^ S value
+    (defclass [dataclass] _Success []
+        #^ Any value
         (defn __str__ [self] (+ "Success: " (str self.value)))
         (defn __repr__ [self] (self.__str__)))
 
 
-    (defclass Result [BaseModel (of Generic S F)]
-        #^ (of Union (of _Success S) (of _Failure F)) result
+    (defclass [dataclass] Result []
+        #^ (of Union _Success _Failure) result
         (defn [property] value [self] self.result.value)
         (defn __str__ [self] (+ "<R." (str self.result) ">"))
         (defn __repr__ [self] (self.__str__)))
@@ -80,28 +77,28 @@
 ; _____________________________________________________________________________/ }}}1
 ; utils: Routing ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn #^ S unwrapR [#^ (of Result S F) resultM]
+    (defn unwrapR [#^ Result resultM]
         "throws error when on Failure track"
         (if (successQ resultM)
              (return resultM.value)
              (raise (ValueError f"Can't unwrapR {resultM}, since it's on Failure track"))))
 
-    (defn #^ S unwrapR_or
-        [ #^ (of Result S F) resultM
-          #^ S default]
+    (defn unwrapR_or
+        [ #^ Result resultM
+          default]
         (if (successQ resultM)
              (return resultM.value)
              (return default)))
 
-    (defn #^ F unwrapE [#^ (of Result S F) resultM]
+    (defn unwrapE [#^ Result resultM]
         "throws error when on Success track"
         (if (failureQ resultM)
              (return resultM.value)
              (raise (ValueError f"Can't unwrapE {resultM}, since it's on Success track"))))
 
-    (defn #^ F unwrapE_or
-        [ #^ (of Result S F) resultM
-          #^ F default]
+    (defn unwrapE_or
+        [ #^ Result resultM
+          default]
         (if (failureQ resultM)
              (return resultM.value)
              (return default)))

@@ -73,10 +73,10 @@
 
 ; [C] Classes ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defclass [] Wy2Hy_Args [BaseModel]
-        (#^ (of List StrictStr) filenames)
-        (#^ bool                silent_mode)
-        (#^ bool                stdout_mode))
+    (defclass [dataclass] Wy2Hy_Args []
+        (#^ (of List str) filenames)
+        (#^ bool          silent_mode)
+        (#^ bool          stdout_mode))
 
     (defclass FTYPE [Enum]
         (setv WY    0)
@@ -88,14 +88,12 @@
         (setv STDOUT_1    2)
         (setv TRANSPILE_N 3))
 
-    (defclass APP_ERROR [BaseModel]
-        (setv #^ StrictStr msg "ERROR: unspecified")
-        (defn __init__ [self #^ StrictStr msg] (-> (super) (.__init__ :msg msg))))
+    (defclass [dataclass] APP_ERROR []
+        (setv #^ str msg "ERROR: unspecified"))
 
-    (defclass Transpiled [BaseModel]
-        (#^ StrictNumber time) ; in seconds 
-        (#^ HyCode       code) ; not used anywhere really
-        (defn __init__ [self #^ StrictNumber time #^ HyCode code] (-> (super) (.__init__ :time time :code code))))
+    (defclass [dataclass] Transpiled []
+        (#^ float  time)  ; in seconds 
+        (#^ HyCode code)) ; not used anywhere really
 
 ; _____________________________________________________________________________/ }}}1
 ; [F] ErrorHandling helpers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -144,7 +142,7 @@
 ; _____________________________________________________________________________/ }}}1
 ; [F] /monadic/ decide on run mode ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ (of Result RUN_MODE APP_ERROR)
+    (defn [] #^ Result ; RUN_MODE / APP_ERROR
         validate_args_and_decide_on_run_mode
         [ #^ Wy2Hy_Args args
         ]
@@ -169,9 +167,9 @@
 
 ; [F] /monadic/ Runner: stdout_mode ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ (of Result HyCode APP_ERROR) 
+    (defn [] #^ Result ; HyCode / APP_ERROR
         transpile_in_stdout_mode
-        [ #^ StrictStr source_filename
+        [ #^ str source_filename
         ]
         ;
         (try (setv _wy_code (read_file source_filename))
@@ -189,18 +187,18 @@
 
 ; [F] Filename operations: utils ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ FTYPE
+    (defn [] #^ FTYPE
         get_ft
-        [ #^ StrictStr filename
+        [ #^ str filename
         ]
         (setv [root ext] (os.path.splitext filename))
         (cond (= ext ".wy") (return FTYPE.WY)
               (= ext ".hy") (return FTYPE.HY)
               True          (return FTYPE.ERROR)))
 
-    (defn [validateF] #^ StrictStr
+    (defn [] #^ str
         change_filename_ext_to_hy
-        [ #^ StrictStr filename
+        [ #^ str filename
         ]
         "file1.wy -> file1.hy"
         (setv [root ext] (os.path.splitext filename))
@@ -209,9 +207,9 @@
 ; _____________________________________________________________________________/ }}}1
 ; [F] /monadic/ Filename operations: try generate pairs ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ (of Result bool APP_ERROR)
+    (defn [] #^ Result ; bool / APP_ERROR
         filenames_pairable_possibility
-        [ #^ (of List StrictStr) filenames
+        [ #^ (of List str) filenames
         ]
         ; check if all files are *.wy or *.hy:
         (setv _types (lmap get_ft filenames))
@@ -231,9 +229,9 @@
         (Success True))
 
     ; should only be used on pairable input!
-    (defn [validateF] #^ (of List (of Tuple StrictStr StrictStr))
+    (defn [] #^ (of List (of Tuple str str))
         generate_filenames_pairs
-        [ #^ (of List StrictStr) filenames
+        [ #^ (of List str) filenames
         ]
         (setv splitted_by_wy (lmulticut_by (fm (= (get_ft %1) FTYPE.WY))
                                            filenames
@@ -248,10 +246,10 @@
 ; _____________________________________________________________________________/ }}}1
 ; [F] /monadic/ Runner: Transpile one wy-hy pair ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ (of Result Transpiled APP_ERROR)
+    (defn [] #^ Result ; Transpiled / APP_ERROR
         transpile_wy_file
-        [ #^ StrictStr source_filename
-          #^ StrictStr target_filename
+        [ #^ str source_filename
+          #^ str target_filename
         ]
         ;
         (try (setv _wy_code (read_file source_filename))
@@ -278,7 +276,7 @@
     (defn unwrapTime [resultM] (. (unwrapR resultM) time)) ; for transpilation_result
 
     (defn run_wy2hy_incorrect_mode
-        [ #^ (of Result RUN_MODE APP_ERROR) run_mode_result
+        [ #^ Result run_mode_result ; RUN_MODE / APP_ERROR 
         ]
         "de facto: called for incorrect files for stdout-mode"
         (print :file sys.stderr PMsg.welcome)
@@ -289,7 +287,7 @@
         (normal_exit PMsg.info))
 
     (defn run_wy2hy_stdout_mode
-        [ #^ (of List StrictStr) filenames
+        [ #^ (of List str) filenames
         ]
         (setv _resultSTD (transpile_in_stdout_mode (first filenames)))
         (if (successQ _resultSTD)
@@ -297,7 +295,7 @@
             (exit_with_error 1 (unwrapEMsg _resultSTD) :closing_msg False)))
 
     (defn run_wy2hy_transpileN_mode
-        [ #^ (of List StrictStr) filenames
+        [ #^ (of List str) filenames
           #^ bool                silent_mode
         ]
         (setv _pairs (generate_filenames_pairs filenames))

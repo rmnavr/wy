@@ -20,13 +20,13 @@
 
 ; [F] substeps ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn #^ StrictStr tabs_to_spaces [#^ StrictStr line] (line.expandtabs :tabsize 4))
+    (defn #^ str tabs_to_spaces [#^ str line] (line.expandtabs :tabsize 4))
 
-    (defn #^ StrictStr remove_trailing_spaces [#^ StrictStr line] (line.rstrip " "))
+    (defn #^ str remove_trailing_spaces [#^ str line] (line.rstrip " "))
 
-    (defn #^ StrictStr prepend_newline_mark [#^ StrictStr line] (sconcat $NEWLINE_MARK line))
+    (defn #^ str prepend_newline_mark [#^ str line] (sconcat $NEWLINE_MARK line))
 
-    (defn #^ StrictStr insert_indent_marks [#^ WyCodeLine line]
+    (defn #^ str insert_indent_marks [#^ WyCodeLine line]
         ; requires rstrip to be already done to work correctly
         ;                                                  [------------------] last omarker is not required to have space before \
         (re_sub (sconcat r"^\s*(" $OMARKERS_REGEX r"\s+)*" $OMARKERS_REGEX r"?" $CMARKER_REGEX r"*\s*")
@@ -37,7 +37,7 @@
 ; _____________________________________________________________________________/ }}}1
 ; [I] Wycode to PreparedCode ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ PreparedCode
+    (defn [] #^ PreparedCode
         wycode_to_prepared_code
         [#^ WyCode raw_wy_code]
         (->> raw_wy_code

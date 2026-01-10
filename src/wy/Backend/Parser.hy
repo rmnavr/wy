@@ -62,9 +62,9 @@
 ; _____________________________________________________________________________/ }}}1
 ; add actions to pp-entities ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ StrictStr
+    (defn [] #^ str
         cleanse_multiline
-        [#^ StrictStr text]
+        [#^ str text]
         "removes indent/newline marks"
         (->> text (re_sub $INDENT_MARK " ")
                   (re_sub $NEWLINE_MARK ""))) ; "\n☇¦■smth" -> "\n smth"
@@ -84,7 +84,7 @@
 
 ; [F] Parsing whole  :: PreparedCode -> [Token ...] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ (of List Token)
+    (defn [] #^ (of List Token)
         prepared_code_to_tokens
         [ #^ PreparedCode prepared_code
         ]
@@ -100,7 +100,7 @@
 ; [F] Split to lines :: [Token ...] -> [NTLine ...] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
 
-    (defn [validateF] #^ (of List NTLine)
+    (defn [] #^ (of List NTLine)
         tokens_to_NTLines
         [ #^ (of List Token) tokens
         ]
@@ -120,7 +120,7 @@
         (return ntlines))
 
 
-    (defn [validateF] 
+    (defn [] 
         check_ntlines_for_parser_error
         [ #^ (of List NTLine) ntlines
         ]
@@ -137,7 +137,7 @@
                ntlines))
         
 
-    (defn [validateF] #^ (of List (of List Token))
+    (defn [] #^ (of List (of List Token))
         split_tokens_by_newline_tokens
         [ #^ (of List Token) tokens
         ]
@@ -147,7 +147,7 @@
                       :keep_border False
                       :merge_border False))
 
-    (defn [validateF] #^ StrictInt
+    (defn [] #^ int
         count_n_of_rows_that_tline_takes
         [#^ (of List Token) tokens]
         (->> tokens
@@ -160,7 +160,7 @@
 
 ; [I] PreparedCode to NTLines ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ (of List NTLine)
+    (defn [] #^ (of List NTLine)
         prepared_code_to_ntlines
         [ #^ PreparedCode prepared_code
         ]

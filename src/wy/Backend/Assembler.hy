@@ -3,7 +3,6 @@
 
     (import sys) (sys.setrecursionlimit 3000) ; needed for pyparser, I saw it crash at 1300
 
-    (import  wy.utils.fptk_local [validateF])
     (require wy.utils.fptk_local [->>])
 
     (import  wy.Backend.Classes  [WyCode HyCode])
@@ -16,7 +15,7 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    (defn [validateF] #^ HyCode
+    (defn [] #^ HyCode
         transpile_wy2hy
         [ #^ WyCode code
         ]

@@ -5,3 +5,8 @@ Purpose of local version is to have stable fptk
 inside other projects until fptk reaches stable version.
 
 This file was generated from local git version: 0.5.0.dev1
+
+
+
+Additionally:
+- monads are made non-strict (do not require pydantic, thus startup is much faster)

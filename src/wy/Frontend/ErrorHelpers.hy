@@ -14,12 +14,11 @@
 
 ; [C] PrettyTEMsg ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defclass [] PrettyTEMsg [BaseModel]
+    (defclass [dataclass] PrettyTEMsg []
         "Pretty Transpilation Error Message.
          This is essentially str synonim, but differentiated from pure str
          (this is used in Result monad subtypes of run_wy2hy_transpilation)"
-        (#^ StrictStr msg)
-        (defn __init__ [self m] (-> (super) (.__init__ :msg m))))
+        (#^ str msg))
 
 ; _____________________________________________________________________________/ }}}1
 
@@ -27,9 +26,9 @@
 
     (defn #^ str
         extract_codeline_with_neighbours
-        [ #^ WyCode                  code
-          #^ StrictInt               lineN1         ; start     ; in 1-based index due to wy line-count logic
-          #^ (of Optional StrictInt) [lineN2 None]] ; end>start ; in 1-based index due to wy line-count logic
+        [ #^ WyCode            code
+          #^ int               lineN1         ; start     ; in 1-based index due to wy line-count logic
+          #^ (of Optional int) [lineN2 None]] ; end>start ; in 1-based index due to wy line-count logic
         (setv $PRE 5)
         (setv $POST 3)
         ;
@@ -41,14 +40,14 @@
         ;
         (setv preNs                                                 ; in 1-based index
             (lfilter (pflip geq 1)
-                     (range_ (minus lineN1 $PRE) (dec lineN1))))    
+                     (range_ (minus lineN1 $PRE) (dec lineN1))))
         (setv mainNs (lrange_ lineN1 lineN2_))                       ; in 1-based index
         (setv postNs                                                ; in 1-based index
             (lfilter (pflip leq (len nmbrdLines))
-                     (range_ (inc lineN2_) (plus lineN2_ $POST))))  
+                     (range_ (inc lineN2_) (plus lineN2_ $POST))))
         ;
         (str_join
-            (flatten [ (pick (lmap dec preNs) nmbrdLines)                 
+            (flatten [ (pick (lmap dec preNs) nmbrdLines)
                        (lmap clrz_r (pick (lmap dec mainNs) nmbrdLines))
                        (pick (lmap dec postNs) nmbrdLines)])
                   :sep "\n"))
@@ -70,10 +69,10 @@
 ; _____________________________________________________________________________/ }}}1
 ; helper: preparedcode charpos to lineN ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn #^ (of Optional StrictInt)
+    (defn #^ (of Optional int)
         charpos_to_lineN
-        [ #^ StrictInt char_pos ; 0-based index
-          #^ StrictStr text
+        [ #^ int char_pos ; 0-based index
+          #^ str text
         ]
         "returned lineN is given in 1-based index"
         (setv newline_positions
@@ -86,10 +85,10 @@
                     (return (inc &i))))
         (return None))
 
-    (defn #^ (of Optional StrictInt)
+    (defn #^ (of Optional int)
         preparedcode_charpos_to_orig_lineN
-        [ #^ StrictInt char_pos ; 0-based index
-          #^ WyCode    code     ; yes, WyCode is used to calc PreparedCode positions
+        [ #^ int    char_pos ; 0-based index
+          #^ WyCode code     ; yes, WyCode is used to calc PreparedCode positions
          ]
          (setv lines (code.split "\n"))
          (setv semiprep_lines (lmap (partial sconcat $NEWLINE_MARK) lines))
@@ -169,7 +168,7 @@
         (setv l1 (sconcat (clrz_r f"Indent error at {lineNstr}: ") f"{e.msg}"))
         (setv l2 (extract_codeline_with_neighbours code lineN1 lineN2))
         (sconcat l1 "\n" l2))
-                  
+
     (defn #^ str
         str_prepare_BracketerError
         [ #^ WyCode           code
@@ -185,10 +184,10 @@
 
 ; [F] run wy2hy transpilation -> Result[HyCode, PrettyTEMsg] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ (of Result HyCode PrettyTEMsg)
+    (defn [] #^ Result ; HyCode / PrettyTEMsg
         run_wy2hy_transpilation
         [ #^ WyCode code
-          #^ bool   [silent True]          
+          #^ bool   [silent True]
         ]
         "Returns result monad.
          On success places transpiled HyCode in monad,

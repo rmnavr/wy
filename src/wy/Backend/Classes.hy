@@ -9,12 +9,12 @@
 
 ; _____________________________________________________________________________/ }}}1
 
-    (setv WyCode       StrictStr)
-    (setv WyCodeLine   StrictStr)
-    (setv PreparedCode StrictStr)
-    (setv Atom         StrictStr)
-    (setv HyCodeLine   StrictStr)
-    (setv HyCode       StrictStr)
+    (setv WyCode       str)
+    (setv WyCodeLine   str)
+    (setv PreparedCode str)
+    (setv Atom         str)
+    (setv HyCodeLine   str)
+    (setv HyCode       str)
 
     ; Preparator
 ; [=] wy marks and markers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -146,12 +146,11 @@
 ; _____________________________________________________________________________/ }}}1
 ; [C] Token: main ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defclass [] Token [BaseModel]
+    (defclass [dataclass] Token []
         (#^ Atom  atom)
         (#^ PKind pkind)
         (#^ TKind tkind)
         ;
-        (defn __init__ [self a p t] (-> (super) (.__init__ :atom a :pkind p :tkind t)))
         (defn __repr__ [self] (return (sconcat "<" self.tkind.name "(" self.pkind.name "): '" self.atom "'>")))
         (defn __str__  [self] (return (self.__repr__))))
 
@@ -171,7 +170,7 @@
     (setv $HMMR_TEST (sconcat r"^" $HY_MACROMARKS_REGEX))
 
     ; used only in Parser:
-    (defn [validateF] #^ Token
+    (defn [] #^ Token
         semiword_to_token
         [ #^ Atom atom
         ]
@@ -193,11 +192,11 @@
 ; _____________________________________________________________________________/ }}}1
 ; [F] atom checks (used only by Writer) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ bool omarker_atomQ [#^ Atom atom] (in atom $OMARKERS)) 
-    (defn [validateF] #^ bool hy_opener_atomQ       [#^ Atom atom] (in atom $HY_OPENERS))
-    (defn [validateF] #^ bool closing_bracket_atomQ [#^ Atom atom] (in atom $CLOSER_BRACKETS))
+    (defn [] #^ bool omarker_atomQ [#^ Atom atom] (in atom $OMARKERS)) 
+    (defn [] #^ bool hy_opener_atomQ       [#^ Atom atom] (in atom $HY_OPENERS))
+    (defn [] #^ bool closing_bracket_atomQ [#^ Atom atom] (in atom $CLOSER_BRACKETS))
 
-    (defn [validateF] #^ bool
+    (defn [] #^ bool
         hy_bracket_atomQ
         [ #^ Atom atom
         ]
@@ -208,12 +207,12 @@
 
 ; [C] NTLine (numbered line of tokens) ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (setv _tripleInt (of Tuple StrictInt StrictInt StrictInt))
+    (setv _tripleInt (of Tuple int int int))
     ; 1 - ordered NTLine number; multiline qstrings do not increase this number
     ; 2 - raw wy-code line number (start); multiline qstrings are taken into account here
     ; 3 - raw wy-code line number (end)
 
-    (defclass [] NTLine [BaseModel]
+    (defclass [dataclass] NTLine []
         "Numbered Line of Tokens;
          Count starts from 1 (not 0) to be consistent with python errors messages
          (where 1st line of file is line 1, not line 0)"
@@ -239,11 +238,11 @@
         (defn __repr__ [self] (return self.name))
         (defn __str__  [self] (return self.name)))
 
-    (defclass [] NDLine [BaseModel]
-        (#^ SKind                kind)
-        (#^ _tripleInt           rowN)                 ; lineNs from source NTLine
-        (#^ StrictInt            indent)               ; <- " \ x" is 3, " #:" is 1, "" (empty line) is 0, "x" is 0
-        (#^ (of List Token)      body_tokens)          ; <- other tokens, info on which is NOT dubbed (in some way) in other fields
+    (defclass [dataclass] NDLine []
+        (#^ SKind           kind)
+        (#^ _tripleInt      rowN)                 ; lineNs from source NTLine
+        (#^ int             indent)               ; <- " \ x" is 3, " #:" is 1, "" (empty line) is 0, "x" is 0
+        (#^ (of List Token) body_tokens)          ; <- other tokens, info on which is NOT dubbed (in some way) in other fields
         ; below None is used for kinds where field not applicable:
         (#^ (of Optional Token)  t_smarker)            ; <- used only by SKind.GroupStarter
         (#^ (of Optional Token)  t_ocomment))          ; <- used by 3 SKinds: ImpliedOpener/Continuator/OnlyOComment
@@ -252,14 +251,14 @@
 ; [C] BLine (bracketed line), NDLineInfo ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; structural bracket processor
-    (defclass NDLineInfo [BaseModel]
+    (defclass [dataclass] NDLineInfo []
         "gives info on previously processed line"
-        (#^ (of List StrictInt) indents)
-        (#^ (of List StrictStr) brckt_stack #_ "elems of CLOSER_BRACKETS: like [')' '}' ']'] where ')' is the first one to be closed")
-        (#^ SKind               kind))
+        (#^ (of List int) indents)
+        (#^ (of List str) brckt_stack #_ "elems of CLOSER_BRACKETS: like [')' '}' ']'] where ')' is the first one to be closed")
+        (#^ SKind         kind))
 
     ; Bracketed line
-    (defclass BLine [BaseModel]
+    (defclass [dataclass] BLine []
         "calcs structural opener brackets for current line"
         (#^ NDLine         ndline)
         (#^ (of List Atom) prev_closers #_ "elems of CLOSER_BRACKETS; closers are closing previous line - but this info is stored in cur line")
@@ -300,10 +299,10 @@
             "for unmatched open brackets"
             (defn __init__
                 [ self
-                  #^ StrictInt startpos  ; char pos in overall prepared-wy-code (because Parser runs on Prepared code)
-                  #^ StrictInt endpos    ; char pos in overall prepared-wy-code
-                  #^ StrictInt char      ; like '~@('
-                  #^ StrictStr msg
+                  #^ int startpos  ; char pos in overall prepared-wy-code (because Parser runs on Prepared code)
+                  #^ int endpos    ; char pos in overall prepared-wy-code
+                  #^ int char      ; like '~@('
+                  #^ str msg
                 ]
                 (. (super) (__init__ f"{msg}\npos={startpos}-{endpos} char='{char}'"))
                 (setv self.startpos startpos)
@@ -315,8 +314,8 @@
             "for unmatched closer brackets, double-quote and unicode outside strings/comments"
             (defn __init__
                 [ self
-                  #^ NTLine    ntline
-                  #^ StrictStr msg
+                  #^ NTLine ntline
+                  #^ str    msg
                 ]
                 (. (super) (__init__ f"{msg}\nntline: {ntline}"))
                 (setv self.ntline ntline)
@@ -327,8 +326,8 @@
         (defclass [] WyExpanderError [Exception]
             (defn __init__
                 [ self
-                  #^ NTLine    ntline 
-                  #^ StrictStr msg]
+                  #^ NTLine ntline 
+                  #^ str    msg]
                 (. (super) (__init__ f"{msg}\nntline:\n{ntline}"))
                 (setv self.ntline ntline)
                 (setv self.msg    msg)))
@@ -338,9 +337,9 @@
         (defclass [] WyDeconstructorError [Exception]
             (defn __init__
                 [ self
-                  #^ NDLine    ndline1 ; 1   line with parent indent 
-                  #^ NDLine    ndline2 ;  2  line that was tried to be indented
-                  #^ StrictStr msg]
+                  #^ NDLine ndline1 ; 1   line with parent indent 
+                  #^ NDLine ndline2 ;  2  line that was tried to be indented
+                  #^ str    msg]
                 (. (super) (__init__ f"{msg}\nndline1:\n{ndline1}\nndline2:\n{ndline2}"))
                 (setv self.ndline1 ndline1)
                 (setv self.ndline2 ndline2)
@@ -351,8 +350,8 @@
         (defclass [] WyBracketerError [Exception]
             (defn __init__
                 [ self
-                  #^ NDLine    ndline 
-                  #^ StrictStr msg]
+                  #^ NDLine ndline 
+                  #^ str    msg]
                 (. (super) (__init__ f"{msg}\nndline:\n{ndline}"))
                 (setv self.ndline ndline)
                 (setv self.msg    msg)))

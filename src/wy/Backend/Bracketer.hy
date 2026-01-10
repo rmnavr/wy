@@ -16,10 +16,10 @@
 ; [util] indent level processing ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
     ; «indent» is symbols count, «indent_level» is index in list
-    (defn #^ StrictInt
+    (defn #^ int
         get_indent_level
-        [ #^ (of List StrictInt) indents      #_ "[0 4 8 20]"
-          #^ StrictInt           cur_indent
+        [ #^ (of List int) indents      #_ "[0 4 8 20]"
+          #^ int           cur_indent
         ]
         "when can't calculate indent, will raise error
          (I don't care of what kind, i catch all of them later)"
@@ -40,7 +40,7 @@
 ; _____________________________________________________________________________/ }}}1
 ; [util] omarker to hy tokens ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [validateF] #^ (of Tuple StrictStr StrictStr) #_ "[HY_OPENER CLOSER_BRACKET]"
+    (defn [] #^ (of Tuple str str) #_ "[HY_OPENER CLOSER_BRACKET]"
         omarker_to_hy_brackets
         [ #^ Atom atom
         ]
@@ -52,7 +52,7 @@
 ; _____________________________________________________________________________/ }}}1
 ; [F] process_one_ndline ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
   
-    (defn [validateF] #^ (of Tuple NDLineInfo BLine)
+    (defn [] #^ (of Tuple NDLineInfo BLine)
         process_one_ndline
         [ #^ NDLineInfo pcard  ; info on previous ndline
           #^ NDLine     ndline
@@ -65,7 +65,7 @@
 
 ; ■ EL ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
 
-    (defn [validateF] #^ (of Tuple NDLineInfo BLine)
+    (defn [] #^ (of Tuple NDLineInfo BLine)
         process_EL
         [ #^ NDLineInfo pcard
           #^ NDLine     ndline
@@ -81,7 +81,7 @@
 ; ________________________________________________________________________/ }}}2
 ; ■ OC ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
 
-    (defn [validateF] #^ (of Tuple NDLineInfo BLine)
+    (defn [] #^ (of Tuple NDLineInfo BLine)
         process_OC
         [ #^ NDLineInfo pcard
           #^ NDLine     ndline
@@ -95,7 +95,7 @@
 ; ________________________________________________________________________/ }}}2
 ; ■ IO ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
 
-    (defn [validateF] #^ (of Tuple NDLineInfo BLine)
+    (defn [] #^ (of Tuple NDLineInfo BLine)
         process_IO
         [ #^ NDLineInfo pcard
           #^ NDLine     ndline
@@ -140,7 +140,7 @@
 ; ________________________________________________________________________/ }}}2
 ; ■ GS ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
 
-    (defn [validateF] #^ (of Tuple NDLineInfo BLine)
+    (defn [] #^ (of Tuple NDLineInfo BLine)
         process_GS
         [ #^ NDLineInfo pcard
           #^ NDLine     ndline
@@ -187,7 +187,7 @@
 ; ________________________________________________________________________/ }}}2
 ; ■ C ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{2
 
-    (defn [validateF] #^ (of Tuple NDLineInfo BLine)
+    (defn [] #^ (of Tuple NDLineInfo BLine)
         process_C
         [ #^ NDLineInfo pcard  ; info on previous ndline
           #^ NDLine     ndline

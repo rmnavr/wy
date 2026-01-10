@@ -80,9 +80,8 @@
 	······························
 
 	Current:
-	- upd fptk.local (for more speed)
-	* remove pydantic (for more speed)
-	+ allow indent increase after continuator
+	* remove pydantic/monad-pydantic/lens (for more speed)
+	+ allow indent increase after \continuator
 	+ $ cutter
 
 	······························
@@ -90,7 +89,7 @@
 	<$ — forbid indent
 	,  — ?
 
-	forbid indent further that start of 
+	forbid indent further than start of 
 	multiline line for $
 	      
 	print $ str "line

@@ -4,7 +4,7 @@ import importlib
 _show_startup_times = False
 #
 _import_lenses      = True
-_import_strictT     = True
+_import_strictT     = False
 _import_monads      = True
 
 # Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
