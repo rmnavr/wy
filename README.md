@@ -139,8 +139,6 @@ Dependencies:
 * python >= 3.9 *(tested with 3.9 and 3.10)*
 * ipython *(tested with 8.18.1 and some 9 version)*
 * hy *(tested with 1.0.0 and 1.1.0)*
-* hyrule *(tested with 1.0.0 and 1.1.0)*
-* pydantic *(tested with 2.11.7)*
 * pyparsing *(tested with 3.0.9)*
 * funcy *(tested with 2.0)*
 * lenses *(tested with 1.2.0)*
@@ -151,6 +149,8 @@ Dependencies:
 
 # Changelog
 
+* Version 0.5.1 (13 jan 2026)
+  * noticeably increased startup time due to removing pydantic and hyrule requirement
 * Version 0.5.0 (17 nov 2025)
   * for user:
     * added meaningfull error messages for wy2hy
