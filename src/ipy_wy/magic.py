@@ -12,7 +12,7 @@ from IPython.core.magic import Magics, magics_class, line_cell_magic, needs_loca
 import hy
 
 from wy import run_wy2hy_transpilation, frame_hycode
-from wy.utils.fptk_local import unwrapR, unwrapE, failureQ
+from wy.utils.fptk_local.monads.resultM import unwrapS, unwrapE, failureQ
 
 # _____________________________________________________________________________/ }}}1
 
@@ -46,7 +46,7 @@ class WyMagics(Magics):
             print(unwrapE(transpilationResult).msg)
             return None
         else:
-            hycode = unwrapR(transpilationResult)
+            hycode = unwrapS(transpilationResult)
             return hy.eval(
                 hy.read_many(hycode, filename=cell_filename),
                 locals=local_ns,
@@ -79,7 +79,7 @@ class WyMagics(Magics):
             print("wy -> hy transpilation failed:\n")
             print(unwrapE(transpilationResult).msg)
             return None
-        hycode = unwrapR(transpilationResult)
+        hycode = unwrapS(transpilationResult)
         if hycode != "":
            print(frame_hycode(hycode.strip('\n'), colored=True))
         return hy.eval(

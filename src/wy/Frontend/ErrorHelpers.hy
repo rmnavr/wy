@@ -3,8 +3,8 @@
 
     (import  sys) (sys.setrecursionlimit 3000) ; needed for pyparser, I saw it crash at 1300
 
-    (import  wy.utils.fptk_local *)
-    (require wy.utils.fptk_local *)
+    (require wy.utils.fptk_local.loader [load_fptk])
+    (load_fptk "core" "resultM")
     (import  wy.utils.coloring *)
 
     (import  wy.Backend.Classes *)
@@ -184,7 +184,7 @@
 
 ; [F] run wy2hy transpilation -> Result[HyCode, PrettyTEMsg] ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [] #^ Result ; HyCode / PrettyTEMsg
+    (defn [] #^ (of Result HyCode PrettyTEMsg)
         run_wy2hy_transpilation
         [ #^ WyCode code
           #^ bool   [silent True]

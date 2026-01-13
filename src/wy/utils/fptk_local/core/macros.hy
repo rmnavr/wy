@@ -46,19 +46,6 @@
 
 )
 ; _____________________________________________________________________________/ }}}1
-; Info on importing ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
-
-	; when only importing (import wy.utils.fptk_local [f>]), f> is required to have fm internally, and it can be called as:
-	; 
-	; -> hy.R.wy.utils.fptk_local.fm				-> ✗ does not work in dev file
-	;								   ✓ works from outside projs (it is essentially call to installed lib)
-	;								   ✓ this is how it is done in hyrule (I think this is due to their hy_init.hy importing everything)
-	;										 
-	;	 fm							-> [✓ ✗] works from dev file
-	;	 hy.R.wy.utils.fptk_local_macros.fm		-> [✓ ✗] works from dev file
-	;	 hy.R.wy.utils.fptk_local.wy.utils.fptk_local_macros.fm	-> [✗ ✗] does not work anywhere
-
-; _____________________________________________________________________________/ }}}1
 ; 
 ; expr type checkers ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
@@ -218,6 +205,7 @@
     ; aarg = annotated arg
 
 	(defmacro def:: [#* margs]
+        "help string (to be done)"
         ; deconstruct margs:
         (for [[&n &arg] (enumerate margs)]
             (when (= &arg '=>)
@@ -315,19 +303,19 @@
 		(return `(fn [~@inputs] ~@exprs)))
 
 	(defmacro f> [one_shot_fm #* args]
-		(return `((fm ~one_shot_fm) ~@args)))
+		(return `((hy.R.wy/utils/fptk_local/core.fm ~one_shot_fm) ~@args)))
 
 	(defmacro mapm [one_shot_fm #* args]
-		(return `(map (fm ~one_shot_fm) ~@args)))
+		(return `(map (hy.R.wy/utils/fptk_local/core.fm ~one_shot_fm) ~@args)))
 
 	(defmacro lmapm [one_shot_fm #* args]
-		(return `(list (map (fm ~one_shot_fm) ~@args))))
+		(return `(list (map (hy.R.wy/utils/fptk_local/core.fm ~one_shot_fm) ~@args))))
 
 	(defmacro filterm [one_shot_fm iterable]
-		(return `(filter (fm ~one_shot_fm) ~iterable)))
+		(return `(filter (hy.R.wy/utils/fptk_local/core.fm ~one_shot_fm) ~iterable)))
 
 	(defmacro lfilterm [one_shot_fm iterable]
-		(return `(list (filter (fm ~one_shot_fm) ~iterable))))
+		(return `(list (filter (hy.R.wy/utils/fptk_local/core.fm ~one_shot_fm) ~iterable))))
 
 ; _____________________________________________________________________________/ }}}1
 ; =>, =>> ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
@@ -478,7 +466,7 @@
 					(_isExprWithHeadSymbol &arg "f>") 
 					(do (setv body (get &arg 1))
                         (setv ags  (cut &arg 2 None))
-                        (pargs.append `(hy.I.funcy.partial (fm ~body) ~@ags)))
+                        (pargs.append `(hy.I.funcy.partial (hy.R.wy/utils/fptk_local/core.fm ~body) ~@ags)))
 					; (func 1 2)       -> (partial func 1 2)
 					; (operator.add 3) -> (partial operator.add 3)
 					(= (type &arg) hy.models.Expression)
@@ -563,7 +551,7 @@
 	(defmacro &+ [#* macro_args]
 		(setv lenses_ (butlast macro_args))
 		(setv func	 (get macro_args (- 1)))
-	   `(& ~@lenses_ (lns ~func)))
+	   `(& ~@lenses_ (hy.R.wy/utils/fptk_local/core/macros.lns ~func)))
 
 	; compose lens, add setters/getters, apply
 
@@ -571,19 +559,19 @@
 		(setv variable (get macro_args 0))
 		(setv lenses   (butlast (rest macro_args)))
 		(setv func	   (get macro_args (- 1)))
-	   `((& ~@lenses (lns ~func)) ~variable))
+	   `((& ~@lenses (hy.R.wy/utils/fptk_local/core/macros.lns ~func)) ~variable))
 
 	; construct lens, apply:
 
 	(defmacro l> [#* macro_args]
 		(setv variable	  (get macro_args 0))
 		(setv lenses_args (rest macro_args))
-	   `((lns ~@lenses_args) ~variable))
+	   `((hy.R.wy/utils/fptk_local/core/macros.lns ~@lenses_args) ~variable))
 
 	(defmacro l>= [#* macro_args]
 		(setv variable	  (get macro_args 0))
 		(setv lenses_args (rest macro_args))
-	   `(&= ~variable (lns ~@lenses_args)))
+	   `(&= ~variable (hy.R.wy/utils/fptk_local/core/macros.lns ~@lenses_args)))
 
 ; _____________________________________________________________________________/ }}}1
 ; assertm, gives_error_typeQ ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1

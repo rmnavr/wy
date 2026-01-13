@@ -1,6 +1,6 @@
 
-    (import  wy.utils.fptk_local *)
-    (require wy.utils.fptk_local *)
+    (import  wy.utils.fptk_local.core *)
+    (require wy.utils.fptk_local.core *)
 
     (import wy.Backend.Classes *)
     (import wy.Backend.Preparator    [wycode_to_prepared_code])

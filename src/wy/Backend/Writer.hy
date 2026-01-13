@@ -4,8 +4,8 @@
     (import  wy.Backend.Classes *)
     (import  wy.Backend.Bracketer [omarker_to_hy_brackets])
 
-    (import  wy.utils.fptk_local *)
-    (require wy.utils.fptk_local *)
+    (require wy.utils.fptk_local.loader [load_fptk])
+    (load_fptk "core" "lenses")
 
 ; _____________________________________________________________________________/ }}}1
 

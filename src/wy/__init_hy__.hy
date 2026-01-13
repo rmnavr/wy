@@ -7,6 +7,6 @@
     (import wy.Frontend.ReplHelpers  [ frame_hycode ])
     (import wy.Frontend.DebugHelpers [ print_wy2hy_steps ])
 
-    (import wy.utils.fptk_local      [ successQ failureQ unwrapR unwrapE ])
+    (import wy.utils.fptk_local.monads.resultM [ successQ failureQ unwrapS unwrapE ])
 
 

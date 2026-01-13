@@ -5,8 +5,8 @@
     (import wy.Backend.Expander [first_indent_profile])
     (import wy.Backend.Expander [decide_structural_kind])
 
-    (import  wy.utils.fptk_local *)
-    (require wy.utils.fptk_local *)
+    (require wy.utils.fptk_local.loader [load_fptk])
+    (load_fptk "core")
 
 ; _____________________________________________________________________________/ }}}1
 

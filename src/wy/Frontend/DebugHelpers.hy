@@ -3,8 +3,8 @@
 
     (import  sys) (sys.setrecursionlimit 3000) ; needed for pyparser, I saw it crash at 1300
 
-    (import  wy.utils.fptk_local *)
-    (require wy.utils.fptk_local *)
+    (require wy.utils.fptk_local.loader [load_fptk])
+    (load_fptk "core")
     (import  wy.utils.coloring *)
 
     (import  wy.Backend.Classes *)

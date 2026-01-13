@@ -1,8 +1,8 @@
 
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (import  wy.utils.fptk_local *)
-    (require wy.utils.fptk_local *)
+    (require wy.utils.fptk_local.loader [load_fptk])
+    (load_fptk "core")
 
     (import  sys)
     (. sys.stdout (reconfigure :encoding "utf-8"))

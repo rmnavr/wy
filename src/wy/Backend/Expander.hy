@@ -6,8 +6,8 @@
 
     (import wy.Backend.Classes *)
 
-    (import  wy.utils.fptk_local *)
-    (require wy.utils.fptk_local *)
+    (require wy.utils.fptk_local.loader [load_fptk])
+    (load_fptk "core")
 
 ; _____________________________________________________________________________/ }}}1
 

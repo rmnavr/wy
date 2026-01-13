@@ -1,6 +1,6 @@
 
     ; this is limited set of funcs/macros from hyrule 1.0.1 library (with minimal changes);
-    ; required to speed up startup time of wy.utils.fptk_local lib
+    ; required to speed up startup time of fptk lib
 
 ; Import, Export ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 

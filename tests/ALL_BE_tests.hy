@@ -2,8 +2,8 @@
     (import os)
     (import subprocess)
 
-    (import  wy.utils.fptk_local [str_join lmap sconcat zerolenQ])
-    (require wy.utils.fptk_local [->> unless])
+    (import  wy.utils.fptk_local.core [str_join lmap sconcat zerolenQ])
+    (require wy.utils.fptk_local.core [->> unless])
 
 ; [F] test machinery setup ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 

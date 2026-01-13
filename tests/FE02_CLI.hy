@@ -1,6 +1,6 @@
 
-    (import  wy.utils.fptk_local *)
-    (require wy.utils.fptk_local *)
+    (import  wy.utils.fptk_local.core *)
+    (require wy.utils.fptk_local.core *)
 
     (import wy.Frontend.wy2hy [run_wy2hy_script Wy2Hy_Args])
 

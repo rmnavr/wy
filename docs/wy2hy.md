@@ -90,7 +90,7 @@ regarding error messages.
     ; ---------------------------------------------------
 
     (import wy [ run_wy2hy_transpilation ])
-    (import wy [ successQ unwrapR unwrapE ])
+    (import wy [ successQ unwrapS unwrapE ])
 
     (setv result
         (run_wy2hy_transpilation   
@@ -104,8 +104,8 @@ regarding error messages.
     ; You don't have to understand how Result monad works,
     ; just use this code to extract data:
     (if (successQ result)
-        (unwrapR result)          ; extracts correct HyCode as a string
-        (. (unwrapE result) msg)) ; extracts user-friendly msg as a string
+        (unwrapS result)          ; extracts correct (S is for "Success") HyCode as a string
+        (. (unwrapE result) msg)) ; extracts user-friendly msg (E is for "Error") as a string
 
     ; ---------------------------------------------------
 

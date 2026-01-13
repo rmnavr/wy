@@ -1,8 +1,8 @@
 
 ; Imports ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (import  wy.utils.fptk_local *)
-    (require wy.utils.fptk_local *)
+    (require wy.utils.fptk_local.loader [load_fptk])
+    (load_fptk "core" "resultM")
     (import  wy.utils.coloring *)
 
     (import os)
@@ -142,7 +142,7 @@
 ; _____________________________________________________________________________/ }}}1
 ; [F] /monadic/ decide on run mode ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [] #^ Result ; RUN_MODE / APP_ERROR
+    (defn [] #^ (of Result RUN_MODE APP_ERROR)
         validate_args_and_decide_on_run_mode
         [ #^ Wy2Hy_Args args
         ]
@@ -167,7 +167,7 @@
 
 ; [F] /monadic/ Runner: stdout_mode ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [] #^ Result ; HyCode / APP_ERROR
+    (defn [] #^ (of Result HyCode APP_ERROR)
         transpile_in_stdout_mode
         [ #^ str source_filename
         ]
@@ -207,7 +207,7 @@
 ; _____________________________________________________________________________/ }}}1
 ; [F] /monadic/ Filename operations: try generate pairs ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [] #^ Result ; bool / APP_ERROR
+    (defn [] #^ (of Result bool APP_ERROR)
         filenames_pairable_possibility
         [ #^ (of List str) filenames
         ]
@@ -246,7 +246,7 @@
 ; _____________________________________________________________________________/ }}}1
 ; [F] /monadic/ Runner: Transpile one wy-hy pair ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    (defn [] #^ Result ; Transpiled / APP_ERROR
+    (defn [] #^ (of Result Transpiled APP_ERROR)
         transpile_wy_file
         [ #^ str source_filename
           #^ str target_filename
@@ -261,11 +261,11 @@
         (if (failureQ _trnsplR)
             (do (setv tr_err_msg (-> _trnsplR unwrapE (getattrm .msg)))
                 (return (Failure (APP_ERROR (sconcat f"{tr_err_msg}\n" PMsg.trspl_bad) ))))
-            (try (write_to_file (unwrapR _trnsplR) target_filename)
+            (try (write_to_file (unwrapS _trnsplR) target_filename)
                  (except [e Exception]
                          (return (Failure (APP_ERROR PMsg.trspl_write))))))
         ;
-        (return (Success (Transpiled _t_s (unwrapR _trnsplR)))))
+        (return (Success (Transpiled _t_s (unwrapS _trnsplR)))))
 
 ; _____________________________________________________________________________/ }}}1
 
@@ -273,10 +273,10 @@
 
     ; helpers:
     (defn unwrapEMsg [resultM] (. (unwrapE resultM) msg))  ; for run_mode_result/transpilation_result
-    (defn unwrapTime [resultM] (. (unwrapR resultM) time)) ; for transpilation_result
+    (defn unwrapTime [resultM] (. (unwrapS resultM) time)) ; for transpilation_result
 
     (defn run_wy2hy_incorrect_mode
-        [ #^ Result run_mode_result ; RUN_MODE / APP_ERROR 
+        [ #^ (of Result RUN_MODE APP_ERROR) run_mode_result
         ]
         "de facto: called for incorrect files for stdout-mode"
         (print :file sys.stderr PMsg.welcome)
@@ -291,7 +291,7 @@
         ]
         (setv _resultSTD (transpile_in_stdout_mode (first filenames)))
         (if (successQ _resultSTD)
-            (normal_exit (unwrapR _resultSTD) :closing_msg False)
+            (normal_exit (unwrapS _resultSTD) :closing_msg False)
             (exit_with_error 1 (unwrapEMsg _resultSTD) :closing_msg False)))
 
     (defn run_wy2hy_transpileN_mode
@@ -348,7 +348,7 @@
         (if (failureQ run_mode_result)
             (run_wy2hy_incorrect_mode run_mode_result)
             ;
-            (do (setv run_mode   (unwrapR run_mode_result)) 
+            (do (setv run_mode   (unwrapS run_mode_result)) 
                 (setv _filenames wy2hy_args.filenames)
                 (setv _m_silent  wy2hy_args.silent_mode)
                 ;

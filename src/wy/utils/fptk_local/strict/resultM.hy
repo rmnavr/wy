@@ -6,7 +6,7 @@
 
 ; Import/Export ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\ {{{1
 
-    ; no pydantic import
+    (import pydantic [BaseModel])
 
     (import typing [TypeVar Generic Union])
     (import funcy [rcompose lmap partial])
@@ -25,23 +25,23 @@
     (setv S (TypeVar "S"))
     (setv F (TypeVar "F"))
 
-    (defclass _Failure [(of Generic F)]
-        (defn __init__ [self value] (setv #^ F self.value value))
+    (defclass _Failure [BaseModel (of Generic F)]
+        #^ F value
         ;
         (defn __str__ [self] (+ "Failure: " (str self.value)))
         (defn __repr__ [self] (self.__str__)))
 
-    (defclass _Success [(of Generic S)]
-        (defn __init__ [self value] (setv #^ S self.value value))
+    (defclass _Success [BaseModel (of Generic S)]
+        #^ S value
         ;
         (defn __str__ [self] (+ "Success: " (str self.value)))
         (defn __repr__ [self] (self.__str__)))
 
-    (defclass Result [(of Generic S F)]
-        (defn __init__ [self container] (setv #^ (of Union (of _Success S) (of _Failure F)) self.container container))
+    (defclass Result [BaseModel (of Generic S F)]
+        #^ (of Union (of _Success S) (of _Failure F)) container
         (defn [property] value [self] self.container.value)
         ;
-        (defn __str__ [self] (+ "<R." (str F) (str S) (str self.container) ">"))
+        (defn __str__ [self] (+ "<R." (str self.container) ">"))
         (defn __repr__ [self] (self.__str__)))
 
     (defn Failure [value] (Result :container (_Failure :value value)))

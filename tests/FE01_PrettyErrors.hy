@@ -1,6 +1,6 @@
 
-    (import  wy.utils.fptk_local *)
-    (require wy.utils.fptk_local *)
+    (import  wy.utils.fptk_local.core *)
+    (require wy.utils.fptk_local.core *)
 
     (import wy.Frontend.ErrorHelpers [run_wy2hy_transpilation transpile_wy2hy])
 
